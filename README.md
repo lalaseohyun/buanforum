@@ -9,6 +9,15 @@ GitHub Pages에 올려 씁니다. **주소가 고정**이라 QR을 행사 전에
 
 파일을 고치려는 분은 이 문서 대신 **[MAP.md](MAP.md)** 를 먼저 보세요 — "뭘 바꾸려면 어디를 여는지" 표 하나로 끝납니다.
 
+## 지금 배포된 주소
+
+| 화면 | 주소 |
+|---|---|
+| 참여자 | https://lalaseohyun.github.io/buanforum/ |
+| 진행자 | https://lalaseohyun.github.io/buanforum/host.html?k=2026 |
+
+Firebase 프로젝트: `buanforum` (Firestore·Storage 모두 asia-northeast3/무료 위치로 생성 완료, Storage는 Blaze 요금제).
+
 ---
 
 ## 처음 배포하기 (한 번만)
@@ -26,8 +35,8 @@ GitHub Pages에 올려 씁니다. **주소가 고정**이라 QR을 행사 전에
 3. Storage 콘솔 ▸ 규칙 탭에 [firebase/storage.rules](firebase/storage.rules) 내용을 붙여넣고 **게시**
 4. Firestore 콘솔에서 문서 하나를 손으로 만듭니다 — 이게 **진행자 키**입니다:
    - 컬렉션 `forums` → 문서 ID `buan2026`(= [content/forum.json](content/forum.json)의 `id`와 반드시 같아야 함)
-   - 그 안에 컬렉션 `config` → 문서 ID `host` → 필드 `key`(문자열) = 아무 진행자 키(예: `bg2026`)
-   - 진행자 화면은 이제부터 `host.html?k=bg2026` 로 열어야 조작할 수 있습니다
+   - 그 안에 컬렉션 `config` → 문서 ID `host` → 필드 `key`(문자열) = 아무 진행자 키(이 프로젝트는 `2026`으로 정함)
+   - 진행자 화면은 이제부터 `host.html?k=2026` 로 열어야 조작할 수 있습니다
 
 ### 3. GitHub Pages에 올리기
 1. GitHub에 새 저장소 만들고 이 폴더 전체를 업로드(커밋)
