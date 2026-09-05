@@ -1,0 +1,58 @@
+{
+  "_": "행사 기본 정보 · 세션 목록 · 팀 구성. 행사명이나 팀 수를 바꾸려면 이 파일만 고치세요.",
+
+  "id": "buan2026",
+  "title": "2026 부안군 청년포럼",
+  "subtitle": "청년이 그리는 부안의 현재와 미래",
+  "date": "",
+  "time": "18:30 ~ 21:20",
+  "venue": "",
+  "host": "부안군",
+  "organizer": "주식회사 라인교육연구소",
+
+  "_sessions": "id는 코드가 쓰는 식별자라 바꾸지 마세요. no·title·subtitle·short는 화면 표시용이라 자유롭게.",
+  "sessions": [
+    {
+      "id": "opening",
+      "no": 1,
+      "short": "오프닝",
+      "title": "오프닝 스몰토크",
+      "subtitle": "부안 청년라이프",
+      "kind": "slides"
+    },
+    {
+      "id": "quiz",
+      "no": 2,
+      "short": "퀴즈",
+      "title": "청년정책 퀴즈",
+      "subtitle": "숫자로 보는 부안청년",
+      "kind": "quiz"
+    },
+    {
+      "id": "talk",
+      "no": 3,
+      "short": "토크콘서트",
+      "title": "토크콘서트",
+      "subtitle": "농촌에서 청년으로 살아간다는 것",
+      "kind": "slides"
+    },
+    {
+      "id": "board",
+      "no": 4,
+      "short": "원탁토론",
+      "title": "원탁토론",
+      "subtitle": "내가 만약 부안군수라면?",
+      "kind": "board"
+    }
+  ],
+
+  "_teams": "no는 내부 식별자라 절대 바꾸지 마세요 (답변·점수·사진이 여기에 매핑됩니다). 화면에 보이는 건 label입니다. 테이블 배치도의 번호와 label을 똑같이 맞추세요.",
+  "teams": [
+    { "no": 1, "label": "1", "name": "1조" },
+    { "no": 2, "label": "2", "name": "2조" },
+    { "no": 3, "label": "3", "name": "3조" },
+    { "no": 4, "label": "4", "name": "4조" },
+    { "no": 5, "label": "5", "name": "5조" },
+    { "no": 6, "label": "6", "name": "6조" }
+  ]
+}

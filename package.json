@@ -1,0 +1,10 @@
+{
+  "name": "buan-youth-forum-2026",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "2026 부안군 청년포럼 웹앱 — 빌드 과정 없음, GitHub Pages로 그대로 서빙",
+  "scripts": {
+    "test": "node tools/test-score.js"
+  }
+}

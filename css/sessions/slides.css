@@ -1,0 +1,39 @@
+/* ───────────────────────────────────────
+   1. 오프닝 스몰토크 · 3. 토크콘서트 — 정적 슬라이드 공용 화면.
+   두 세션 모두 이 클래스만 쓴다. 내용은 content/01-opening.json,
+   content/03-talk.json이 다를 뿐 화면 구조는 동일하다.
+
+   고칠 때 ─ 문구·패널 소개·큐시트   → content/01-opening.json, content/03-talk.json
+             넘기는 방식(방향키 등)  → js/host/sessions/opening.js, talk.js
+             색·크기                → 이 파일
+   ─────────────────────────────────────── */
+
+.slide{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center;
+  align-items:center;text-align:center;gap:clamp(18px,3vh,42px)}
+.slide .kicker{font-size:clamp(14px,1.3vw,20px);font-weight:800;letter-spacing:.14em;color:var(--yellow)}
+.slide h2{font-size:clamp(38px,4.8vw,84px);font-weight:800;letter-spacing:-.04em;line-height:1.24}
+.slide p{font-size:clamp(24px,3vw,50px);font-weight:600;line-height:1.42;letter-spacing:-.03em;color:var(--ink)}
+.slide p.sub{font-size:clamp(17px,1.7vw,28px);color:var(--ink2);font-weight:500}
+
+/* 패널/게스트 소개 카드 (토크콘서트) */
+.panels{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(16px,2vw,36px);width:100%;margin-top:clamp(10px,2vh,20px)}
+.panel{background:var(--panel);border-radius:22px;padding:clamp(20px,2.6vh,36px) clamp(14px,1.4vw,24px);text-align:center}
+.panel .name{font-size:clamp(19px,1.8vw,30px);font-weight:800}
+.panel .role{font-size:clamp(13px,1.15vw,19px);color:var(--ink2);font-weight:600;margin-top:6px;line-height:1.4}
+
+/* 진행 순서 인디케이터 — 지금 몇 번째 카드인지 */
+.stepdots{display:flex;gap:8px;justify-content:center}
+.stepdots i{width:8px;height:8px;border-radius:50%;background:var(--line);display:block}
+.stepdots i.on{background:var(--yellow)}
+
+/* 큐시트(라운드) 배지 */
+.round{font-size:clamp(13px,1.2vw,19px);font-weight:700;padding:8px 20px;border-radius:999px;background:var(--panel);color:var(--ink2)}
+
+/* 홈 — 2x2 진행순서 카드 */
+.homegrid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(2,1fr);gap:clamp(16px,2vw,32px)}
+.homecard{background:var(--panel);border-radius:26px;display:flex;flex-direction:column;justify-content:center;align-items:center;
+  text-align:center;gap:10px;cursor:pointer;transition:.15s}
+.homecard:hover{background:var(--panel2);outline:2px solid var(--yellow)}
+.homecard .n{font-size:clamp(15px,1.4vw,22px);font-weight:800;color:var(--yellow)}
+.homecard .t{font-size:clamp(26px,3vw,52px);font-weight:800;letter-spacing:-.03em}
+.homecard .s{font-size:clamp(14px,1.3vw,20px);color:var(--ink2);font-weight:600}
