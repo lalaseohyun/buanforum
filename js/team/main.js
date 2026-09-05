@@ -7,7 +7,7 @@
      default export = { id, mount(ctx) → { unmount() } }
      ctx로 넘겨주는 것: root, forum, team(조 번호), leaveTeam()
    라우팅 규칙 ─ 진행자가 goSession()할 때마다 forum 문서의 session 필드가 바뀐다.
-   그 값이 'quiz'|'board'면 해당 팀 세션 모듈을, 그 외(home/opening/talk)는
+   그 값이 'quiz'|'board'|'policy'면 해당 팀 세션 모듈을, 그 외(home/opening/talk)는
    공용 대기화면(wait.js)을 띄운다 — 참가자는 스스로 진행하지 않는다.
    ─────────────────────────────────────── */
 import { ensureAuth, watch, teamSet, path } from '../db.js';
@@ -17,8 +17,9 @@ import { esc } from '../util.js';
 import waitSession from './sessions/wait.js';
 import quizSession from './sessions/quiz.js';
 import boardSession from './sessions/board.js';
+import policySession from './sessions/policy.js';
 
-const byId = { quiz: quizSession, board: boardSession };
+const byId = { quiz: quizSession, board: boardSession, policy: policySession };
 
 const root = document.getElementById('app');
 const bar = { title: document.getElementById('ttl'), myteam: document.getElementById('mt'), foot: document.getElementById('foot') };

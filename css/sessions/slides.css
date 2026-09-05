@@ -1,10 +1,11 @@
 /* ───────────────────────────────────────
-   1. 오프닝 스몰토크 · 3. 토크콘서트 — 정적 슬라이드 공용 화면.
-   두 세션 모두 이 클래스만 쓴다. 내용은 content/01-opening.json,
-   content/03-talk.json이 다를 뿐 화면 구조는 동일하다.
+   1. 오프닝 스몰토크 · 3. 토크콘서트 · 4. 원탁토론(첫 화면) — 정적 슬라이드 공용 화면.
+   홈의 타이틀 화면도 같은 `.slide` 클래스를 쓴다.
+   "좌측상단 제목 + N단 박스" 패턴(.toppage/.boxrow/.qbox)은 오프닝의 질문 2개,
+   원탁토론의 STEP 3개가 함께 쓰는 공용 레이아웃이다.
 
-   고칠 때 ─ 문구·패널 소개·큐시트   → content/01-opening.json, content/03-talk.json
-             넘기는 방식(방향키 등)  → js/host/sessions/opening.js, talk.js
+   고칠 때 ─ 문구·질문·STEP        → content/01-opening.json, 03-talk.json, 04-board.json
+             넘기는 방식(방향키 등)  → js/host/sessions/opening.js, talk.js, board.js
              색·크기                → 이 파일
    ─────────────────────────────────────── */
 
@@ -29,11 +30,41 @@
 /* 큐시트(라운드) 배지 */
 .round{font-size:clamp(13px,1.2vw,19px);font-weight:700;padding:8px 20px;border-radius:999px;background:var(--panel);color:var(--ink2)}
 
-/* 홈 — 2x2 진행순서 카드 */
-.homegrid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(2,1fr);gap:clamp(16px,2vw,32px)}
+/* 홈 — 타이틀 화면 부제(행사 소개 문구) — 시그니처 옐로우로 크게, 메인 제목보다는 작게 */
+.homesub{font-size:clamp(32px,3.6vw,60px);color:var(--yellow);font-weight:800;letter-spacing:-.02em;line-height:1.3}
+
+/* 홈 — 하단 중앙 로고 */
+.homelogo{flex:0 0 auto;display:flex;justify-content:center;align-items:center;gap:10px;
+  padding:clamp(18px,2.6vh,36px) 0 clamp(4px,.8vh,10px)}
+.homelogo img{height:clamp(26px,3vh,44px);width:auto;opacity:.92}
+.homelogo span{color:var(--ink3);font-weight:700;font-size:14px;letter-spacing:.04em}
+
+/* 홈 — 2x2(5개면 자동으로 3줄) 진행순서 카드 */
+.homegrid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(2,1fr);grid-auto-rows:1fr;gap:clamp(16px,2vw,32px)}
 .homecard{background:var(--panel);border-radius:26px;display:flex;flex-direction:column;justify-content:center;align-items:center;
   text-align:center;gap:10px;cursor:pointer;transition:.15s}
 .homecard:hover{background:var(--panel2);outline:2px solid var(--yellow)}
 .homecard .n{font-size:clamp(15px,1.4vw,22px);font-weight:800;color:var(--yellow)}
 .homecard .t{font-size:clamp(26px,3vw,52px);font-weight:800;letter-spacing:-.03em}
 .homecard .s{font-size:clamp(14px,1.3vw,20px);color:var(--ink2);font-weight:600}
+
+/* ───────────────────────────────────────
+   좌측상단 제목 + 아래 N단 박스 — 공용 패턴
+   오프닝(질문 2개 · cols-2)과 원탁토론(STEP 3개 · cols-3)이 함께 쓴다.
+   ─────────────────────────────────────── */
+.toppage{flex:1;min-height:0;display:flex;flex-direction:column;gap:clamp(24px,4vh,56px)}
+.toppage-head{flex:0 0 auto;text-align:left}
+.toppage-head .kicker{font-size:clamp(14px,1.3vw,20px);font-weight:800;letter-spacing:.14em;color:var(--yellow)}
+.toppage-head h2{font-size:clamp(34px,4.2vw,72px);font-weight:800;letter-spacing:-.04em;line-height:1.22;margin-top:8px}
+.toppage-head p{font-size:clamp(17px,1.7vw,28px);color:var(--ink2);font-weight:600;margin-top:10px}
+
+.boxrow{flex:1;min-height:0;display:grid;gap:clamp(18px,2.4vw,40px)}
+.boxrow.cols-2{grid-template-columns:repeat(2,1fr)}
+.boxrow.cols-3{grid-template-columns:repeat(3,1fr)}
+.qbox{background:var(--panel);border-radius:26px;padding:clamp(28px,4vh,56px) clamp(20px,2.4vw,36px);
+  display:flex;flex-direction:column;justify-content:center;gap:clamp(12px,2vh,22px);text-align:left}
+.qbox .badge-step{align-self:flex-start;font-size:clamp(13px,1.1vw,18px);font-weight:800;letter-spacing:.08em;
+  color:#2c2c2a;background:var(--yellow);padding:6px 16px;border-radius:999px}
+.qbox .qt{font-size:clamp(24px,2.6vw,42px);font-weight:800;letter-spacing:-.03em;line-height:1.32}
+.qbox .qs{font-size:clamp(15px,1.4vw,22px);color:var(--ink2);font-weight:500;line-height:1.5}
+.qbox .qnote{font-size:clamp(14px,1.25vw,19px);color:var(--yellow);font-weight:700}

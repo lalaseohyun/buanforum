@@ -17,7 +17,10 @@
      · 정답(quiz/live의 reveal)은 「정답 공개」를 누르는 순간에만 써진다.
        팀 화면은 그 전까지 정답을 알 방법이 없다(개발자도구로도 못 봄).
      · 보기 개수가 문항마다 다르다(OX 2개 / 4지선다 4개) → --n으로 그리드 조정
-     · ⭐ 문항은 정답 공개 뒤 「데이터 보기」 단계가 하나 더 있다
+     · ⭐ 문항은 정답 공개 뒤 「데이터 보기」 단계가 하나 더 있다(해설이 데이터 아래 붙는다)
+     · 문항이 열려 있는 동안(정답 공개 전)에는 문제 → 보기 → 제출현황 순으로
+       화살표를 누를 때마다 한 단계씩 더 보여준다(stage 0/1/2). Firestore에는
+       안 남기는 진행자 화면만의 연출이라 팀 화면과는 무관하다.
    ─────────────────────────────────────── */
 import { esc, sentences, fitInto } from '../../util.js';
 import { loadQuiz } from '../../content.js';
@@ -34,6 +37,7 @@ export default {
     let state = { phase: 'lobby', index: -1, open: false, revealed: false, showChart: false, openedAt: null, asked: {} };
     let teamsMap = {};    // { [no]: {joinedAt} }
     let answersAll = {};  // { [qid]: { [no]: {choice, ms} } }
+    let stage = 0;        // 0=문제만 1=+보기 2=+제출현황 — 진행자 화면 전용, Firestore에 안 남긴다
     const unsubs = [];
 
     const choicesFor = it => it.type === 'ox' ? ['O', 'X'] : it.choices;
@@ -73,6 +77,7 @@ export default {
     function selectIndex(i) {
       i = Math.max(0, Math.min(ITEMS.length - 1, i));
       const it = ITEMS[i];
+      stage = 0;
       writeState({
         phase: 'quiz', index: i, open: true, revealed: false, showChart: false,
         openedAt: Date.now(), asked: { ...state.asked, [it.id]: true },
@@ -80,20 +85,35 @@ export default {
     }
     const reveal = () => writeState({ open: false, revealed: true });
     const showChart = () => writeState({ showChart: true });
-    const goFinal = () => writeState({ phase: 'final', open: false, revealed: false, showChart: false });
-    const toLobby = () => writeState({ phase: 'lobby', open: false, revealed: false, showChart: false });
+    const goFinal = () => { stage = 0; writeState({ phase: 'final', open: false, revealed: false, showChart: false }); };
+    const toLobby = () => { stage = 0; writeState({ phase: 'lobby', open: false, revealed: false, showChart: false }); };
+
+    // 문항이 열려 있는 동안(정답 공개 전)에는 화살표가 문제→보기→제출현황 단계부터 채운 뒤,
+    // 다 채워진 다음에야 실제로 다른 문항으로 넘어간다.
+    function stepForward() {
+      const it = currentItem();
+      if (state.phase === 'quiz' && it && !state.revealed && stage < 2) { stage++; render(); }
+      else selectIndex(state.index + 1);
+    }
+    function stepBack() {
+      const it = currentItem();
+      if (state.phase === 'quiz' && it && !state.revealed && stage > 0) { stage--; render(); }
+      else selectIndex(state.index - 1);
+    }
 
     function resetQuestion() {
       const it = currentItem();
       if (!it) return;
       if (!confirm('이 문제의 팀 답변을 모두 지웁니다. 진행할까요?')) return;
       hostReset(path('quizAnswers', it.id), {});
+      stage = 0;
       writeState({ revealed: false, open: false, showChart: false });
     }
     function resetAll() {
       if (!confirm('답변·점수·접속한 팀까지 모두 지웁니다. 정말 초기화할까요?')) return;
       ITEMS.forEach(it => hostReset(path('quizAnswers', it.id), {}));
       teams.forEach(t => hostReset(path('teams', String(t.no)), {}));
+      stage = 0;
       writeState({ phase: 'lobby', index: -1, open: false, revealed: false, showChart: false, asked: {} });
     }
 
@@ -159,10 +179,11 @@ export default {
       const stat = cnt === 0 ? `<div class="tstat">답변을 기다리는 중</div>`
         : cnt === teams.length ? `<div class="tstat done">전체 제출 완료!</div>`
         : `<div class="tstat"><b>${cnt}</b>조 제출 완료${state.open ? '' : ' · 마감됨'}</div>`;
-      return `${badges(it)}
-        <div class="q">${esc(it.question)}</div>
-        <div class="choices" style="--n:${n}">${ch}</div>
-        <div class="foot"><div class="tmeta">${stat}</div><div class="chips">${chips}</div></div>`;
+      // 문제 → (화살표) 보기 → (화살표) 제출현황, 세 단계로 나눠 보여준다
+      let body = `${badges(it)}<div class="q">${esc(it.question)}</div>`;
+      if (stage >= 1) body += `<div class="choices" style="--n:${n}">${ch}</div>`;
+      if (stage >= 2) body += `<div class="foot"><div class="tmeta">${stat}</div><div class="chips">${chips}</div></div>`;
+      return `<div class="qview ${stage < 2 ? 'centered' : ''}">${body}</div>`;
     }
 
     function viewReveal(it) {
@@ -197,7 +218,7 @@ export default {
     }
 
     function viewChart(it) {
-      return `${badges(it)}${renderChart(it.chart)}`;
+      return `${badges(it)}${renderChart(it.chart)}<div class="chartnote">${sentences(it.explanation)}</div>`;
     }
 
     function viewFinal() {
@@ -215,8 +236,9 @@ export default {
     function controlsFor() {
       const it = currentItem();
       const quizPhase = state.phase === 'quiz' && it;
+      const midStage = quizPhase && !state.revealed; // 문제/보기/제출현황 단계 중
       const btns = [
-        { label: '◀', onClick: () => selectIndex(state.index - 1), disabled: state.index <= 0 },
+        { label: '◀', onClick: stepBack, disabled: midStage ? (stage === 0 && state.index <= 0) : state.index <= 0 },
       ];
       if (state.phase === 'final') {
         btns.push({ label: '토크콘서트로', variant: 'primary', onClick: () => ctx.goSession('talk') });
@@ -230,7 +252,7 @@ export default {
         const isLast = state.index >= ITEMS.length - 1;
         btns.push({ label: isLast ? '최종 순위' : '다음 문제', variant: 'primary', onClick: () => (isLast ? goFinal() : selectIndex(state.index + 1)) });
       }
-      btns.push({ label: '▶', onClick: () => selectIndex(state.index + 1), disabled: state.phase === 'final' || state.index >= ITEMS.length - 1 });
+      btns.push({ label: '▶', onClick: stepForward, disabled: state.phase === 'final' || (!midStage && state.index >= ITEMS.length - 1) });
       btns.push({ label: '대기화면', variant: 'ghost', onClick: toLobby });
       btns.push({ label: '이 문제 답 초기화', variant: 'danger', onClick: resetQuestion, disabled: !it });
       btns.push({ label: '전체 초기화', variant: 'danger', onClick: resetAll });
@@ -240,8 +262,8 @@ export default {
     /* ---- 단축키 ---- */
     ctx.setKeys({
       ' ': () => controlsFor().find(b => b.variant === 'primary')?.onClick(),
-      ArrowRight: () => selectIndex(state.index + 1),
-      ArrowLeft: () => selectIndex(state.index - 1),
+      ArrowRight: stepForward,
+      ArrowLeft: stepBack,
     });
 
     /* ---- 구독 시작 ---- */

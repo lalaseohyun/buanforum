@@ -11,7 +11,7 @@
      teams/{teamNo}         { joinedAt }
      slides/opening         { index }
      slides/talk            { index }
-     board/state            { mode: 'write' | 'present' }
+     slides/board           { index }
      boardPhotos/{id}       { teamNo, url, path, at, voters:{ [voterId]: true } }
      config/host            { key }   ← 쓰기 금지, 규칙이 대조용으로만 읽음
 

@@ -11,7 +11,7 @@
 | 오프닝 스몰토크 카드 문구 | [content/01-opening.json](content/01-opening.json) |
 | 퀴즈 문항·정답·해설·그래프 수치 | [content/02-quiz.json](content/02-quiz.json) |
 | 토크콘서트 큐시트·패널 소개 | [content/03-talk.json](content/03-talk.json) |
-| 원탁토론 작성양식·참고자료(예산표) | [content/04-board.json](content/04-board.json) |
+| 원탁토론 첫 화면·STEP1~3·참고자료(예산표) | [content/04-board.json](content/04-board.json) |
 
 `content/*.json`은 GitHub 저장소에서 웹으로 직접 열어 고치고 저장하면 끝난다. 로컬 개발 환경이 필요 없다.
 
@@ -23,10 +23,11 @@
 | 공통 버튼·배지·연결 끊김 표시 | [css/base.css](css/base.css) |
 | 진행자 화면 셸(탭바·조작바·무대모드) | [css/host.css](css/host.css) |
 | 참여자 화면 셸(상단바) | [css/team.css](css/team.css) |
-| 오프닝·토크콘서트 슬라이드 모양 | [css/sessions/slides.css](css/sessions/slides.css) |
+| 오프닝·토크콘서트·원탁토론 첫화면/STEP 모양 | [css/sessions/slides.css](css/sessions/slides.css) (홈 로고·부제도 여기) |
 | 퀴즈 화면(문제·보기·정답·순위) 모양 | [css/sessions/quiz.css](css/sessions/quiz.css) |
 | 정답 뒤 그래프/표 화면 모양 | [css/sessions/chart.css](css/sessions/chart.css) |
-| 원탁토론(양식·갤러리·투표) 모양 | [css/sessions/board.css](css/sessions/board.css) |
+| 원탁토론 참고자료 패널 모양 | [css/sessions/board.css](css/sessions/board.css) |
+| 대표정책(사진 갤러리·업로드·하트) 모양 | [css/sessions/policy.css](css/sessions/policy.css) |
 
 ## 진행 흐름·버튼 로직 (세션별로 완전히 분리돼 있다)
 
@@ -40,7 +41,8 @@
 | 2. 청년정책 퀴즈 | [js/host/sessions/quiz.js](js/host/sessions/quiz.js) | [js/team/sessions/quiz.js](js/team/sessions/quiz.js) |
 | ⭐ 정답 뒤 그래프 화면 | [js/host/sessions/chart.js](js/host/sessions/chart.js) (quiz.js가 불러 씀, 독립 세션 아님) | — |
 | 3. 토크콘서트 | [js/host/sessions/talk.js](js/host/sessions/talk.js) | wait.js 공용 |
-| 4. 원탁토론 | [js/host/sessions/board.js](js/host/sessions/board.js) | [js/team/sessions/board.js](js/team/sessions/board.js) |
+| 4. 원탁토론(첫화면+STEP1~3, 사진 없음) | [js/host/sessions/board.js](js/host/sessions/board.js) | [js/team/sessions/board.js](js/team/sessions/board.js) |
+| 5. 대표정책(사진 갤러리·하트) | [js/host/sessions/policy.js](js/host/sessions/policy.js) | [js/team/sessions/policy.js](js/team/sessions/policy.js) |
 
 세션을 하나 더 추가하려면: `js/host/sessions/새이름.js` 작성(아래 계약 참고) → [js/host/main.js](js/host/main.js)의 `SESSIONS` 배열에 한 줄 등록 → `content/forum.json`의 `sessions`에 한 항목 추가. 기존 세션 파일은 하나도 안 건드린다.
 

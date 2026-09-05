@@ -41,8 +41,16 @@
       "no": 4,
       "short": "원탁토론",
       "title": "원탁토론",
-      "subtitle": "내가 만약 부안군수라면?",
+      "subtitle": "청년이 그리는 부안의 현재와 미래",
       "kind": "board"
+    },
+    {
+      "id": "policy",
+      "no": 5,
+      "short": "대표정책",
+      "title": "대표정책",
+      "subtitle": "우리 조가 제안하는 정책",
+      "kind": "policy"
     }
   ],
 

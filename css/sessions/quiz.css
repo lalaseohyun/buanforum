@@ -6,8 +6,14 @@
              색                  → css/tokens.css
    참고 ─ 보기 개수가 문항마다 다르다(OX 2개 / 객관식 4개).
           .choices에 style="--n:2"(또는 4)를 인라인으로 줘서 그리드 열 수를 맞춘다.
-          팀은 6개 고정 → .chips는 3열 2줄.
+          팀은 6개 고정 → .chips는 6열 1줄.
+          .qview는 문제 화면의 단계별 노출(문제→보기→제출현황) 감싸개.
    ─────────────────────────────────────── */
+
+/* 문제 화면 — 문제만/문제+보기/전체 3단계로 노출된다(js/host/sessions/quiz.js의 stage).
+   보기·제출현황이 아직 없을 때는 세로 중앙 정렬로, 다 나오면 기존처럼 아래로 붙는다. */
+.qview{flex:1;min-height:0;display:flex;flex-direction:column}
+.qview.centered{justify-content:center}
 
 /* 배지 */
 .badges{display:flex;gap:10px;align-items:center;justify-content:center;margin-bottom:clamp(14px,2.2vh,30px);flex-wrap:wrap;flex:0 0 auto}
@@ -44,14 +50,14 @@
 .tstat b{color:var(--yellow)}
 .tstat.done{color:var(--yellow)}
 
-/* 팀 원 — 6팀 = 3칸 x 2줄 */
-.chips{display:grid;grid-template-columns:repeat(3,1fr);
-  gap:clamp(10px,1.5vh,22px) clamp(12px,1.4vw,24px);
-  width:100%;max-width:min(clamp(320px,44vw,620px), 44vh);
+/* 팀 원 — 6팀 = 6칸 1줄 */
+.chips{display:grid;grid-template-columns:repeat(6,1fr);
+  gap:clamp(8px,1.2vh,18px) clamp(10px,1.2vw,20px);
+  width:100%;max-width:min(100%,860px);
   margin:clamp(18px,2.8vh,44px) auto 0;flex:0 0 auto}
 .chip{width:100%;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;position:relative;
   background:var(--panel);color:var(--ink3);
-  font-weight:800;font-size:clamp(20px,2.2vw,38px);letter-spacing:-.02em;transition:.2s}
+  font-weight:800;font-size:clamp(15px,1.6vw,28px);letter-spacing:-.02em;transition:.2s}
 .chip.on{background:var(--yellow);color:#2c2c2a}
 .chip.done{background:var(--fill);color:var(--fillInk)}
 .chip.wrong{background:var(--panel2);color:var(--no);box-shadow:inset 0 0 0 3px var(--no)}
@@ -66,8 +72,8 @@
   flex:1;min-height:0;margin-top:clamp(10px,1.6vh,26px)}
 .rleft{display:flex;flex-direction:column;min-height:0;gap:clamp(12px,1.8vh,24px)}
 .rtitle{font-size:clamp(13px,1.2vw,19px);font-weight:700;color:var(--ink3);letter-spacing:.02em;flex:0 0 auto}
-.rbottom .chips{margin:0;max-width:min(100%, 40vh);gap:clamp(8px,1.2vh,14px) clamp(9px,1vw,16px)}
-.rbottom .chip{font-size:clamp(15px,1.4vw,25px)}
+.rbottom .chips{margin:0;max-width:100%;gap:clamp(6px,1vh,12px) clamp(7px,.8vw,14px)}
+.rbottom .chip{font-size:clamp(11px,1.05vw,18px)}
 
 .rright{display:flex;flex-direction:column;min-height:0;gap:clamp(10px,1.6vh,20px)}
 .answer{background:var(--yellow);color:#2c2c2a;border-radius:24px;
@@ -93,9 +99,9 @@
 .lobby h2 span{color:var(--yellow)}
 .lsub{font-size:clamp(19px,2.1vw,38px);color:var(--ink2);font-weight:600;margin-bottom:clamp(8px,1.2vh,16px)}
 .lsub b{color:var(--yellow)}
-.lobby .chips{margin:clamp(12px,2vh,24px) 0 0;max-width:min(100%,360px);
+.lobby .chips{margin:clamp(12px,2vh,24px) 0 0;max-width:min(100%,540px);
   gap:clamp(7px,1vh,12px) clamp(8px,.8vw,13px)}
-.lobby .chip{font-size:clamp(15px,1.3vw,24px)}
+.lobby .chip{font-size:clamp(12px,1.15vw,20px)}
 
 /* 최종 순위 */
 .rank{flex:1;min-height:0;display:grid;grid-template-columns:repeat(2,1fr);gap:clamp(6px,.9vh,13px) clamp(20px,2.8vw,50px);align-content:start;overflow:auto}

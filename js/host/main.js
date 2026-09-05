@@ -27,8 +27,9 @@ import openingSession from './sessions/opening.js';
 import quizSession from './sessions/quiz.js';
 import talkSession from './sessions/talk.js';
 import boardSession from './sessions/board.js';
+import policySession from './sessions/policy.js';
 
-const SESSIONS = [homeSession, openingSession, quizSession, talkSession, boardSession];
+const SESSIONS = [homeSession, openingSession, quizSession, talkSession, boardSession, policySession];
 const byId = Object.fromEntries(SESSIONS.map(s => [s.id, s]));
 
 const root = document.getElementById('stage');
