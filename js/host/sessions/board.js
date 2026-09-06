@@ -31,11 +31,13 @@ export default {
       `<i class="${i === index ? 'on' : ''}"></i>`).join('')}</div>`;
 
     function renderIntro() {
+      // 1.오프닝 메인페이지와 같은 레이아웃 — 작은 노란 kicker(세션 이름) 위에,
+      // 큰 흰 제목(테마 문구), 그 아래 회색 한 줄(질문)
       const c = data.intro;
       ctx.root.innerHTML = `<div class="slide">
-        <h2 class="boardtitle">${esc(c.title)}</h2>
-        <p class="sub">${esc(c.subtitle)}</p>
-        <p>${esc(c.question)}</p>
+        <div class="kicker">${esc(c.title)}</div>
+        <h2>${esc(c.subtitle)}</h2>
+        <p class="sub">${esc(c.question)}</p>
       </div>${dots()}`;
     }
     function renderSteps() {

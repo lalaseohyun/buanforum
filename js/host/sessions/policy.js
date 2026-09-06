@@ -1,12 +1,16 @@
 /* ───────────────────────────────────────
    5. 대표정책 — 진행자 화면. 화살표로 두 페이지가 이어진다.
-     0) 정책 갤러리 — 진행자가 자기 컴퓨터에서 조별 사진을 올리고,
-        사진을 누르면 전체화면으로 크게 띄운다(하트 없음)
-     1) 공감투표 — 투표 전용 QR + 조별 정책명 표(진행자가 직접 기입) + 실시간 집계
+     0) 정책 갤러리(메인페이지) — 위에 "대표정책" kicker + 제목 + 안내문이 있고,
+        그 아래 진행자가 자기 컴퓨터에서 조별 사진을 올리는 칸이 있다.
+        사진을 누르면 전체화면으로 크게 띄우고, 거기서 "사진 바꾸기"로 다시 올릴 수 있다.
+     1) 공감투표 — 투표 전용 QR + 조별 정책명(진행자가 직접 기입) + 실시간 집계.
+        표 수만큼 동그란 점이 박스 안에 콕콕 찍히는 방식(멘티미터 스타일, 막대 아님).
+        조가 적을수록(예: 3개) 한 줄이 세로로 더 크게 — 화면을 항상 채우도록
+        css/sessions/policy.css의 .voterow가 flex:1로 남는 세로 공간을 나눠 가진다.
 
    고칠 때 ─ 조 수                  → 퀴즈 대기화면에서 고른 값(Firestore forum 문서)
              투표 규칙(순위별 표수) → js/db.js의 voteWeights
-             색·크기                → css/sessions/policy.css
+             색·크기·점 애니메이션  → css/sessions/policy.css
    쓰는 것 ─ js/db.js(boardPhotos·policy/live·policyVotes) · js/storage.js(사진 업로드)
    ─────────────────────────────────────── */
 import { esc } from '../../util.js';
@@ -54,7 +58,7 @@ export default {
       }
     }
 
-    /* ---- 0. 갤러리 ---- */
+    /* ---- 0. 갤러리(메인페이지) ---- */
     function viewGallery() {
       const cards = teams().map(t => {
         const p = photoOf(t.no);
@@ -63,13 +67,22 @@ export default {
           <div class="meta"><span class="tm">${esc(t.label)}조</span>${names[t.no] ? `<span class="pn">${esc(names[t.no])}</span>` : ''}</div>
         </div>`;
       }).join('');
+      // 사진이 이미 있으면 확대해서 보여주고, 옆에 "사진 바꾸기"를 같이 둔다 —
+      // 진행자가 다시 눌러서 잘못 올라온 사진을 그 자리에서 바로 교체할 수 있게.
       const zoom = zoomId && photos[zoomId] ? `
         <div class="zoom" id="zoomLayer">
-          <button class="close ghost" id="zoomClose">✕ 닫기</button>
+          <div class="zoomtools">
+            <button class="ghost" id="zoomReplace">🔄 사진 바꾸기</button>
+            <button class="close ghost" id="zoomClose">✕ 닫기</button>
+          </div>
           <img src="${esc(photos[zoomId].url)}">
         </div>` : '';
       return `<div class="toppage">
-        <div class="toppage-head"><h2>대표정책 제안</h2></div>
+        <div class="toppage-head">
+          <div class="kicker">대표정책</div>
+          <h2>대표정책 제안</h2>
+          <p>논의결과 종이를 사진찍어서 올려주세요!</p>
+        </div>
         <div class="gallery" style="--cols:${teamCount <= 4 ? 2 : 3}">${cards}</div>
       </div>
         <input type="file" accept="image/*" id="fileUp" hidden>
@@ -78,18 +91,24 @@ export default {
     }
 
     /* ---- 1. 공감투표 ---- */
+    // 멘티미터의 객관식 투표처럼, 막대가 아니라 표 하나당 동그란 점 하나가 박스 안에
+    // 콕콕 찍히는 걸로 보여준다. 매번 다시 그릴 때마다 점이 튀어 오르듯 애니메이션된다
+    // (css/sessions/policy.css의 @keyframes dotpop).
     function viewVote() {
       const t = tallyVotes(votes, teamCount);
-      const max = Math.max(1, ...Object.values(t));
       const w = voteWeights(teamCount);
       const rows = teams().map(tm => {
         const n = t[tm.no] || 0;
-        return `<tr>
-          <td class="no">${esc(tm.label)}조</td>
-          <td class="name"><input data-t="${tm.no}" value="${esc(names[tm.no] || '')}" placeholder="정책명을 적어주세요"></td>
-          <td class="bar"><i style="width:${Math.round(n / max * 100)}%"></i></td>
-          <td class="cnt">${n}</td>
-        </tr>`;
+        // 점이 한꺼번에 안 튀고 순서대로 톡톡 찍히는 느낌 — 점이 많아지면 지연을 너무
+        // 길게 안 늘리려고 24개까지만 순서를 두고 그 뒤는 한꺼번에 나온다.
+        const dots = Array.from({ length: n }, (_, i) =>
+          `<span class="dot" style="animation-delay:${Math.min(i, 24) * 35}ms"></span>`).join('');
+        return `<div class="voterow">
+          <div class="no">${esc(tm.label)}조</div>
+          <div class="name"><input data-t="${tm.no}" value="${esc(names[tm.no] || '')}" placeholder="정책명을 적어주세요"></div>
+          <div class="dotcell"><div class="dotbox">${dots}</div></div>
+          <div class="cnt">${n}</div>
+        </div>`;
       }).join('');
       return `<div class="votewrap">
         <div class="voteleft">
@@ -100,7 +119,7 @@ export default {
           <div class="votecount">투표한 사람 <b>${Object.keys(votes).length}</b>명</div>
         </div>
         <div class="voteright">
-          <table class="votetable"><tbody>${rows}</tbody></table>
+          <div class="votetable">${rows}</div>
         </div>
       </div>
       <div class="pagedots"><i></i><i class="on"></i></div>`;
@@ -123,6 +142,15 @@ export default {
         });
         const close = document.getElementById('zoomClose');
         if (close) close.onclick = e => { e.stopPropagation(); zoomId = null; render(); };
+        const replace = document.getElementById('zoomReplace');
+        if (replace) replace.onclick = e => {
+          e.stopPropagation();
+          const no = photos[zoomId]?.teamNo;
+          zoomId = null;
+          if (!no) return;
+          f.onchange = () => { const file = f.files[0]; f.value = ''; if (file) upload(no, file); };
+          f.click();
+        };
         const layer = document.getElementById('zoomLayer');
         if (layer) layer.onclick = e => { e.stopPropagation(); if (e.target === layer) { zoomId = null; render(); } };
       } else {

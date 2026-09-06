@@ -28,12 +28,13 @@
 .zoom{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:40;display:flex;
   align-items:center;justify-content:center;padding:24px;cursor:zoom-out}
 .zoom img{max-width:96vw;max-height:92vh;border-radius:10px;object-fit:contain}
-.zoom .close{position:absolute;top:24px;right:28px;cursor:pointer}
+.zoom .zoomtools{position:absolute;top:24px;right:28px;display:flex;gap:12px;cursor:default}
 
 /* ── 공감투표(진행자) ── */
-.votewrap{flex:1;min-height:0;display:grid;grid-template-columns:auto 1fr;
-  gap:clamp(28px,4vw,72px);align-items:center}
-.voteleft{display:flex;flex-direction:column;align-items:center;gap:clamp(8px,1.2vh,16px)}
+/* align-items를 stretch로(기본값) 둬야 .voteright가 세로 꽉 차서, 안의 .voterow들이
+   조 수에 맞춰 남는 세로 공간을 나눠 갖는다 — 조가 3개면 그만큼 한 줄이 커진다. */
+.votewrap{flex:1;min-height:0;display:grid;grid-template-columns:auto 1fr;gap:clamp(28px,4vw,72px)}
+.voteleft{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(8px,1.2vh,16px)}
 .voteleft .qrbox{padding:clamp(10px,1vw,16px)}
 .voteleft .qrbox img,.voteleft .qrbox canvas{width:clamp(150px,17vw,260px)!important;height:auto!important}
 .votetitle{font-size:clamp(24px,2.6vw,44px);font-weight:800;letter-spacing:-.03em}
@@ -43,22 +44,28 @@
 .votecount{font-size:clamp(14px,1.25vw,21px);color:var(--ink3);font-weight:700}
 .votecount b{color:var(--ink)}
 
-.voteright{min-width:0}
-.votetable{width:100%;border-collapse:separate;border-spacing:0 clamp(6px,1vh,12px)}
-.votetable td{padding:clamp(8px,1.2vh,16px) clamp(8px,.8vw,14px);background:var(--panel);vertical-align:middle}
-.votetable td:first-child{border-radius:16px 0 0 16px}
-.votetable td:last-child{border-radius:0 16px 16px 0}
-.votetable .no{font-size:clamp(16px,1.5vw,26px);font-weight:800;white-space:nowrap;width:1%}
-.votetable .name{width:45%}
-.votetable .name input{width:100%;background:var(--panel2);border:2px solid transparent;border-radius:12px;
+/* 표 대신 div로 만든 행 목록 — 각 행이 flex:1이라, 조가 몇 개든 남는 세로 공간을
+   똑같이 나눠 갖는다(조가 3개면 한 줄이 훨씬 커진다. 조가 8개면 그만큼 작아진다). */
+.voteright{min-width:0;height:100%;display:flex;flex-direction:column}
+.votetable{flex:1;min-height:0;display:flex;flex-direction:column;gap:clamp(6px,1vh,12px)}
+.voterow{flex:1;min-height:0;display:flex;align-items:center;gap:clamp(10px,1vw,18px);
+  padding:clamp(8px,1.2vh,16px) clamp(12px,1vw,18px);background:var(--panel);border-radius:16px}
+.voterow .no{font-size:clamp(16px,1.5vw,26px);font-weight:800;white-space:nowrap;flex:0 0 auto}
+.voterow .name{width:32%;flex:0 0 auto}
+.voterow .name input{width:100%;background:var(--panel2);border:2px solid transparent;border-radius:12px;
   color:var(--ink);font:inherit;font-size:clamp(15px,1.4vw,24px);font-weight:700;padding:10px 14px}
-.votetable .name input:focus{outline:none;border-color:var(--yellow)}
-.votetable .name input::placeholder{color:var(--ink3);font-weight:500}
-.votetable .bar{width:35%}
-.votetable .bar i{display:block;height:clamp(14px,1.6vh,24px);border-radius:99px;background:var(--yellow);
-  min-width:2px;transition:width .3s}
-.votetable .cnt{font-size:clamp(18px,1.8vw,32px);font-weight:800;color:var(--yellow);
-  font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap;width:1%}
+.voterow .name input:focus{outline:none;border-color:var(--yellow)}
+.voterow .name input::placeholder{color:var(--ink3);font-weight:500}
+
+/* 멘티미터 스타일 표 집계 — 막대 대신, 표 하나당 동그란 점 하나가 박스 안에 찍힌다 */
+.voterow .dotcell{flex:1;min-width:0;align-self:stretch;display:flex}
+.voterow .dotbox{display:flex;flex-wrap:wrap;align-content:center;gap:clamp(4px,.6vw,8px);
+  width:100%;background:var(--panel2);border-radius:12px;padding:clamp(6px,1vh,12px);overflow:hidden}
+.voterow .dot{width:clamp(9px,1.3vw,20px);height:clamp(9px,1.3vw,20px);border-radius:50%;
+  background:var(--yellow);flex:0 0 auto;animation:dotpop .3s ease-out backwards}
+@keyframes dotpop{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+.voterow .cnt{font-size:clamp(18px,1.8vw,32px);font-weight:800;color:var(--yellow);
+  font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap;flex:0 0 auto;min-width:1.4em}
 
 /* ── 공감투표(참여자 모바일) ── */
 .votelist{display:flex;flex-direction:column;gap:12px;margin-top:20px}
