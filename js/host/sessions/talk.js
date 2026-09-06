@@ -11,11 +11,14 @@ import { esc } from '../../util.js';
 import { loadTalk } from '../../content.js';
 import { hostSet, path } from '../../db.js';
 
+// opening.js와 같은 이유로 마지막으로 보던 페이지를 기억해 둔다.
+let lastIndex = -1;
+
 export default {
   id: 'talk',
   title: '토크콘서트',
   mount(ctx) {
-    let data = null, index = -1; // -1 = 패널 소개, 0.. = rounds
+    let data = null, index = lastIndex; // -1 = 패널 소개, 0.. = rounds
 
     // 화살표로 넘기는 페이지 수를 하단 노란 점으로 (패널 소개 1 + 라운드 수)
     const dots = () => `<div class="pagedots">${Array.from({ length: data.rounds.length + 1 }, (_, i) =>
@@ -37,15 +40,16 @@ export default {
       </div>${dots()}`;
     }
     function render() {
+      lastIndex = index;
       index < 0 ? renderPanels() : renderRound();
       ctx.setControls([
-        { label: '◀ 이전', onClick: prev, disabled: index <= -1 },
+        { label: index <= -1 ? '◀ 퀴즈로' : '◀ 이전', onClick: prev },
         { label: index >= data.rounds.length - 1 ? '토크콘서트 끝' : '다음 ▶', onClick: next, variant: 'primary' },
       ]);
       hostSet(path('slides', 'talk'), { index });
     }
     function next() { if (index < data.rounds.length - 1) { index++; render(); } else ctx.goSession('board'); }
-    function prev() { if (index > -1) { index--; render(); } }
+    function prev() { if (index > -1) { index--; render(); } else ctx.goSession('quiz'); }
 
     loadTalk().then(d => { data = d; render(); })
       .catch(e => { ctx.root.innerHTML = `<div class="slide"><h2>content/03-talk.json 로드 실패</h2><p class="sub">${esc(e.message)}</p></div>`; });

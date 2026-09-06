@@ -47,8 +47,8 @@ export default {
     // sub를 작고 노란 글자로 강조한다. 구분자가 없는 보기(OX, 짧은 보기)는 그대로 한 줄.
     const choiceHtml = c => {
       const i = c.indexOf(' — ');
-      if (i === -1) return esc(c);
-      return `${esc(c.slice(0, i))}<br><span class="sub">${esc(c.slice(i + 3))}</span>`;
+      if (i === -1) return nl2br(c);
+      return `${nl2br(c.slice(0, i))}<br><span class="sub">${nl2br(c.slice(i + 3))}</span>`;
     };
     const orderOf = it => it.scored ? ITEMS.filter(q => q.scored).indexOf(it) + 1 : 0;
     const joinedNos = () => Object.entries(teamsMap).filter(([, v]) => v && v.joinedAt).map(([k]) => Number(k));
@@ -109,7 +109,10 @@ export default {
     const pagesOf = it => (it && it.chart ? 5 : 4);
     const pageNow = () => (state.showChart ? 4 : state.revealed ? 3 : stage);
 
+    // 화살표는 세션 경계도 넘나든다 — 대기화면에서 더 뒤로 가면 1.오프닝으로,
+    // 최종 순위에서 더 앞으로 가면 3.토크콘서트로 이어진다.
     function stepForward() {
+      if (state.phase === 'final') { ctx.goSession('talk'); return; }
       const it = currentItem();
       if (state.phase !== 'quiz' || !it) { selectIndex(state.index + 1); return; }
       const p = pageNow();
@@ -120,6 +123,7 @@ export default {
       else selectIndex(state.index + 1);
     }
     function stepBack() {
+      if (state.phase === 'lobby') { ctx.goSession('opening'); return; }
       const it = currentItem();
       if (state.phase !== 'quiz' || !it) { selectIndex(state.index - 1); return; }
       const p = pageNow();
@@ -258,8 +262,9 @@ export default {
 
     function viewChart(it) {
       // 데이터 해설은 그래프 "위"에 붙는다. chart.note가 따로 있으면 그걸(데이터 전용 해설),
-      // 없으면 정답 화면과 같은 explanation을 그대로 재사용한다.
-      const chart = { ...it.chart, note: it.chart.note || it.explanation };
+      // note 필드 자체가 없으면 정답 화면과 같은 explanation을 재사용한다.
+      // note를 일부러 빈 문자열로 넣어두면(정답 화면과 중복이라 뺀 경우) 아무것도 안 붙는다.
+      const chart = { ...it.chart, note: 'note' in it.chart ? it.chart.note : it.explanation };
       return `<div class="qview">${badges(it)}${renderChart(chart)}
         <div class="qbottom">${dots(it)}</div>
       </div>`;
@@ -287,7 +292,8 @@ export default {
       const p = quizPhase ? pageNow() : -1;
       const isLast = state.index >= ITEMS.length - 1;
       const btns = [
-        { label: '◀', onClick: stepBack, disabled: quizPhase ? (p === 0 && state.index <= 0) : state.index <= 0 },
+        // 대기화면·최종순위에서도 ◀는 살아있다 — 각각 오프닝 끝 페이지, 직전 문항으로 넘어간다
+        { label: '◀', onClick: stepBack, disabled: quizPhase && p === 0 && state.index <= 0 },
       ];
       if (state.phase === 'final') {
         btns.push({ label: '토크콘서트로', variant: 'primary', onClick: () => ctx.goSession('talk') });
@@ -305,7 +311,7 @@ export default {
           onClick: stepForward,
         });
       }
-      btns.push({ label: '▶', onClick: stepForward, disabled: state.phase === 'final' });
+      btns.push({ label: '▶', onClick: stepForward });
       btns.push({ label: '대기화면', variant: 'ghost', onClick: toLobby });
       btns.push({ label: '이 문제 답 초기화', variant: 'danger', onClick: resetQuestion, disabled: !it });
       btns.push({ label: '전체 초기화', variant: 'danger', onClick: resetAll });

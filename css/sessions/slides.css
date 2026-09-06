@@ -45,6 +45,12 @@
 .homelogo img{display:block;opacity:.92}
 .homelogo span{color:var(--ink3);font-weight:700;font-size:20px;letter-spacing:.04em}
 
+/* 홈 — 오늘 진행할 조 수(여기서 고르면 퀴즈·대표정책·공감투표가 전부 따라간다) */
+.hometeams{text-align:center}
+.hometeams .httl{font-size:16px;font-weight:700;color:#D2D0CB;letter-spacing:.06em;margin-bottom:10px}
+.hometeams .htbtns{display:flex;justify-content:center;gap:10px}
+.hometeams .tcbtn{font-size:20px;padding:10px 20px}
+
 /* 6. 우수정책 — 시상 타이틀. 아래로 갈수록 커진다 */
 .awardslide{gap:clamp(14px,2.4vh,34px)}
 .awardsmall{font-size:clamp(18px,1.8vw,32px);font-weight:700;color:var(--ink2);letter-spacing:.02em}
@@ -74,7 +80,7 @@
 .boxrow.cols-2{grid-template-columns:repeat(2,1fr)}
 .boxrow.cols-3{grid-template-columns:repeat(3,1fr)}
 .qbox{background:var(--panel);border-radius:26px;padding:clamp(28px,4vh,56px) clamp(20px,2.4vw,36px);
-  display:flex;flex-direction:column;justify-content:center;gap:clamp(12px,2vh,22px);text-align:left}
+  display:flex;flex-direction:column;justify-content:center;gap:clamp(12px,2vh,22px);text-align:center}
 .qbox .badge-step{align-self:flex-start;font-size:clamp(13px,1.1vw,18px);font-weight:800;letter-spacing:.08em;
   color:#2c2c2a;background:var(--yellow);padding:6px 16px;border-radius:999px}
 /* 목업 기준: 40px @1600px, 가운데 정렬 */

@@ -113,11 +113,10 @@ export function submitVote(voterId, ranks) {
   return setDoc(doc(fs, path('policyVotes', voterId)), { ranks, at: Date.now() }, { merge: false });
 }
 
-/** 조 수에 따른 순위별 가중치 — 3팀 이하 [1] · 4~5팀 [2,1] · 6팀 이상 [3,2,1] */
+/** 조 수에 따른 순위별 가중치 — 3팀 이하 [1](한 팀만) · 4팀 이상 [2,1](1순위 2표·2순위 1표) */
 export function voteWeights(teamCount) {
   if (teamCount <= 3) return [1];
-  if (teamCount <= 5) return [2, 1];
-  return [3, 2, 1];
+  return [2, 1];
 }
 
 /** 투표 결과 집계 — { [teamNo]: 표수 } */

@@ -64,7 +64,7 @@
 | [js/storage.js](js/storage.js) | 사진 리사이즈·업로드 |
 | [js/util.js](js/util.js) | esc·문장분리·글자맞춤 |
 | [js/score.js](js/score.js) | **채점 규칙의 유일한 정의.** `node tools/test-score.js`로 검증됨 |
-| [js/db.js](js/db.js) 의 `voteWeights` | **공감투표 규칙의 유일한 정의.** 조가 3개 이하면 1표, 4~5조면 1순위 2표·2순위 1표, 6조 이상이면 1순위 3표·2순위 2표·3순위 1표 |
+| [js/db.js](js/db.js) 의 `voteWeights` | **공감투표 규칙의 유일한 정의.** 조가 3개 이하면 1표, 4조 이상이면 1순위 2표·2순위 1표 |
 | [js/firebase.js](js/firebase.js) | Firebase 프로젝트 연결 값 (배포 시 여기부터 채운다) |
 
 ## 세션 모듈 계약
