@@ -76,9 +76,11 @@ export default {
         <div class="qbox">
           <div class="qt">${esc(f.name)}</div>
           <div class="qs">${esc(f.subtitle)}</div>
+          <div class="qnote">(${f.count}개 사업)</div>
         </div>`).join('');
+      // 이 페이지만 제목을 가운데 정렬한다(다른 toppage-head는 왼쪽 정렬 그대로)
       ctx.root.innerHTML = `<div class="toppage">
-        <div class="toppage-head"><h2>2026 부안군 청년정책 시행계획</h2></div>
+        <div class="toppage-head center"><h2>2026 부안군 청년정책 시행계획</h2></div>
         <div class="boxrow cols-5">${boxes}</div>
       </div>${dots()}`;
     }

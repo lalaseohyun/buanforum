@@ -66,6 +66,7 @@
    ─────────────────────────────────────── */
 .toppage{flex:1;min-height:0;display:flex;flex-direction:column;gap:clamp(24px,4vh,56px)}
 .toppage-head{flex:0 0 auto;text-align:left}
+.toppage-head.center{text-align:center}
 .toppage-head .kicker{font-size:clamp(14px,1.3vw,20px);font-weight:800;letter-spacing:.14em;color:var(--yellow)}
 .toppage-head h2{font-size:clamp(34px,4.2vw,72px);font-weight:800;letter-spacing:-.04em;line-height:1.22;margin-top:8px}
 
@@ -86,9 +87,17 @@
 /* 4단은 3단보다 박스가 좁아서 기본 qt 크기로는 강제 줄바꿈 앞 문구가 한 줄에 안 들어가고
    한 번 더 꺾여 3줄이 됐다 — 이 박스에서만 글자를 살짝 줄여 의도한 2줄로 맞춘다 */
 .boxrow.cols-4 .qt{font-size:clamp(18px,1.9vw,34px)}
+/* 토크콘서트 ROUND·정책 개요 박스 — 남는 세로 공간을 끝까지 채우지 않고 내용 높이만큼만
+   차지하게 해서(align-content:start) 박스 세로 길이를 살짝 줄인다. */
+.boxrow.cols-4,.boxrow.cols-5{align-content:start}
 .qbox .badge-step{align-self:flex-start;font-size:clamp(13px,1.1vw,18px);font-weight:800;letter-spacing:.08em;
   color:#2c2c2a;background:var(--yellow);padding:6px 16px;border-radius:999px}
+/* ROUND 박스 안의 노란 타원(Round N · ○○)은 좌측 정렬 대신 가운데 정렬로 */
+.boxrow.cols-4 .qbox .badge-step{align-self:center}
 /* 목업 기준: 40px @1600px, 가운데 정렬 */
 .qbox .qt{font-size:clamp(22px,2.5vw,42px);font-weight:800;letter-spacing:-.03em;line-height:1.32;text-align:center}
 .qbox .qs{font-size:clamp(15px,1.4vw,22px);color:var(--ink2);font-weight:500;line-height:1.5}
 .qbox .qnote{font-size:clamp(14px,1.25vw,19px);color:var(--yellow);font-weight:700}
+
+/* 원탁토론 참고자료 개요(5개 분야 박스)만 분야명을 노란색으로 */
+.boxrow.cols-5 .qt{color:var(--yellow)}

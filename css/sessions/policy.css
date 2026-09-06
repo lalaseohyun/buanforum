@@ -77,8 +77,13 @@
 .votecard .tm{font-size:17px;font-weight:800;color:var(--ink2)}
 .votecard.picked .tm{color:var(--fill)}
 .votecard .nm{font-size:20px;font-weight:700;letter-spacing:-.02em}
-.votecard .rank{position:absolute;top:14px;right:16px;font-size:13px;font-weight:800;
-  color:#2c2c2a;background:var(--yellow);padding:5px 12px;border-radius:999px}
+/* 골랐다는 표시 — 진행자 화면의 공감투표 점(.voterow .dot)과 같은 느낌으로,
+   순위별 표 수만큼(1순위 2개·2순위 1개) 노란 점이 튀어 오르듯 찍힌다 */
+.votecard .rankmark{position:absolute;top:14px;right:16px;display:flex;flex-direction:column;align-items:flex-end;gap:5px}
+.votecard .rankmark .dots{display:flex;gap:5px}
+.votecard .rankmark .dots i{width:12px;height:12px;border-radius:50%;background:var(--yellow);
+  display:block;animation:dotpop .25s ease-out backwards}
+.votecard .rankmark b{font-size:11px;font-weight:800;color:var(--yellow);letter-spacing:-.01em}
 .votebar{display:flex;gap:10px;margin-top:20px;position:sticky;bottom:0;padding:12px 0;background:var(--bg)}
 .votebar button{flex:1;padding:16px;font-size:16px;border-radius:14px}
 .votebar .primary{background:var(--yellow);color:#2c2c2a;font-weight:800}

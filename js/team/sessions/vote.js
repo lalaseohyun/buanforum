@@ -31,8 +31,9 @@ export default {
     let live = null;                 // policy/live { open, names }
     let teamCount = ctx.forum.teamCount || ctx.forum.teams.length;
     let picks = [];                  // 1순위부터 순서대로 담긴 조 번호
-    // 새로고침하면(또는 "다시 투표하기"를 누르면) 다시 투표할 수 있다 — 이 세션이
-    // 떠 있는 동안만 기억하는 값이라 새로고침하면 자동으로 false로 돌아온다.
+    // 새로고침하면 다시 투표할 수 있다(버튼은 일부러 안 둔다 — 실제 참가자에게
+    // "또 눌러도 된다"는 티를 안 내려고) — 이 세션이 떠 있는 동안만 기억하는
+    // 값이라 새로고침하면 자동으로 false로 돌아온다.
     let done = false;
     let sending = false;
     const unsubs = [];
@@ -45,9 +46,7 @@ export default {
         ctx.root.innerHTML = `<div class="center">
           <div class="big">투표해 주셔서 고맙습니다</div>
           <div class="sub">결과는 앞 화면에서 함께 확인해요.</div>
-          <button class="ghost" id="voteAgain" style="margin-top:22px">다시 투표하기</button>
         </div>`;
-        document.getElementById('voteAgain').onclick = () => { picks = []; done = false; render(); };
         return;
       }
       if (!live || !live.open) {
@@ -57,11 +56,18 @@ export default {
         return;
       }
       const w = weights();
+      // 골랐다는 표시를 글자 배지 대신, 진행자 화면과 같은 노란 점으로 보여준다 —
+      // 1순위를 고르면 그 자리에서 점 2개가(2순위면 1개가) 바로 찍혀서,
+      // "1순위=2표"라는 게 숫자를 안 읽어도 한눈에 보인다.
       const cards = teams().map(t => {
         const rank = picks.indexOf(t.no);          // -1이면 아직 안 고름
         const name = (live.names || {})[t.no] || '';
+        const rankMark = rank >= 0 ? `<span class="rankmark">
+          <span class="dots">${'<i></i>'.repeat(w[rank])}</span>
+          <b>${rank + 1}순위</b>
+        </span>` : '';
         return `<button class="votecard ${rank >= 0 ? 'picked' : ''}" data-t="${t.no}">
-          ${rank >= 0 ? `<span class="rank">${rank + 1}순위 · ${w[rank]}표</span>` : ''}
+          ${rankMark}
           <span class="tm">${esc(t.label)}조</span>
           <span class="nm">${name ? esc(name) : '정책명 준비 중'}</span>
         </button>`;
