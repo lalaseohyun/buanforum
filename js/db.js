@@ -4,7 +4,9 @@
    고칠 때 ─ Firebase 프로젝트 자체를 바꾸려면   → js/firebase.js
              문서 구조를 바꾸려면                 → 이 파일 + firebase/firestore.rules
    구조(forums/{FORUM_ID} 아래) ─
-     (forum 문서 자체)      { session }   ← 지금 진행 중인 세션 id. 팀 화면 전체가 이걸 구독해서 라우팅한다
+     (forum 문서 자체)      { session, teamCount }  ← 지금 진행 중인 세션 id + 오늘 진행할 조 수. 팀 화면 전체가 구독한다
+     policy/live            { page, open, names:{ [teamNo]: "정책명" } }  대표정책 화면 상태(팀·투표 화면이 구독)
+     policyVotes/{voterId}  { ranks:[조번호…], at }   공감투표. 문서 ID가 기기별 voterId라 1인 1회로 묶인다
      quiz/state          { phase, index, open, revealed, showChart, openedAt, asked{} }  진행자 전용 상태
      quiz/live             { phase, index, open, revealed, item{...정답 없음}, reveal{...정답 공개 시에만} }  팀이 구독
      quizAnswers/{qid}      { "1":{choice,ms}, "2":{...} }      문항당 문서 1개, 팀 번호가 필드명
@@ -93,18 +95,41 @@ export function submitAnswer(qid, teamNo, choice, ms) {
   return setDoc(doc(fs, path('quizAnswers', qid)), { [String(teamNo)]: { choice, ms } }, { merge: true });
 }
 
-/* ---- 원탁토론: 사진·하트 ---- */
-/** 팀당 기본 1장 — 문서 ID를 팀 번호로 고정해서, 다시 올리면 완전히 새 문서로 교체된다(투표도 초기화). */
+/* ---- 대표정책: 사진 ---- */
+/** 조당 1장 — 문서 ID를 조 번호로 고정해서, 다시 올리면 그 자리를 덮어쓴다. */
 export function saveMainPhoto(teamNo, photo) {
-  return setDoc(doc(fs, path('boardPhotos', `${teamNo}-main`)), { teamNo, ...photo, at: Date.now(), voters: {} }, { merge: false });
+  return setDoc(doc(fs, path('boardPhotos', `${teamNo}-main`)), { teamNo, ...photo, at: Date.now() }, { merge: false });
 }
-/** 「+ 사진 추가」 — 팀당 여러 장을 원하면 자동 ID로 추가 문서를 만든다. */
+/** 「+ 사진 추가」 — 조당 여러 장이 필요하면 자동 ID로 추가 문서를 만든다. */
 export function addExtraPhoto(teamNo, photo) {
-  return addDoc(collection(fs, path('boardPhotos')), { teamNo, ...photo, at: Date.now(), voters: {} });
+  return addDoc(collection(fs, path('boardPhotos')), { teamNo, ...photo, at: Date.now() });
 }
-/** 하트 토글 — 자기 voterId 필드만 켜고 끈다. 다른 사람 표는 건드릴 수 없다(규칙에서도 강제). */
-export function toggleHeart(photoId, voterId, on) {
-  return updateDoc(doc(fs, path('boardPhotos', photoId)), { [`voters.${voterId}`]: on ? true : deleteField() });
+
+/* ---- 공감투표 ----
+   한 사람(기기)당 문서 하나. 문서 ID가 voterId라서 같은 기기는 덮어쓰기만 가능하고,
+   화면에서는 이미 투표한 기기를 다시 못 들어오게 막는다.
+   ranks = 1순위부터 순서대로 담은 조 번호 배열. 표 수는 순위별 가중치로 계산한다. */
+export function submitVote(voterId, ranks) {
+  return setDoc(doc(fs, path('policyVotes', voterId)), { ranks, at: Date.now() }, { merge: false });
+}
+
+/** 조 수에 따른 순위별 가중치 — 3팀 이하 [1] · 4~5팀 [2,1] · 6팀 이상 [3,2,1] */
+export function voteWeights(teamCount) {
+  if (teamCount <= 3) return [1];
+  if (teamCount <= 5) return [2, 1];
+  return [3, 2, 1];
+}
+
+/** 투표 결과 집계 — { [teamNo]: 표수 } */
+export function tallyVotes(votes, teamCount) {
+  const w = voteWeights(teamCount);
+  const out = {};
+  Object.values(votes || {}).forEach(v => {
+    (v && v.ranks || []).forEach((teamNo, i) => {
+      if (i < w.length && teamNo) out[teamNo] = (out[teamNo] || 0) + w[i];
+    });
+  });
+  return out;
 }
 
 export { doc, collection, updateDoc, deleteField, serverTimestamp };

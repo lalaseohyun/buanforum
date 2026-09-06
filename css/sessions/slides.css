@@ -45,6 +45,12 @@
 .homelogo img{display:block;opacity:.92}
 .homelogo span{color:var(--ink3);font-weight:700;font-size:20px;letter-spacing:.04em}
 
+/* 6. 우수정책 — 시상 타이틀. 아래로 갈수록 커진다 */
+.awardslide{gap:clamp(14px,2.4vh,34px)}
+.awardsmall{font-size:clamp(18px,1.8vw,32px);font-weight:700;color:var(--ink2);letter-spacing:.02em}
+.awardmid{font-size:clamp(28px,3.2vw,56px);font-weight:800;color:var(--yellow);letter-spacing:-.02em}
+.awardbig{font-size:clamp(48px,6.4vw,116px);font-weight:800;color:var(--ink);letter-spacing:-.04em;line-height:1.15}
+
 /* 홈 — 2x2(5개면 자동으로 3줄) 진행순서 카드 */
 .homegrid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(2,1fr);grid-auto-rows:1fr;gap:clamp(16px,2vw,32px)}
 .homecard{background:var(--panel);border-radius:26px;display:flex;flex-direction:column;justify-content:center;align-items:center;

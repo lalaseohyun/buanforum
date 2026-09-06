@@ -64,16 +64,22 @@ service cloud.firestore {
         allow read: if signedIn();
         allow write: if isHost(forumId);
       }
+      // 정책 사진 — 이제 진행자가 자기 컴퓨터에서 올린다(참가자 업로드 없음)
       match /boardPhotos/{photoId} {
         allow read: if signedIn();
-        allow write: if signedIn() && (
-          isHost(forumId) ||
-          // 하트 토글 — voters 맵(과 updatedAt)만 바뀌는 요청만 허용
-          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['voters', 'updatedAt']) ||
-          // 새 사진 업로드/교체 — hostKey 없이, 사진에 필요한 필드를 갖춘 요청만 허용
-          (!('hostKey' in request.resource.data) &&
-           request.resource.data.keys().hasAll(['teamNo', 'url', 'path', 'at', 'voters']))
-        );
+        allow write: if isHost(forumId);
+      }
+      // 공감투표 화면 상태(조별 정책명 포함) — 진행자만 쓴다
+      match /policy/live {
+        allow read: if signedIn();
+        allow write: if isHost(forumId);
+      }
+      // 공감투표 — 문서 ID가 기기별 voterId다. 자기 문서만 쓰게 막을 로그인 체계가 없으므로
+      // (위 신뢰 모델 참고) 익명 인증만 확인하고, 1인 1회는 화면 쪽에서 막는다.
+      // 초기화는 진행자가 빈 문서로 덮어쓴다.
+      match /policyVotes/{voterId} {
+        allow read: if signedIn();
+        allow write: if signedIn();
       }
     }
   }

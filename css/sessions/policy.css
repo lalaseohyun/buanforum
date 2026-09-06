@@ -1,41 +1,78 @@
 /* ───────────────────────────────────────
-   5. 대표정책 — 각 조가 올린 정책 사진 갤러리 + 하트투표.
-   (예전 원탁토론 "발표모드"였던 부분이 독립 탭으로 옮겨온 것)
+   5. 대표정책 — 정책 사진 갤러리(진행자가 올림) + 공감투표.
 
-   고칠 때 ─ 업로드·투표 로직   → js/host/sessions/policy.js, js/team/sessions/policy.js
+   고칠 때 ─ 업로드·투표 로직   → js/host/sessions/policy.js, js/team/sessions/vote.js
+             투표 규칙(표 수)   → js/db.js voteWeights
              사진 리사이즈       → js/storage.js
              색·크기            → 이 파일
    ─────────────────────────────────────── */
 
-/* ── 갤러리(진행자 + 팀 공용) ── */
-.gallery{flex:1;min-height:0;display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(14px,1.8vw,28px);
-  align-content:start;overflow:auto}
+/* ── 갤러리(진행자) ── */
+.gallery{flex:1;min-height:0;display:grid;grid-template-columns:repeat(var(--cols,3),1fr);
+  gap:clamp(14px,1.8vw,28px);align-content:start;overflow:auto}
 .gcard{background:var(--panel);border-radius:20px;overflow:hidden;display:flex;flex-direction:column;cursor:pointer;transition:.15s}
 .gcard:hover{outline:2px solid var(--yellow)}
 .gcard .ph{aspect-ratio:4/3;background:var(--panel2);overflow:hidden}
 .gcard .ph img{width:100%;height:100%;object-fit:cover;display:block}
-.gcard .ph.empty{display:flex;align-items:center;justify-content:center;color:var(--ink3);font-size:14px;font-weight:600}
-.gcard .meta{display:flex;align-items:center;justify-content:space-between;padding:12px 16px}
-.gcard .tm{font-size:clamp(15px,1.3vw,22px);font-weight:800}
-.gcard .hearts{display:flex;align-items:center;gap:6px;font-size:clamp(15px,1.3vw,22px);font-weight:800;color:var(--yellow)}
+.gcard .ph.empty{display:flex;align-items:center;justify-content:center;color:var(--ink3);
+  font-size:clamp(13px,1.15vw,19px);font-weight:600}
+.gcard .meta{display:flex;align-items:center;gap:clamp(8px,1vw,16px);padding:12px 16px}
+.gcard .tm{font-size:clamp(15px,1.3vw,22px);font-weight:800;flex:0 0 auto}
+.gcard .pn{font-size:clamp(13px,1.15vw,19px);font-weight:600;color:var(--yellow);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
-/* 확대 보기 */
-.zoom{position:fixed;inset:0;background:rgba(0,0,0,.86);z-index:40;display:flex;
-  flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:40px}
-.zoom img{max-width:88vw;max-height:76vh;border-radius:14px;object-fit:contain}
-.zoom .cap{color:var(--ink);font-size:22px;font-weight:800}
-.zoom .close{position:absolute;top:24px;right:28px}
+.uploading{position:fixed;left:50%;bottom:120px;transform:translateX(-50%);z-index:35;
+  background:var(--panel2);color:var(--ink);padding:12px 24px;border-radius:999px;font-weight:700}
 
-/* ── 팀(모바일): 업로드 ── */
-.upload{border:2px dashed var(--line);border-radius:20px;padding:28px 18px;text-align:center;cursor:pointer}
-.upload input{display:none}
-.upload .ic{font-size:34px}
-.upload .t{font-size:15.5px;font-weight:700;color:var(--ink2);margin-top:8px}
-.myphotos{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}
-.myphotos .ph{aspect-ratio:1;border-radius:14px;overflow:hidden;background:var(--panel)}
-.myphotos .ph img{width:100%;height:100%;object-fit:cover}
-.addmore{margin-top:12px}
+/* 사진 크게 보기 — 화면 전체 */
+.zoom{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:40;display:flex;
+  align-items:center;justify-content:center;padding:24px;cursor:zoom-out}
+.zoom img{max-width:96vw;max-height:92vh;border-radius:10px;object-fit:contain}
+.zoom .close{position:absolute;top:24px;right:28px;cursor:pointer}
 
-.heartbtn{display:flex;align-items:center;gap:8px;background:var(--panel);border-radius:999px;padding:8px 16px;
-  font-weight:800;font-size:15px;color:var(--ink2);cursor:pointer;user-select:none}
-.heartbtn.on{background:rgba(232,112,95,.18);color:var(--no)}
+/* ── 공감투표(진행자) ── */
+.votewrap{flex:1;min-height:0;display:grid;grid-template-columns:auto 1fr;
+  gap:clamp(28px,4vw,72px);align-items:center}
+.voteleft{display:flex;flex-direction:column;align-items:center;gap:clamp(8px,1.2vh,16px)}
+.voteleft .qrbox{padding:clamp(10px,1vw,16px)}
+.voteleft .qrbox img,.voteleft .qrbox canvas{width:clamp(150px,17vw,260px)!important;height:auto!important}
+.votetitle{font-size:clamp(24px,2.6vw,44px);font-weight:800;letter-spacing:-.03em}
+.votesub{font-size:clamp(15px,1.4vw,24px);color:var(--ink2);font-weight:600;text-align:center;line-height:1.45}
+.voterule{font-size:clamp(14px,1.25vw,21px);font-weight:800;color:var(--yellow);
+  background:rgba(253,206,15,.12);padding:8px 18px;border-radius:999px}
+.votecount{font-size:clamp(14px,1.25vw,21px);color:var(--ink3);font-weight:700}
+.votecount b{color:var(--ink)}
+
+.voteright{min-width:0}
+.votetable{width:100%;border-collapse:separate;border-spacing:0 clamp(6px,1vh,12px)}
+.votetable td{padding:clamp(8px,1.2vh,16px) clamp(8px,.8vw,14px);background:var(--panel);vertical-align:middle}
+.votetable td:first-child{border-radius:16px 0 0 16px}
+.votetable td:last-child{border-radius:0 16px 16px 0}
+.votetable .no{font-size:clamp(16px,1.5vw,26px);font-weight:800;white-space:nowrap;width:1%}
+.votetable .name{width:45%}
+.votetable .name input{width:100%;background:var(--panel2);border:2px solid transparent;border-radius:12px;
+  color:var(--ink);font:inherit;font-size:clamp(15px,1.4vw,24px);font-weight:700;padding:10px 14px}
+.votetable .name input:focus{outline:none;border-color:var(--yellow)}
+.votetable .name input::placeholder{color:var(--ink3);font-weight:500}
+.votetable .bar{width:35%}
+.votetable .bar i{display:block;height:clamp(14px,1.6vh,24px);border-radius:99px;background:var(--yellow);
+  min-width:2px;transition:width .3s}
+.votetable .cnt{font-size:clamp(18px,1.8vw,32px);font-weight:800;color:var(--yellow);
+  font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap;width:1%}
+
+/* ── 공감투표(참여자 모바일) ── */
+.votelist{display:flex;flex-direction:column;gap:12px;margin-top:20px}
+.votecard{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:6px;
+  background:var(--panel);border:2px solid transparent;border-radius:20px;padding:18px;
+  text-align:left;width:100%;cursor:pointer;color:inherit;font:inherit;transition:.15s}
+.votecard:active{transform:scale(.98)}
+.votecard.picked{background:rgba(253,206,15,.16);border-color:var(--yellow)}
+.votecard .tm{font-size:17px;font-weight:800;color:var(--ink2)}
+.votecard.picked .tm{color:var(--fill)}
+.votecard .nm{font-size:20px;font-weight:700;letter-spacing:-.02em}
+.votecard .rank{position:absolute;top:14px;right:16px;font-size:13px;font-weight:800;
+  color:#2c2c2a;background:var(--yellow);padding:5px 12px;border-radius:999px}
+.votebar{display:flex;gap:10px;margin-top:20px;position:sticky;bottom:0;padding:12px 0;background:var(--bg)}
+.votebar button{flex:1;padding:16px;font-size:16px;border-radius:14px}
+.votebar .primary{background:var(--yellow);color:#2c2c2a;font-weight:800}
+.votebar .primary:disabled{background:var(--panel);color:var(--ink3)}

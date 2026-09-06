@@ -15,6 +15,8 @@
 
 `content/*.json`은 GitHub 저장소에서 웹으로 직접 열어 고치고 저장하면 끝난다. 로컬 개발 환경이 필요 없다.
 
+**오늘 몇 조로 할지는 파일이 아니라 행사장에서 고른다.** 진행자 화면 ▸ 2. 퀴즈 ▸ 대기화면의 `3 / 4 / 5 / 6` 버튼을 누르면 그 값이 저장되고, 퀴즈 참여현황·최종순위·대표정책 갤러리·공감투표가 전부 그 조 수만큼만 쓴다. `forum.json`의 `teamCount`는 처음 기본값일 뿐이다.
+
 ## 화면 색·크기
 
 | 바꾸고 싶은 것 | 파일 |
@@ -27,7 +29,8 @@
 | 퀴즈 화면(문제·보기·정답·순위) 모양 | [css/sessions/quiz.css](css/sessions/quiz.css) |
 | 정답 뒤 그래프/표 화면 모양 | [css/sessions/chart.css](css/sessions/chart.css) |
 | 원탁토론 참고자료 패널 모양 | [css/sessions/board.css](css/sessions/board.css) |
-| 대표정책(사진 갤러리·업로드·하트) 모양 | [css/sessions/policy.css](css/sessions/policy.css) |
+| 대표정책(사진 갤러리·확대·공감투표 표) 모양 | [css/sessions/policy.css](css/sessions/policy.css) |
+| 6. 우수정책 시상 타이틀 모양 | [css/sessions/slides.css](css/sessions/slides.css) 의 `.awardslide` 부분 |
 
 ## 진행 흐름·버튼 로직 (세션별로 완전히 분리돼 있다)
 
@@ -42,7 +45,8 @@
 | ⭐ 정답 뒤 그래프 화면 | [js/host/sessions/chart.js](js/host/sessions/chart.js) (quiz.js가 불러 씀, 독립 세션 아님) | — |
 | 3. 토크콘서트 | [js/host/sessions/talk.js](js/host/sessions/talk.js) | wait.js 공용 |
 | 4. 원탁토론(첫화면+STEP1~3, 사진 없음) | [js/host/sessions/board.js](js/host/sessions/board.js) | [js/team/sessions/board.js](js/team/sessions/board.js) |
-| 5. 대표정책(사진 갤러리·하트) | [js/host/sessions/policy.js](js/host/sessions/policy.js) | [js/team/sessions/policy.js](js/team/sessions/policy.js) |
+| 5. 대표정책(사진 갤러리 → 공감투표) | [js/host/sessions/policy.js](js/host/sessions/policy.js) | [js/team/sessions/vote.js](js/team/sessions/vote.js) (투표 화면. `?vote=1`로 들어온 폰만 뜬다) |
+| 6. 우수정책 시상 | [js/host/sessions/award.js](js/host/sessions/award.js) | wait.js 공용 |
 
 세션을 하나 더 추가하려면: `js/host/sessions/새이름.js` 작성(아래 계약 참고) → [js/host/main.js](js/host/main.js)의 `SESSIONS` 배열에 한 줄 등록 → `content/forum.json`의 `sessions`에 한 항목 추가. 기존 세션 파일은 하나도 안 건드린다.
 
@@ -60,6 +64,7 @@
 | [js/storage.js](js/storage.js) | 사진 리사이즈·업로드 |
 | [js/util.js](js/util.js) | esc·문장분리·글자맞춤 |
 | [js/score.js](js/score.js) | **채점 규칙의 유일한 정의.** `node tools/test-score.js`로 검증됨 |
+| [js/db.js](js/db.js) 의 `voteWeights` | **공감투표 규칙의 유일한 정의.** 조가 3개 이하면 1표, 4~5조면 1순위 2표·2순위 1표, 6조 이상이면 1순위 3표·2순위 2표·3순위 1표 |
 | [js/firebase.js](js/firebase.js) | Firebase 프로젝트 연결 값 (배포 시 여기부터 채운다) |
 
 ## 세션 모듈 계약

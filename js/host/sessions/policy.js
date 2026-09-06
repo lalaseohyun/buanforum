@@ -1,74 +1,201 @@
 /* ───────────────────────────────────────
-   5. 대표정책 — 진행자 화면. 각 조가 올린 정책 사진을 갤러리로 보여준다.
-   (예전 원탁토론의 "발표모드"가 독립 탭으로 옮겨온 것)
+   5. 대표정책 — 진행자 화면. 화살표로 두 페이지가 이어진다.
+     0) 정책 갤러리 — 진행자가 자기 컴퓨터에서 조별 사진을 올리고,
+        사진을 누르면 전체화면으로 크게 띄운다(하트 없음)
+     1) 공감투표 — 투표 전용 QR + 조별 정책명 표(진행자가 직접 기입) + 실시간 집계
 
-   고칠 때 ─ 갤러리·투표 로직   → 이 파일
-             사진 리사이즈       → js/storage.js
-             색·크기            → css/sessions/policy.css
-   쓰는 것 ─ js/db.js(boardPhotos 구독) — 업로드·하트는 팀 쪽(./policy.js의 team 버전)에서 일어난다.
+   고칠 때 ─ 조 수                  → 퀴즈 대기화면에서 고른 값(Firestore forum 문서)
+             투표 규칙(순위별 표수) → js/db.js의 voteWeights
+             색·크기                → css/sessions/policy.css
+   쓰는 것 ─ js/db.js(boardPhotos·policy/live·policyVotes) · js/storage.js(사진 업로드)
    ─────────────────────────────────────── */
 import { esc } from '../../util.js';
-import { watchCollection, hostReset, path } from '../../db.js';
+import { watch, watchCollection, hostSet, hostReset, path, tallyVotes, voteWeights } from '../../db.js';
+import { uploadPhoto } from '../../storage.js';
 
 export default {
   id: 'policy',
   title: '대표정책',
   mount(ctx) {
-    const teams = ctx.forum.teams;
-    let photos = {};   // { photoId: {teamNo, url, path, at, voters} }
+    let page = 0;                 // 0 갤러리 · 1 공감투표
+    let teamCount = ctx.forum.teamCount || ctx.forum.teams.length;
+    let photos = {};              // { photoId: {teamNo, url, path, at} }
+    let names = {};               // { [teamNo]: 정책명 }
+    let votes = {};               // { [voterId]: {ranks} }
     let zoomId = null;
+    let uploading = 0;
     const unsubs = [];
 
-    function photosByTeam(no) {
-      return Object.entries(photos).filter(([, p]) => p.teamNo === no).map(([id, p]) => ({ id, ...p }));
-    }
-    function heartsOf(p) { return Object.keys(p.voters || {}).length; }
+    const teams = () => ctx.forum.teams.slice(0, teamCount);
+    const photoOf = no => Object.entries(photos)
+      .filter(([, p]) => p && p.teamNo === no && p.url)
+      .map(([id, p]) => ({ id, ...p }))[0];
+
+    const voteUrl = () => location.href.replace(/host\.html.*$/, '') + '?vote=1';
 
     function render() {
-      const cards = teams.map(t => {
-        const ps = photosByTeam(t.no);
-        const main = ps[0];
-        const totalHearts = ps.reduce((s, p) => s + heartsOf(p), 0);
+      // 투표가 들어올 때마다 다시 그리는데, 그 순간 진행자가 정책명을 치고 있을 수 있다.
+      // 치던 칸(값·커서)을 붙잡아 뒀다가 그린 뒤에 되돌려 준다.
+      const act = document.activeElement;
+      const typing = act && act.matches?.('.votetable input')
+        ? { t: act.dataset.t, v: act.value, s: act.selectionStart } : null;
+
+      ctx.root.innerHTML = page === 0 ? viewGallery() : viewVote();
+      wire();
+      ctx.setControls(controlsFor());
+
+      if (typing) {
+        const back = ctx.root.querySelector(`.votetable input[data-t="${typing.t}"]`);
+        if (back) {
+          back.value = typing.v;
+          back.focus();
+          try { back.setSelectionRange(typing.s, typing.s); } catch {}
+        }
+      }
+    }
+
+    /* ---- 0. 갤러리 ---- */
+    function viewGallery() {
+      const cards = teams().map(t => {
+        const p = photoOf(t.no);
         return `<div class="gcard" data-t="${t.no}">
-          <div class="ph ${main ? '' : 'empty'}">${main ? `<img src="${esc(main.url)}">` : '아직 업로드 전'}</div>
-          <div class="meta"><span class="tm">${esc(t.label)}조</span><span class="hearts">♥ ${totalHearts}</span></div>
+          <div class="ph ${p ? '' : 'empty'}">${p ? `<img src="${esc(p.url)}">` : '클릭해서 사진 올리기'}</div>
+          <div class="meta"><span class="tm">${esc(t.label)}조</span>${names[t.no] ? `<span class="pn">${esc(names[t.no])}</span>` : ''}</div>
         </div>`;
       }).join('');
       const zoom = zoomId && photos[zoomId] ? `
         <div class="zoom" id="zoomLayer">
           <button class="close ghost" id="zoomClose">✕ 닫기</button>
           <img src="${esc(photos[zoomId].url)}">
-          <div class="cap">♥ ${heartsOf(photos[zoomId])}</div>
         </div>` : '';
-      ctx.root.innerHTML = `<div class="gallery">${cards}</div>${zoom}`;
-      ctx.setControls([
-        { label: '전체 초기화(사진·하트)', variant: 'danger', onClick: resetAll },
-      ]);
+      return `<div class="gallery" style="--cols:${teamCount <= 4 ? 2 : 3}">${cards}</div>
+        <input type="file" accept="image/*" id="fileUp" hidden>
+        ${uploading ? `<div class="uploading">사진 올리는 중…</div>` : ''}${zoom}
+        <div class="pagedots"><i class="on"></i><i></i></div>`;
+    }
+
+    /* ---- 1. 공감투표 ---- */
+    function viewVote() {
+      const t = tallyVotes(votes, teamCount);
+      const max = Math.max(1, ...Object.values(t));
+      const w = voteWeights(teamCount);
+      const rows = teams().map(tm => {
+        const n = t[tm.no] || 0;
+        return `<tr>
+          <td class="no">${esc(tm.label)}조</td>
+          <td class="name"><input data-t="${tm.no}" value="${esc(names[tm.no] || '')}" placeholder="정책명을 적어주세요"></td>
+          <td class="bar"><i style="width:${Math.round(n / max * 100)}%"></i></td>
+          <td class="cnt">${n}</td>
+        </tr>`;
+      }).join('');
+      return `<div class="votewrap">
+        <div class="voteleft">
+          <div class="votetitle">공감투표</div>
+          <div class="qrbox"><div id="voteQr"></div></div>
+          <div class="votesub">휴대폰으로 QR을 찍고<br>마음에 드는 정책을 골라주세요</div>
+          <div class="voterule">${w.length === 1 ? '한 팀에 1표' : w.map((v, i) => `${i + 1}순위 ${v}표`).join(' · ')}</div>
+          <div class="votecount">투표한 사람 <b>${Object.keys(votes).length}</b>명</div>
+        </div>
+        <div class="voteright">
+          <table class="votetable"><tbody>${rows}</tbody></table>
+        </div>
+      </div>
+      <div class="pagedots"><i></i><i class="on"></i></div>`;
+    }
+
+    function wire() {
+      if (page === 0) {
+        const f = document.getElementById('fileUp');
+        ctx.root.querySelectorAll('.gcard').forEach(card => {
+          card.onclick = () => {
+            const no = Number(card.dataset.t);
+            const p = photoOf(no);
+            if (p) { zoomId = p.id; render(); return; }   // 이미 있으면 크게 보기
+            f.onchange = () => { const file = f.files[0]; f.value = ''; if (file) upload(no, file); };
+            f.click();                                     // 없으면 내 컴퓨터에서 고르기
+          };
+        });
+        const close = document.getElementById('zoomClose');
+        if (close) close.onclick = () => { zoomId = null; render(); };
+        const layer = document.getElementById('zoomLayer');
+        if (layer) layer.onclick = e => { if (e.target === layer) { zoomId = null; render(); } };
+      } else {
+        const holder = document.getElementById('voteQr');
+        if (holder && window.QRCode) {
+          holder.innerHTML = '';
+          new QRCode(holder, { text: voteUrl(), width: 260, height: 260, colorDark: '#2c2c2a', colorLight: '#ffffff' });
+        }
+        // 정책명은 타이핑이 끝난 뒤(포커스가 빠질 때) 저장한다 — 글자마다 저장하면 커서가 튄다
+        ctx.root.querySelectorAll('.votetable input').forEach(inp => {
+          inp.onblur = () => saveName(Number(inp.dataset.t), inp.value);
+          inp.onkeydown = e => { if (e.key === 'Enter') inp.blur(); };
+        });
+      }
+    }
+
+    async function upload(teamNo, file) {
+      uploading++; render();
+      try {
+        const photo = await uploadPhoto(file, teamNo);
+        await hostSet(path('boardPhotos', `${teamNo}-main`), { teamNo, ...photo, at: Date.now() });
+      } catch (e) {
+        alert('업로드에 실패했습니다: ' + e.message);
+      } finally { uploading--; render(); }
+    }
+
+    function saveName(teamNo, value) {
+      const v = String(value || '').trim();
+      if ((names[teamNo] || '') === v) return;
+      names = { ...names, [teamNo]: v };
+      hostSet(path('policy', 'live'), { page, open: page === 1, names });
+    }
+
+    function goPage(p) {
+      page = Math.max(0, Math.min(1, p));
+      zoomId = null;
+      hostSet(path('policy', 'live'), { page, open: page === 1, names });
+      render();
     }
 
     function resetAll() {
-      if (!confirm('업로드된 사진과 하트를 모두 지웁니다. 정말 초기화할까요?')) return;
+      if (!confirm('올린 사진과 투표를 모두 지웁니다. 정말 초기화할까요?')) return;
       Object.keys(photos).forEach(id => hostReset(path('boardPhotos', id), {}));
+      Object.keys(votes).forEach(id => hostReset(path('policyVotes', id), {}));
     }
 
-    ctx.setKeys({});
+    function controlsFor() {
+      return [
+        { label: '◀ 이전', onClick: () => (page === 0 ? ctx.goSession('board') : goPage(0)) },
+        page === 0
+          ? { label: '공감투표 ▶', variant: 'primary', onClick: () => goPage(1) }
+          : { label: '우수정책 시상 ▶', variant: 'primary', onClick: () => ctx.goSession('award') },
+        { label: '전체 초기화(사진·투표)', variant: 'danger', onClick: resetAll },
+      ];
+    }
 
+    ctx.setKeys({
+      ArrowRight: () => (page === 0 ? goPage(1) : ctx.goSession('award')),
+      ArrowLeft: () => (page === 0 ? ctx.goSession('board') : goPage(0)),
+      ' ': () => (page === 0 ? goPage(1) : ctx.goSession('award')),
+      Escape: () => { if (zoomId) { zoomId = null; render(); } },
+    });
+
+    unsubs.push(watch(path(), snap => {
+      const n = Number(snap?.teamCount) || ctx.forum.teamCount || ctx.forum.teams.length;
+      if (n !== teamCount) { teamCount = n; render(); }
+    }));
+    unsubs.push(watch(path('policy', 'live'), snap => {
+      names = snap?.names || {};
+      render();
+    }));
     unsubs.push(watchCollection(path('boardPhotos'), snap => {
-      // 초기화로 비운 문서({})는 갤러리에서 제외
       photos = Object.fromEntries(Object.entries(snap).filter(([, v]) => v && v.url));
       render();
     }));
-
-    // 갤러리 클릭 → 확대, 확대 화면 닫기는 이벤트 위임으로 처리(리렌더마다 다시 그려지므로)
-    ctx.root.addEventListener('click', e => {
-      const card = e.target.closest('.gcard');
-      const closeBtn = e.target.closest('#zoomClose');
-      if (closeBtn) { zoomId = null; render(); return; }
-      if (card) {
-        const ps = photosByTeam(Number(card.dataset.t));
-        if (ps[0]) { zoomId = ps[0].id; render(); }
-      }
-    });
+    unsubs.push(watchCollection(path('policyVotes'), snap => {
+      votes = Object.fromEntries(Object.entries(snap).filter(([, v]) => v && v.ranks));
+      render();
+    }));
 
     render();
     return { unmount() { unsubs.forEach(u => u && u()); } };

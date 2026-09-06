@@ -32,7 +32,9 @@ export default {
   id: 'quiz',
   title: '청년정책 퀴즈',
   mount(ctx) {
-    const teams = ctx.forum.teams; // [{no,label,name}]
+    // 오늘 진행할 조 수는 진행자가 대기화면에서 고른다(Firestore forum 문서의 teamCount).
+    let teamCount = ctx.forum.teamCount || ctx.forum.teams.length;
+    const teams = () => ctx.forum.teams.slice(0, teamCount);
     let data = null, ITEMS = [];
     let state = { phase: 'lobby', index: -1, open: false, revealed: false, showChart: false, openedAt: null, asked: {} };
     let teamsMap = {};    // { [no]: {joinedAt} }
@@ -50,6 +52,12 @@ export default {
     };
     const orderOf = it => it.scored ? ITEMS.filter(q => q.scored).indexOf(it) + 1 : 0;
     const joinedNos = () => Object.entries(teamsMap).filter(([, v]) => v && v.joinedAt).map(([k]) => Number(k));
+    // 순위·시상 대상 — 한 번이라도 접속한 조만. 아무도 안 들어왔으면 전체를 그대로 쓴다(리허설용).
+    const rankTeams = () => {
+      const joined = joinedNos();
+      const only = teams().filter(t => joined.includes(t.no));
+      return only.length ? only : teams();
+    };
     const currentItem = () => (state.index >= 0 && state.index < ITEMS.length ? ITEMS[state.index] : null);
     const answersForCurrent = () => { const it = currentItem(); return it ? (answersAll[it.id] || {}) : {}; };
     const answeredNos = () => Object.keys(answersForCurrent()).map(Number);
@@ -76,7 +84,7 @@ export default {
           scored: it.scored, order: orderOf(it), note: it.note || null,
         } : null,
         reveal,
-        ranking: (state.revealed || state.phase === 'final') ? computeRanking(ITEMS, answersAll, teams) : null,
+        ranking: (state.revealed || state.phase === 'final') ? computeRanking(ITEMS, answersAll, rankTeams()) : null,
       });
     }
 
@@ -132,7 +140,7 @@ export default {
     function resetAll() {
       if (!confirm('답변·점수·접속한 팀까지 모두 지웁니다. 정말 초기화할까요?')) return;
       ITEMS.forEach(it => hostReset(path('quizAnswers', it.id), {}));
-      teams.forEach(t => hostReset(path('teams', String(t.no)), {}));
+      ctx.forum.teams.forEach(t => hostReset(path('teams', String(t.no)), {}));
       stage = 0;
       writeState({ phase: 'lobby', index: -1, open: false, revealed: false, showChart: false, asked: {} });
     }
@@ -166,14 +174,18 @@ export default {
 
     function viewLobby() {
       const joined = joinedNos();
-      const chips = teams.map(t => chip(t, joined.includes(t.no) ? 'on' : '', null)).join('');
+      const chips = teams().map(t => chip(t, joined.includes(t.no) ? 'on' : '', null)).join('');
       const joinUrl = location.href.replace(/host\.html.*$/, '');
       return `<div class="lobby">
         <div class="qrbox"><div id="qrHolder"></div></div>
         <div>
           <h2>휴대폰으로 <span>QR</span>을 찍고<br>우리 조 번호를 눌러주세요</h2>
           <div class="lsub">조당 한 분만 접속하시면 됩니다</div>
-          <div class="lsub">접속한 조 <b>${joined.length}</b> / ${teams.length}</div>
+          <div class="teamsel">오늘 진행할 조 수
+            ${[3, 4, 5, 6, 7, 8].filter(n => n <= ctx.forum.teams.length).map(n =>
+              `<button class="tcbtn ${n === teamCount ? 'on' : ''}" data-n="${n}">${n}</button>`).join('')}
+          </div>
+          <div class="lsub">접속한 조 <b>${joined.length}</b> / ${teams().length}</div>
           <div class="chips">${chips}</div>
         </div>
       </div>`;
@@ -184,6 +196,14 @@ export default {
         holder.innerHTML = '';
         new QRCode(holder, { text: location.href.replace(/host\.html.*$/, ''), width: 300, height: 300, colorDark: '#2c2c2a', colorLight: '#ffffff' });
       }
+      // 오늘 진행할 조 수 — 여기서 정하면 퀴즈·대표정책·투표가 모두 이 수만큼만 쓴다
+      ctx.root.querySelectorAll('.tcbtn').forEach(b => {
+        b.onclick = () => {
+          teamCount = Number(b.dataset.n);
+          hostSet(path(), { teamCount });
+          render();
+        };
+      });
     }
 
     // 하단 노란 점 — 이 문항을 넘기는 데 몇 번 남았는지 한눈에 보여준다
@@ -205,28 +225,30 @@ export default {
       const total = Math.max(1, Object.keys(ansForItem).length);
       const tally = chArr.map((_, i) => Object.values(ansForItem).filter(a => a.choice === i).length);
 
+      // OX 문항은 번호(1·2)를 빼고 O/X 글자만 크게 보여준다
+      const isOx = it.type === 'ox';
       const ch = chArr.map((c, i) => {
         const ok = revealed && i === it.answerIndex;
         const cls = revealed ? (ok ? 'correct' : 'dimmed') : '';
         return `<div class="ch ${cls}">
-          <div class="n">${i + 1}</div>
+          ${isOx ? '' : `<div class="n">${i + 1}</div>`}
           <div class="t">${choiceHtml(c)}</div>
           ${revealed ? `<div class="tally">${tally[i]}조 · ${Math.round(tally[i] / total * 100)}%</div>` : ''}
           ${ok ? `<div class="hl-inline">${esc(it.highlight)}</div>` : ''}
         </div>`;
       }).join('');
 
-      const chips = teams.map(t => {
+      const chips = teams().map(t => {
         const a = t.no in ansForItem;
         return chip(t, a ? 'done' : joinedNos().includes(t.no) ? 'on' : '', a ? 'check' : null);
       }).join('');
       const cnt = answeredNos().length;
       const stat = cnt === 0 ? `<div class="tstat">답변을 기다리는 중</div>`
-        : cnt === teams.length ? `<div class="tstat done">전체 제출 완료!</div>`
+        : cnt === teams().length ? `<div class="tstat done">전체 제출 완료!</div>`
         : `<div class="tstat"><b>${cnt}</b>조 제출 완료${state.open ? '' : ' · 마감됨'}</div>`;
 
       let body = `${badges(it)}<div class="q">${nl2br(it.question)}</div>`;
-      if (p >= 1) body += `<div class="choices" style="--n:${n}">${ch}</div>`;
+      if (p >= 1) body += `<div class="choices ${isOx ? 'ox' : ''}" style="--n:${n}">${ch}</div>`;
       if (revealed) body += `<div class="answerbox">${sentences(it.explanation)}<div class="src">출처 · ${esc(it.source)}</div></div>`;
       const foot = p === 2 ? `<div class="foot"><div class="tmeta">${stat}</div><div class="chips">${chips}</div></div>` : '';
       return `<div class="qview ${p < 2 ? 'centered' : ''} ${revealed ? 'revealed' : ''}">${body}
@@ -243,16 +265,19 @@ export default {
       </div>`;
     }
 
+    // 최종 순위 — 한 번이라도 접속한 조만 올린다(안 온 조가 0점으로 자리를 채우면 시상에 방해).
+    // 조가 적을수록 칸이 커지도록 줄 수를 조 수에 맞춰 잡는다.
     function viewFinal() {
-      const rows = computeRanking(ITEMS, answersAll, teams);
+      const rows = computeRanking(ITEMS, answersAll, rankTeams());
       const scoredTotal = ITEMS.filter(i => i.scored).length;
       const rowsHtml = rows.map(r => `
         <div class="row ${r.rank <= 3 ? 'p' + r.rank : ''}">
-          <div class="r">${r.rank}위</div><div class="tm">${esc(r.label)}</div>
+          <div class="r">${r.rank}위</div><div class="tm">${esc(r.name || r.label)}</div>
           <div class="sc">${r.score}<small> / ${scoredTotal}</small></div>
         </div>`).join('');
-      return `<div class="badges"><span class="badge num">최종 순위</span><span class="badge">${scoredTotal}문제 기준</span></div>
-        <div class="rank">${rowsHtml}</div>`;
+      const cols = rows.length > 4 ? 2 : 1;
+      return `<div class="finaltitle">최종 순위</div>
+        <div class="rank" style="--cols:${cols};--rows:${Math.ceil(rows.length / cols)}">${rowsHtml}</div>`;
     }
 
     // 큰 버튼도 화살표(stepForward)와 똑같은 한 줄기 흐름을 따른다 — 라벨만 지금 페이지에 맞게 바뀐다
@@ -300,6 +325,10 @@ export default {
       ITEMS = [data.practice, ...data.questions];
       render();
       unsubs.push(watch(path('quiz', 'state'), snap => { if (snap) state = { ...state, ...snap }; render(); }));
+      unsubs.push(watch(path(), snap => {
+        const n = Number(snap?.teamCount);
+        if (n && n !== teamCount) { teamCount = n; render(); }
+      }));
       unsubs.push(watchCollection(path('teams'), snap => { teamsMap = snap; render(); }));
       unsubs.push(watchCollection(path('quizAnswers'), snap => { answersAll = snap; render(); }));
     }).catch(e => {
