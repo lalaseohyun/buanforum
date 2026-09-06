@@ -3,6 +3,8 @@
    카드를 누르면 해당 세션으로 이동한다(하단 탭바를 누른 것과 동일).
    화살표는 전체 세션을 한 줄로 잇는다 ─ 카드 화면에서 더 가면 1.오프닝으로 넘어가고,
    1.오프닝의 첫 페이지에서 뒤로 가면 다시 여기(카드 화면)로 돌아온다.
+   단, 하단 탭바의 "홈"을 직접 누르면 화살표로 어디까지 갔었든 항상 타이틀 화면부터 보여준다
+   (ctx.resume이 false일 때 — js/host/main.js goSession 참고).
 
    타이틀 화면은 디자인 캔버스 목업에서 자유 배치한 좌표를 그대로 쓴다.
    1600×801 무대를 화면 크기에 맞춰 통째로 확대/축소하므로(js/util.js fitStage),
@@ -18,15 +20,15 @@
    ─────────────────────────────────────── */
 import { esc, fitStage } from '../../util.js';
 
-// 다른 세션에서 화살표로 홈까지 되돌아왔을 때 타이틀부터 다시 보여주지 않도록,
-// 마지막으로 보던 화면(타이틀/카드)을 모듈 스코프에 기억해 둔다.
+// 화살표로 옆 세션에서 이어서 들어올 때만(ctx.resume) 마지막으로 보던 화면(타이틀/카드)을 쓴다.
+// 탭바의 "홈" 버튼을 직접 누르면 항상 타이틀 화면부터 — 모듈 스코프에는 "이어서 볼 때 쓸" 값만 둔다.
 let lastShowCards = false;
 
 export default {
   id: 'home',
   title: '홈',
   mount(ctx) {
-    let showCards = lastShowCards;
+    let showCards = ctx.resume ? lastShowCards : false;
     let stopFit = null;
 
     function renderTitle() {
@@ -66,11 +68,11 @@ export default {
       if (stopFit) { stopFit(); stopFit = null; }
       lastShowCards = showCards;
       ctx.setControls(showCards
-        ? [{ label: '◀ 처음 화면', onClick: goPrev }, { label: '1. 오프닝으로 ▶', variant: 'primary', onClick: () => ctx.goSession('opening') }]
+        ? [{ label: '◀ 처음 화면', onClick: goPrev }, { label: '1. 오프닝으로 ▶', variant: 'primary', onClick: () => ctx.goSession('opening', { resume: true }) }]
         : []);
       showCards ? renderCards() : renderTitle();
     }
-    function goNext() { if (!showCards) { showCards = true; render(); } else { ctx.goSession('opening'); } }
+    function goNext() { if (!showCards) { showCards = true; render(); } else { ctx.goSession('opening', { resume: true }); } }
     function goPrev() { if (showCards) { showCards = false; render(); } }
 
     render();

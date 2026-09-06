@@ -11,15 +11,15 @@ import { esc, nl2br } from '../../util.js';
 import { loadOpening } from '../../content.js';
 import { hostSet, path } from '../../db.js';
 
-// 이 세션을 나갔다가(다른 탭 클릭 등) 화살표로 되돌아왔을 때 처음부터 다시 보여주지
-// 않도록, 모듈 스코프에 마지막으로 보던 페이지를 기억해 둔다(진행자 브라우저 탭 하나 기준).
+// 화살표로 옆 세션에서 이어서 들어올 때만(ctx.resume) 마지막으로 보던 페이지를 이어서 보여준다.
+// 탭바를 직접 눌러 들어오면 항상 처음(인트로)부터 — 모듈 스코프에는 "이어서 볼 때 쓸" 값만 둔다.
 let lastIndex = 0;
 
 export default {
   id: 'opening',
   title: '오프닝 스몰토크',
   mount(ctx) {
-    let data = null, index = lastIndex; // 0 = 인트로, 1 = 질문 2개
+    let data = null, index = ctx.resume ? lastIndex : 0; // 0 = 인트로, 1 = 질문 2개
 
     // 화살표로 넘기는 페이지 수를 하단 노란 점으로 (전체 2페이지)
     const dots = () => `<div class="pagedots">${[0, 1].map(i =>
@@ -54,8 +54,8 @@ export default {
       ]);
       hostSet(path('slides', 'opening'), { index });
     }
-    function next() { if (index < 1) { index++; render(); } else ctx.goSession('quiz'); }
-    function prev() { if (index > 0) { index--; render(); } else ctx.goSession('home'); }
+    function next() { if (index < 1) { index++; render(); } else ctx.goSession('quiz', { resume: true }); }
+    function prev() { if (index > 0) { index--; render(); } else ctx.goSession('home', { resume: true }); }
 
     loadOpening().then(d => { data = d; render(); })
       .catch(e => { ctx.root.innerHTML = `<div class="slide"><h2>content/01-opening.json 로드 실패</h2><p class="sub">${esc(e.message)}</p></div>`; });

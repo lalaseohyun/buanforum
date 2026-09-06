@@ -20,9 +20,9 @@ export default {
       </div>`;
 
     ctx.setControls([
-      { label: '◀ 대표정책', onClick: () => ctx.goSession('policy') },
+      { label: '◀ 대표정책', onClick: () => ctx.goSession('policy', { resume: true }) },
     ]);
-    ctx.setKeys({ ArrowLeft: () => ctx.goSession('policy') });
+    ctx.setKeys({ ArrowLeft: () => ctx.goSession('policy', { resume: true }) });
     return { unmount() {} };
   },
 };

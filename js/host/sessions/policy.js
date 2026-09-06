@@ -165,18 +165,18 @@ export default {
 
     function controlsFor() {
       return [
-        { label: '◀ 이전', onClick: () => (page === 0 ? ctx.goSession('board') : goPage(0)) },
+        { label: '◀ 이전', onClick: () => (page === 0 ? ctx.goSession('board', { resume: true }) : goPage(0)) },
         page === 0
           ? { label: '공감투표 ▶', variant: 'primary', onClick: () => goPage(1) }
-          : { label: '우수정책 시상 ▶', variant: 'primary', onClick: () => ctx.goSession('award') },
+          : { label: '우수정책 시상 ▶', variant: 'primary', onClick: () => ctx.goSession('award', { resume: true }) },
         { label: '전체 초기화(사진·투표)', variant: 'danger', onClick: resetAll },
       ];
     }
 
     ctx.setKeys({
-      ArrowRight: () => (page === 0 ? goPage(1) : ctx.goSession('award')),
-      ArrowLeft: () => (page === 0 ? ctx.goSession('board') : goPage(0)),
-      ' ': () => (page === 0 ? goPage(1) : ctx.goSession('award')),
+      ArrowRight: () => (page === 0 ? goPage(1) : ctx.goSession('award', { resume: true })),
+      ArrowLeft: () => (page === 0 ? ctx.goSession('board', { resume: true }) : goPage(0)),
+      ' ': () => (page === 0 ? goPage(1) : ctx.goSession('award', { resume: true })),
       Escape: () => { if (zoomId) { zoomId = null; render(); } },
     });
 

@@ -18,6 +18,11 @@
 /* 배지 */
 .badges{display:flex;gap:10px;align-items:center;justify-content:center;margin-bottom:clamp(14px,2.2vh,30px);flex-wrap:wrap;flex:0 0 auto}
 
+/* 탭바에서 2.퀴즈를 다시 눌러 들어왔을 때(진행 중이었다면) 뜨는 되돌아보기 안내 —
+   실제 진행이 멈춘 게 아니라는 걸 진행자가 한눈에 알 수 있게 크게 보여준다 */
+.previewnotice{text-align:center;margin-bottom:clamp(10px,1.6vh,20px);flex:0 0 auto}
+.badge.preview{background:var(--yellow);color:#2c2c2a;font-weight:800}
+
 /* 문제 */
 .q{font-size:clamp(32px,4.4vw,76px);font-weight:800;line-height:1.3;letter-spacing:-.038em;
   text-align:center;margin-bottom:clamp(28px,4.6vh,64px);flex:0 0 auto}
@@ -82,12 +87,13 @@
 .tstat b{color:var(--yellow)}
 .tstat.done{color:var(--yellow)}
 
-/* 팀 원 — 6팀 = 6칸 1줄 */
-.chips{display:grid;grid-template-columns:repeat(6,1fr);
+/* 팀 원 — 조 수(3~8)에 따라 개수가 달라진다. 예전엔 6칸 그리드라 조가 6보다
+   적으면 남은 칸이 비어 왼쪽으로 쏠려 보였다 — flex+가운데 정렬로 몇 개든 항상 중앙에 온다. */
+.chips{display:flex;flex-wrap:wrap;justify-content:center;
   gap:clamp(8px,1.2vh,18px) clamp(10px,1.2vw,20px);
-  width:100%;max-width:min(100%,680px);
+  max-width:min(100%,680px);
   margin:clamp(12px,2vh,32px) auto 0;flex:0 0 auto}
-.chip{width:100%;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;position:relative;
+.chip{width:clamp(44px,6.05vw,97px);flex:0 0 auto;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;position:relative;
   background:var(--panel);color:var(--ink3);
   font-weight:800;font-size:clamp(15px,1.6vw,28px);letter-spacing:-.02em;transition:.2s}
 .chip.on{background:var(--yellow);color:#2c2c2a}
@@ -116,7 +122,7 @@
 
 .lobby .chips{margin:clamp(12px,2vh,24px) 0 0;max-width:min(100%,540px);
   gap:clamp(7px,1vh,12px) clamp(8px,.8vw,13px)}
-.lobby .chip{font-size:clamp(12px,1.15vw,20px)}
+.lobby .chip{width:clamp(36px,4.9vw,79px);font-size:clamp(12px,1.15vw,20px)}
 
 /* 최종 순위 — 제목은 문제 제목과 같은 톤, 칸은 참여 조 수에 맞춰 늘어난다(--cols/--rows) */
 .finaltitle{font-size:clamp(32px,4.4vw,76px);font-weight:800;line-height:1.3;letter-spacing:-.038em;

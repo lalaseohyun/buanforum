@@ -16,14 +16,14 @@ import { esc, nl2br } from '../../util.js';
 import { loadBoard } from '../../content.js';
 import { hostSet, path } from '../../db.js';
 
-// opening.js와 같은 이유로 마지막으로 보던 페이지를 기억해 둔다.
+// opening.js와 같은 이유로, 화살표로 이어서 들어올 때만(ctx.resume) 마지막 페이지를 쓴다.
 let lastIndex = 0;
 
 export default {
   id: 'board',
   title: '원탁토론',
   mount(ctx) {
-    let data = null, index = lastIndex; // 0 = 인트로, 1 = STEP1~3
+    let data = null, index = ctx.resume ? lastIndex : 0; // 0 = 인트로, 1 = STEP1~3
     let refOpen = false;
 
     // 화살표로 넘기는 페이지 수를 하단 노란 점으로 (전체 2페이지)
@@ -69,8 +69,8 @@ export default {
       ctx.setControls(btns);
       hostSet(path('slides', 'board'), { index });
     }
-    function next() { if (index < 1) { index++; render(); } else ctx.goSession('policy'); }
-    function prev() { if (index > 0) { index--; render(); } else ctx.goSession('talk'); }
+    function next() { if (index < 1) { index++; render(); } else ctx.goSession('policy', { resume: true }); }
+    function prev() { if (index > 0) { index--; render(); } else ctx.goSession('talk', { resume: true }); }
 
     loadBoard().then(d => { data = d; render(); })
       .catch(e => { ctx.root.innerHTML = `<div class="slide"><h2>content/04-board.json 로드 실패</h2><p class="sub">${esc(e.message)}</p></div>`; });

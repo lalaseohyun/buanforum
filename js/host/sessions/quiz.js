@@ -21,6 +21,11 @@
      · 문항이 열려 있는 동안(정답 공개 전)에는 문제 → 보기 → 제출현황 순으로
        화살표를 누를 때마다 한 단계씩 더 보여준다(stage 0/1/2). Firestore에는
        안 남기는 진행자 화면만의 연출이라 팀 화면과는 무관하다.
+     · 탭바에서 "2.퀴즈"를 직접 눌러 들어오면(이미 진행 중이었어도) 진행자 화면만
+       1번 문제부터 되돌아본다(previewIndex) — 실제 진행 상황·참가자 화면·점수는
+       전혀 안 건드린다. 화살표로 계속 넘기면 실제 진행 지점까지 따라잡고 자동으로
+       원래 흐름에 합류한다. 화살표로 옆 세션에서 이어서 들어올 때(ctx.resume)는
+       이 되돌아보기 없이 실제 상태를 바로 보여준다.
    ─────────────────────────────────────── */
 import { esc, nl2br, sentences, fitInto } from '../../util.js';
 import { loadQuiz } from '../../content.js';
@@ -40,6 +45,11 @@ export default {
     let teamsMap = {};    // { [no]: {joinedAt} }
     let answersAll = {};  // { [qid]: { [no]: {choice, ms} } }
     let stage = 0;        // 0=문제만 1=+보기 2=+제출현황 — 진행자 화면 전용, Firestore에 안 남긴다
+    // 탭바에서 "2.퀴즈"를 직접 눌러 들어왔는데(ctx.resume 아님) 이미 진행 중이었다면,
+    // 실제 진행 상황(참가자 화면·점수)은 그대로 둔 채 진행자 화면만 1번 문제부터 되돌아본다.
+    // null이면 "미리보기 아님, 실제 state를 그대로 보여준다". Firestore에는 절대 안 쓴다.
+    let previewIndex = null;
+    let firstSync = true; // 이번 마운트에서 Firestore 값을 처음 받은 순간에만 미리보기 여부를 정한다
     const unsubs = [];
 
     const choicesFor = it => it.type === 'ox' ? ['O', 'X'] : it.choices;
@@ -58,7 +68,8 @@ export default {
       const only = teams().filter(t => joined.includes(t.no));
       return only.length ? only : teams();
     };
-    const currentItem = () => (state.index >= 0 && state.index < ITEMS.length ? ITEMS[state.index] : null);
+    const displayIndex = () => (previewIndex !== null ? previewIndex : state.index);
+    const currentItem = () => { const i = displayIndex(); return i >= 0 && i < ITEMS.length ? ITEMS[i] : null; };
     const answersForCurrent = () => { const it = currentItem(); return it ? (answersAll[it.id] || {}) : {}; };
     const answeredNos = () => Object.keys(answersForCurrent()).map(Number);
 
@@ -103,18 +114,29 @@ export default {
     const reveal = () => writeState({ open: false, revealed: true });
     const showChart = () => writeState({ showChart: true });
     const goFinal = () => { stage = 0; writeState({ phase: 'final', open: false, revealed: false, showChart: false }); };
-    const toLobby = () => { stage = 0; writeState({ phase: 'lobby', open: false, revealed: false, showChart: false }); };
+    // 진행자가 직접 누르는 진짜 진행 조작이라, 미리보기 중이었어도 여기서는 실제 흐름으로 돌아온다
+    const toLobby = () => { previewIndex = null; stage = 0; writeState({ phase: 'lobby', open: false, revealed: false, showChart: false }); };
 
     /* ---- 한 문항 = 여러 페이지. 화살표 하나로 처음부터 끝까지 이어진다 ----
        0 문제만 · 1 +보기 · 2 +제출현황 · 3 정답공개(그 자리에서 정답만 노랗게 + 해설박스)
        4 데이터(차트가 있는 문항만). 하단 노란 점이 이 페이지 수를 보여준다. */
     const pagesOf = it => (it && it.chart ? 5 : 4);
-    const pageNow = () => (state.showChart ? 4 : state.revealed ? 3 : stage);
+    // 되돌아보는 지난 문제는 이미 다 지나간 게 확실하므로(순서대로만 진행되니까) 항상 정답 공개
+    // 상태로 보여준다 — 데이터(차트) 단계는 건너뛰고 문제 단위로만 넘긴다.
+    const pageNow = () => (previewIndex !== null ? 3 : state.showChart ? 4 : state.revealed ? 3 : stage);
 
     // 화살표는 세션 경계도 넘나든다 — 대기화면에서 더 뒤로 가면 1.오프닝으로,
     // 최종 순위에서 더 앞으로 가면 3.토크콘서트로 이어진다.
     function stepForward() {
-      if (state.phase === 'final') { ctx.goSession('talk'); return; }
+      // 미리보기 중엔 실제 진행 상황을 절대 안 건드린다 — 화면만 다음 문제로 넘기다가
+      // 실제 진행 지점(state.index)까지 따라잡으면 미리보기를 끝내고 원래 흐름으로 이어간다.
+      if (previewIndex !== null) {
+        previewIndex = previewIndex < state.index ? previewIndex + 1 : null;
+        if (previewIndex === state.index) previewIndex = null;
+        render();
+        return;
+      }
+      if (state.phase === 'final') { ctx.goSession('talk', { resume: true }); return; }
       const it = currentItem();
       if (state.phase !== 'quiz' || !it) { selectIndex(state.index + 1); return; }
       const p = pageNow();
@@ -125,7 +147,11 @@ export default {
       else selectIndex(state.index + 1);
     }
     function stepBack() {
-      if (state.phase === 'lobby') { ctx.goSession('opening'); return; }
+      if (previewIndex !== null) {
+        if (previewIndex > 0) { previewIndex--; render(); }
+        return;
+      }
+      if (state.phase === 'lobby') { ctx.goSession('opening', { resume: true }); return; }
       const it = currentItem();
       if (state.phase !== 'quiz' || !it) { selectIndex(state.index - 1); return; }
       const p = pageNow();
@@ -138,6 +164,7 @@ export default {
     function resetQuestion() {
       const it = currentItem();
       if (!it) return;
+      if (previewIndex !== null) { alert('미리보기 중인 문제는 초기화할 수 없어요. 화살표로 실제 진행 중인 문제까지 이동한 뒤 눌러주세요.'); return; }
       if (!confirm('이 문제의 팀 답변을 모두 지웁니다. 진행할까요?')) return;
       hostReset(path('quizAnswers', it.id), {});
       stage = 0;
@@ -145,6 +172,7 @@ export default {
     }
     function resetAll() {
       if (!confirm('답변·점수·접속한 팀까지 모두 지웁니다. 정말 초기화할까요?')) return;
+      previewIndex = null;
       ITEMS.forEach(it => hostReset(path('quizAnswers', it.id), {}));
       ctx.forum.teams.forEach(t => hostReset(path('teams', String(t.no)), {}));
       stage = 0;
@@ -155,9 +183,11 @@ export default {
     function render() {
       if (!data) { ctx.root.innerHTML = `<div class="slide"><h2>불러오는 중…</h2></div>`; return; }
       const it = currentItem();
-      if (state.phase === 'lobby' || state.index < 0) { ctx.root.innerHTML = viewLobby(); wireLobby(); }
-      else if (state.phase === 'final') ctx.root.innerHTML = viewFinal();
-      else if (state.showChart && it?.chart) ctx.root.innerHTML = viewChart(it);
+      const previewing = previewIndex !== null;
+      // 미리보기 중에는 실제 phase가 무엇이든(대기화면·최종순위 포함) 항상 문제 화면으로 보여준다.
+      if (!previewing && (state.phase === 'lobby' || state.index < 0)) { ctx.root.innerHTML = viewLobby(); wireLobby(); }
+      else if (!previewing && state.phase === 'final') ctx.root.innerHTML = viewFinal();
+      else if (!previewing && state.showChart && it?.chart) ctx.root.innerHTML = viewChart(it);
       else ctx.root.innerHTML = viewQuestion(it); // 정답 공개도 같은 화면에서(정답만 노랗게 + 해설박스)
       // flex로 높이가 정해진 뒤에 재야 정확하다 — 한 프레임 뒤에 넘칠 때만 줄인다
       requestAnimationFrame(() => fitInto('.answerbox', 18));
@@ -241,7 +271,10 @@ export default {
         : cnt === teams().length ? `<div class="tstat done">전체 제출 완료!</div>`
         : `<div class="tstat"><b>${cnt}</b>조 제출 완료${state.open ? '' : ' · 마감됨'}</div>`;
 
-      let body = `${badges(it)}<div class="q">${nl2br(it.question)}</div>`;
+      // 미리보기 중임을 진행자가 헷갈리지 않게 위에 크게 표시한다 — 실제 진행은 안 멈춰 있다
+      const previewNotice = previewIndex !== null
+        ? `<div class="previewnotice"><span class="badge preview">◀▶ 되돌아보기 · 실제 진행 상황은 그대로예요</span></div>` : '';
+      let body = `${previewNotice}${badges(it)}<div class="q">${nl2br(it.question)}</div>`;
       if (p >= 1) body += `<div class="choices ${isOx ? 'ox' : ''}" style="--n:${n}">${ch}</div>`;
       if (revealed) body += `<div class="answerbox">${sentences(it.explanation)}<div class="src">출처 · ${esc(it.source)}</div></div>`;
       const foot = p === 2 ? `<div class="foot"><div class="tmeta">${stat}</div><div class="chips">${chips}</div></div>` : '';
@@ -278,6 +311,17 @@ export default {
     // 큰 버튼도 화살표(stepForward)와 똑같은 한 줄기 흐름을 따른다 — 라벨만 지금 페이지에 맞게 바뀐다
     function controlsFor() {
       const it = currentItem();
+
+      // 미리보기 중엔 진짜 진행 조작 버튼(정답 공개·최종 순위 등)을 다 감추고,
+      // "지난 문제 넘겨보기"용 버튼만 보여준다 — 실제 진행에는 손 못 대게 막는다.
+      if (previewIndex !== null) {
+        return [
+          { label: '◀ 이전 문제', onClick: stepBack, disabled: previewIndex === 0 },
+          { label: '다음 문제 ▶', variant: 'primary', onClick: stepForward },
+          { label: '대기화면', variant: 'ghost', onClick: toLobby },
+        ];
+      }
+
       const quizPhase = state.phase === 'quiz' && it;
       const p = quizPhase ? pageNow() : -1;
       const isLast = state.index >= ITEMS.length - 1;
@@ -286,7 +330,7 @@ export default {
         { label: '◀', onClick: stepBack, disabled: quizPhase && p === 0 && state.index <= 0 },
       ];
       if (state.phase === 'final') {
-        btns.push({ label: '토크콘서트로', variant: 'primary', onClick: () => ctx.goSession('talk') });
+        btns.push({ label: '토크콘서트로', variant: 'primary', onClick: () => ctx.goSession('talk', { resume: true }) });
       } else if (!quizPhase) {
         btns.push({ label: '퀴즈 시작', variant: 'primary', onClick: () => selectIndex(0) });
       } else {
@@ -320,7 +364,20 @@ export default {
       data = d;
       ITEMS = [data.practice, ...data.questions];
       render();
-      unsubs.push(watch(path('quiz', 'state'), snap => { if (snap) state = { ...state, ...snap }; render(); }));
+      unsubs.push(watch(path('quiz', 'state'), snap => {
+        if (snap) state = { ...state, ...snap };
+        // 탭바에서 직접 눌러 들어왔는데(ctx.resume 아님) 실제 진행 상황을 처음 받아보니
+        // 이미 대기화면을 지나 있었다면 — 그 진행은 그대로 두고 화면만 1번 문제로 되돌린다.
+        if (firstSync) {
+          firstSync = false;
+          // "1번 문제"는 화면에 찍히는 번호(문제 1/9) 기준이라 연습문제(P0)는 건너뛴다
+          if (!ctx.resume && state.phase !== 'lobby' && ITEMS.length) {
+            const first = ITEMS.findIndex(q => q.scored);
+            previewIndex = first >= 0 ? first : 0;
+          }
+        }
+        render();
+      }));
       unsubs.push(watch(path(), snap => {
         const n = Number(snap?.teamCount);
         if (n && n !== teamCount) { teamCount = n; render(); }

@@ -34,7 +34,7 @@ import awardSession from './sessions/award.js';
 // 배포할 때마다 올리는 표식. 탭바 오른쪽에 작게 보인다 —
 // 브라우저가 예전 파일을 캐시해서 보여주고 있는지 이 숫자로 바로 알 수 있다.
 // (GitHub Pages는 정적 파일을 10분간 캐시한다. 강력 새로고침은 Ctrl+Shift+R)
-const BUILD = 'v11';
+const BUILD = 'v12';
 
 const SESSIONS = [homeSession, openingSession, quizSession, talkSession, boardSession, policySession, awardSession];
 const byId = Object.fromEntries(SESSIONS.map(s => [s.id, s]));
@@ -112,20 +112,24 @@ function toggleTeamsMenu(force) {
   document.getElementById('bTeams')?.classList.toggle('active', teamsMenuOpen);
 }
 
-const ctx = () => ({
+const ctx = (opts = {}) => ({
   root, forum, hostKey,
   setControls, setKeys,
   goSession,
+  // true면 "화살표로 옆 세션에서 이어서 넘어옴"(그 세션이 기억해 둔 마지막 페이지부터),
+  // false/생략이면 "탭바를 직접 눌러 들어옴" — 이때는 그 세션의 첫 페이지부터 보여준다.
+  // 어느 쪽을 볼지는 opening.js/talk.js/board.js/home.js가 각자 판단한다.
+  resume: !!opts.resume,
 });
 
-async function goSession(id) {
+async function goSession(id, opts = {}) {
   const mod = byId[id];
   if (!mod) return console.error('알 수 없는 세션', id);
   if (current?.instance?.unmount) { try { current.instance.unmount(); } catch (e) { console.error(e); } }
   current = { id, instance: null };
   setControls([]); setKeys({});
   root.innerHTML = '';
-  current.instance = mod.mount(ctx()) || {};
+  current.instance = mod.mount(ctx(opts)) || {};
   current.id = mod.id;
   renderTabbar();
   // 팀 화면이 "지금 어느 세션인지"를 알 수 있도록 forum 문서 자체에 기록해 둔다
