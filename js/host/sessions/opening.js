@@ -17,13 +17,17 @@ export default {
   mount(ctx) {
     let data = null, index = 0; // 0 = 인트로, 1 = 질문 2개
 
+    // 화살표로 넘기는 페이지 수를 하단 노란 점으로 (전체 2페이지)
+    const dots = () => `<div class="pagedots">${[0, 1].map(i =>
+      `<i class="${i === index ? 'on' : ''}"></i>`).join('')}</div>`;
+
     function renderIntro() {
       const c = data.intro;
       ctx.root.innerHTML = `<div class="slide">
         <div class="kicker">${esc(c.kicker)}</div>
         <h2>${esc(c.title)}</h2>
         ${c.lines.map(l => `<p class="sub">${esc(l)}</p>`).join('')}
-      </div>`;
+      </div>${dots()}`;
     }
     function renderQuestions() {
       const c = data.intro;
@@ -35,7 +39,7 @@ export default {
       ctx.root.innerHTML = `<div class="toppage">
         <div class="toppage-head"><div class="kicker">${esc(c.kicker)}</div><h2>${esc(c.title)}</h2></div>
         <div class="boxrow cols-2">${boxes}</div>
-      </div>`;
+      </div>${dots()}`;
     }
     function render() {
       index === 0 ? renderIntro() : renderQuestions();

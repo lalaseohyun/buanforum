@@ -23,13 +23,17 @@ export default {
     let data = null, index = 0; // 0 = 인트로, 1 = STEP1~3
     let refOpen = false;
 
+    // 화살표로 넘기는 페이지 수를 하단 노란 점으로 (전체 2페이지)
+    const dots = () => `<div class="pagedots">${[0, 1].map(i =>
+      `<i class="${i === index ? 'on' : ''}"></i>`).join('')}</div>`;
+
     function renderIntro() {
       const c = data.intro;
       ctx.root.innerHTML = `<div class="slide">
         <h2>${esc(c.title)}</h2>
         <p class="sub">${esc(c.subtitle)}</p>
         <p>${esc(c.question)}</p>
-      </div>`;
+      </div>${dots()}`;
     }
     function renderSteps() {
       const c = data.intro;
@@ -49,7 +53,7 @@ export default {
         <div class="toppage-head"><h2>${esc(c.title)}</h2><p>${esc(c.subtitle)}</p></div>
         <div class="boxrow cols-3">${boxes}</div>
         ${refPanel}
-      </div>`;
+      </div>${dots()}`;
     }
     function render() {
       index === 0 ? renderIntro() : renderSteps();

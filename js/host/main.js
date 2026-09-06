@@ -29,6 +29,11 @@ import talkSession from './sessions/talk.js';
 import boardSession from './sessions/board.js';
 import policySession from './sessions/policy.js';
 
+// 배포할 때마다 올리는 표식. 탭바 오른쪽에 작게 보인다 —
+// 브라우저가 예전 파일을 캐시해서 보여주고 있는지 이 숫자로 바로 알 수 있다.
+// (GitHub Pages는 정적 파일을 10분간 캐시한다. 강력 새로고침은 Ctrl+Shift+R)
+const BUILD = 'v7';
+
 const SESSIONS = [homeSession, openingSession, quizSession, talkSession, boardSession, policySession];
 const byId = Object.fromEntries(SESSIONS.map(s => [s.id, s]));
 
@@ -58,6 +63,7 @@ function renderTabbar() {
     ...forum.sessions.map(s => `<button data-s="${s.id}" class="${current?.id === s.id ? 'active' : ''}">${s.no}. ${esc(s.short)}</button>`),
   ];
   tabbar.innerHTML = buttons.join('') + '<div class="sp"></div>' +
+    `<span class="build">${BUILD}</span>` +
     `<span class="pill"><span class="dot" id="dot"></span><span id="connTxt">연결 중</span></span>` +
     `<button id="bFs">⛶ 전체화면</button>`;
   tabbar.querySelectorAll('button[data-s]').forEach(b => {

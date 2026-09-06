@@ -29,6 +29,14 @@ button.danger{background:transparent;color:var(--no)}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--no);display:inline-block}
 .dot.live{background:var(--yellow)}
 
+/* 화살표로 넘기는 화면 공통 — 남은 페이지 수를 노란 동그라미로 보여준다.
+   지금 페이지가 크고 밝다. (퀴즈·오프닝·토크콘서트·원탁토론이 함께 쓴다) */
+.pagedots{display:flex;gap:clamp(8px,.8vw,14px);justify-content:center;align-items:center;
+  padding-top:clamp(12px,1.8vh,26px);flex:0 0 auto}
+.pagedots i{width:clamp(9px,.75vw,14px);height:clamp(9px,.75vw,14px);border-radius:50%;
+  background:rgba(253,206,15,.22);display:block;transition:.2s}
+.pagedots i.on{background:var(--yellow);transform:scale(1.35)}
+
 /* 연결 끊김 — 화면 어디서나(무대모드 중에도) 보이는 위치 */
 #alert{position:fixed;top:18px;right:22px;z-index:30;display:none;
   background:var(--no);color:#2c2c2a;padding:10px 20px;border-radius:999px;font-size:15px;font-weight:800}

@@ -38,27 +38,40 @@
 .ch .hl-inline{width:100%;font-size:clamp(15px,1.56vw,27px);font-weight:800;line-height:1.35;
   color:#C60909;text-align:center;border-top:2px solid rgba(44,44,42,.22);padding-top:11px;margin-top:2px}
 
-/* 정답 공개 화면 — 보기 결과를 왼쪽에 세로로 눕혀 정답·해설에 자리를 몰아준다 */
-.choices.compact{grid-template-columns:1fr;gap:clamp(8px,1.2vh,14px)}
-.choices.compact .ch{flex-direction:row;flex-wrap:wrap;justify-content:space-between;gap:clamp(10px,1.1vw,18px);
-  padding:clamp(10px,1.5vh,20px) clamp(14px,1.4vw,26px);border-radius:16px}
-.choices.compact .ch .n{width:clamp(30px,2.2vw,42px);height:clamp(30px,2.2vw,42px);font-size:clamp(14px,1.2vw,21px)}
-.choices.compact .ch .t{font-size:clamp(16px,1.6vw,29px);flex:1;text-align:left}
-/* 정답 카드 — 목업에서 지정한 노랑 배경(#F6D049)에, 오답 카드보다 크게 강조한다
-   (번호 원 50px · 보기 글자 35px @1600px 기준) */
+/* 정답 공개 — 화면 구성은 그대로 두고 정답 보기만 노랗게(#F6D049) 바뀐다 */
 .ch.correct{background:#F6D049;border-color:#F6D049}
 .ch.correct .n{background:var(--fillInk);color:var(--fill)}
 .ch.correct .t,.ch.correct .tally{color:var(--fillInk)}
 .ch.correct .t .sub{color:var(--fillInk);opacity:.72}
-.choices.compact .ch.correct{align-items:flex-start}
-.choices.compact .ch.correct .n{width:clamp(32px,3.13vw,54px);height:clamp(32px,3.13vw,54px);font-size:clamp(16px,1.5vw,26px)}
-.choices.compact .ch.correct .t{font-size:clamp(20px,2.19vw,38px)}
 .ch.dimmed{opacity:.4}
+
+/* 정답 해설 — 보기 바로 아래 연회색 네모박스, 가운데 정렬, 문장마다 줄바꿈 */
+.answerbox{background:var(--beige);color:var(--beigeInk);border-radius:24px;
+  margin-top:clamp(14px,2.2vh,32px);padding:clamp(14px,2vh,28px) clamp(20px,2.4vw,44px);
+  font-size:clamp(19px,1.85vw,33px);line-height:1.45;font-weight:500;letter-spacing:-.02em;
+  text-align:center;flex:1 1 auto;min-height:0;overflow:auto;
+  display:flex;flex-direction:column;justify-content:center}
+.answerbox p+p{margin-top:clamp(3px,.6vh,9px)}
+.answerbox strong{color:#C60909}
+.answerbox .src{font-size:clamp(13px,1.15vw,19px);color:rgba(58,58,56,.5);margin-top:clamp(8px,1.2vh,16px);font-weight:600}
+
+/* 화면 맨 아래 묶음 — 제출현황(있을 때) + 남은 페이지 점.
+   정답 페이지에서는 해설 박스가 남는 자리를 다 쓰므로 auto 여백을 빼준다. */
+.qbottom{margin-top:auto;flex:0 0 auto}
+.qview.revealed .qbottom{margin-top:0}
+/* 정답 페이지 — 이미 읽은 문제와 보기를 조금 줄여 해설 박스 자리를 만든다
+   (배치는 그대로, 크기만 한 단계 낮춘다) */
+.qview.revealed .q{font-size:clamp(21px,2.5vw,44px);margin-bottom:clamp(12px,1.8vh,26px)}
+.qview.revealed .ch{padding:clamp(10px,1.4vh,20px) clamp(12px,1.2vw,20px);gap:clamp(5px,.8vh,11px);border-radius:18px}
+.qview.revealed .ch .n{width:clamp(28px,2.1vw,38px);height:clamp(28px,2.1vw,38px);font-size:clamp(14px,1.15vw,20px)}
+.qview.revealed .ch .t{font-size:clamp(15px,1.7vw,30px)}
+.qview.revealed .ch .tally{font-size:clamp(12px,1.05vw,18px)}
+.qview.revealed .ch .hl-inline{font-size:clamp(13px,1.3vw,23px);padding-top:7px}
 
 /* 보기 아래 여백 + 제출 현황.
    목업 프레임에는 하단 조작바가 없었지만 실제 화면에는 탭바+조작바(약 135px)가 더 있어서,
    조 원이 가려지지 않도록 이 아래 여백과 조 원 크기를 목업보다 조금 줄여 잡았다. */
-.foot{margin-top:auto;padding-top:clamp(18px,3vh,54px);flex:0 0 auto}
+.foot{padding-top:clamp(18px,3vh,54px);flex:0 0 auto}
 .tmeta{display:flex;justify-content:center}
 .tstat{font-size:clamp(21px,2.1vw,38px);font-weight:700;color:var(--ink2)}
 .tstat b{color:var(--yellow)}
@@ -80,32 +93,6 @@
   background:var(--yellow);color:#2c2c2a;border:3px solid var(--bg)}
 .chip .mk.x{background:var(--no);color:#2c2c2a}
 .chip .mk.none{background:var(--panel2);color:var(--ink3)}
-
-/* 정답 공개 레이아웃 */
-.rbottom{display:grid;grid-template-columns:.9fr 1.1fr;gap:clamp(22px,3vw,56px);
-  flex:1;min-height:0;margin-top:clamp(10px,1.6vh,26px)}
-.rleft{display:flex;flex-direction:column;min-height:0;gap:clamp(12px,1.8vh,24px)}
-.rtitle{font-size:clamp(13px,1.2vw,19px);font-weight:700;color:var(--ink3);letter-spacing:.02em;flex:0 0 auto}
-.rbottom .chips{margin:0;max-width:min(100%,560px);gap:clamp(6px,1vh,12px) clamp(7px,.8vw,14px)}
-.rbottom .chip{font-size:clamp(11px,1.05vw,18px)}
-
-.rright{display:flex;flex-direction:column;min-height:0;gap:clamp(10px,1.6vh,20px)}
-.answer{background:var(--yellow);color:#2c2c2a;border-radius:24px;
-  padding:clamp(16px,2.4vh,34px) clamp(20px,2vw,40px);
-  display:flex;flex-direction:column;align-items:center;text-align:center;
-  gap:clamp(8px,1.2vh,16px);flex:0 0 auto}
-.answer .lb{font-size:clamp(12px,1.15vw,18px);font-weight:800;letter-spacing:.2em;color:rgba(44,44,42,.55)}
-.answer .v{font-size:clamp(28px,3.2vw,58px);font-weight:800;letter-spacing:-.04em;line-height:1.15}
-.answer .hl{font-size:clamp(16px,1.55vw,28px);font-weight:800;line-height:1.35;
-  border-top:2px solid rgba(44,44,42,.22);padding-top:clamp(8px,1.2vh,16px);width:100%}
-/* 해설 카드 — 목업 기준 35px @1600×900 */
-.why{background:var(--beige);color:var(--beigeInk);border-radius:24px;
-  padding:clamp(16px,2.2vh,32px) clamp(20px,2vw,38px);
-  font-size:clamp(22px,min(2.19vw,3.9vh),40px);line-height:1.5;font-weight:500;letter-spacing:-.02em;
-  flex:1;min-height:0;overflow:auto;text-align:left}
-.why p+p{margin-top:clamp(7px,1.1vh,18px)}
-.why .src{font-size:clamp(14px,1.38vw,24px);color:rgba(58,58,56,.5);margin-top:clamp(10px,1.5vh,20px);font-weight:600}
-.why strong{color:var(--yellow)}
 
 /* 대기화면(lobby) */
 .lobby{display:grid;grid-template-columns:auto 1fr;gap:clamp(34px,5vw,90px);align-items:center;flex:1;min-height:0}

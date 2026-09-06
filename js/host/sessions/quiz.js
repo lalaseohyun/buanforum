@@ -95,16 +95,29 @@ export default {
     const goFinal = () => { stage = 0; writeState({ phase: 'final', open: false, revealed: false, showChart: false }); };
     const toLobby = () => { stage = 0; writeState({ phase: 'lobby', open: false, revealed: false, showChart: false }); };
 
-    // 문항이 열려 있는 동안(정답 공개 전)에는 화살표가 문제→보기→제출현황 단계부터 채운 뒤,
-    // 다 채워진 다음에야 실제로 다른 문항으로 넘어간다.
+    /* ---- 한 문항 = 여러 페이지. 화살표 하나로 처음부터 끝까지 이어진다 ----
+       0 문제만 · 1 +보기 · 2 +제출현황 · 3 정답공개(그 자리에서 정답만 노랗게 + 해설박스)
+       4 데이터(차트가 있는 문항만). 하단 노란 점이 이 페이지 수를 보여준다. */
+    const pagesOf = it => (it && it.chart ? 5 : 4);
+    const pageNow = () => (state.showChart ? 4 : state.revealed ? 3 : stage);
+
     function stepForward() {
       const it = currentItem();
-      if (state.phase === 'quiz' && it && !state.revealed && stage < 2) { stage++; render(); }
+      if (state.phase !== 'quiz' || !it) { selectIndex(state.index + 1); return; }
+      const p = pageNow();
+      if (p < 2) { stage = p + 1; render(); }
+      else if (p === 2) reveal();
+      else if (p === 3 && it.chart) showChart();
+      else if (state.index >= ITEMS.length - 1) goFinal();
       else selectIndex(state.index + 1);
     }
     function stepBack() {
       const it = currentItem();
-      if (state.phase === 'quiz' && it && !state.revealed && stage > 0) { stage--; render(); }
+      if (state.phase !== 'quiz' || !it) { selectIndex(state.index - 1); return; }
+      const p = pageNow();
+      if (p === 4) writeState({ showChart: false });
+      else if (p === 3) { stage = 2; writeState({ revealed: false }); }
+      else if (p > 0) { stage = p - 1; render(); }
       else selectIndex(state.index - 1);
     }
 
@@ -130,10 +143,10 @@ export default {
       const it = currentItem();
       if (state.phase === 'lobby' || state.index < 0) { ctx.root.innerHTML = viewLobby(); wireLobby(); }
       else if (state.phase === 'final') ctx.root.innerHTML = viewFinal();
-      else if (state.revealed && state.showChart && it?.chart) ctx.root.innerHTML = viewChart(it);
-      else if (state.revealed) ctx.root.innerHTML = viewReveal(it);
-      else ctx.root.innerHTML = viewQuestion(it);
-      fitInto('.why');
+      else if (state.showChart && it?.chart) ctx.root.innerHTML = viewChart(it);
+      else ctx.root.innerHTML = viewQuestion(it); // 정답 공개도 같은 화면에서(정답만 노랗게 + 해설박스)
+      // flex로 높이가 정해진 뒤에 재야 정확하다 — 한 프레임 뒤에 넘칠 때만 줄인다
+      requestAnimationFrame(() => fitInto('.answerbox', 18));
       ctx.setControls(controlsFor());
     }
 
@@ -173,11 +186,36 @@ export default {
       }
     }
 
+    // 하단 노란 점 — 이 문항을 넘기는 데 몇 번 남았는지 한눈에 보여준다
+    function dots(it) {
+      const total = pagesOf(it), now = pageNow();
+      return `<div class="pagedots">${Array.from({ length: total }, (_, i) =>
+        `<i class="${i === now ? 'on' : ''}"></i>`).join('')}</div>`;
+    }
+
+    // 문제 → 보기 → 제출현황 → 정답까지 한 화면에서 이어진다.
+    // 정답 페이지에서도 화면 구성은 그대로 두고, 정답 보기만 노랗게 바뀌고
+    // 보기 아래에 연회색 해설 박스가 붙는다(문장마다 줄바꿈, 가운데 정렬).
     function viewQuestion(it) {
+      const p = pageNow();
+      const revealed = p >= 3;
       const n = it.type === 'ox' ? 2 : it.choices.length;
       const chArr = choicesFor(it);
-      const ch = chArr.map((c, i) => `<div class="ch"><div class="n">${i + 1}</div><div class="t">${choiceHtml(c)}</div></div>`).join('');
       const ansForItem = answersForCurrent();
+      const total = Math.max(1, Object.keys(ansForItem).length);
+      const tally = chArr.map((_, i) => Object.values(ansForItem).filter(a => a.choice === i).length);
+
+      const ch = chArr.map((c, i) => {
+        const ok = revealed && i === it.answerIndex;
+        const cls = revealed ? (ok ? 'correct' : 'dimmed') : '';
+        return `<div class="ch ${cls}">
+          <div class="n">${i + 1}</div>
+          <div class="t">${choiceHtml(c)}</div>
+          ${revealed ? `<div class="tally">${tally[i]}조 · ${Math.round(tally[i] / total * 100)}%</div>` : ''}
+          ${ok ? `<div class="hl-inline">${esc(it.highlight)}</div>` : ''}
+        </div>`;
+      }).join('');
+
       const chips = teams.map(t => {
         const a = t.no in ansForItem;
         return chip(t, a ? 'done' : joinedNos().includes(t.no) ? 'on' : '', a ? 'check' : null);
@@ -186,49 +224,23 @@ export default {
       const stat = cnt === 0 ? `<div class="tstat">답변을 기다리는 중</div>`
         : cnt === teams.length ? `<div class="tstat done">전체 제출 완료!</div>`
         : `<div class="tstat"><b>${cnt}</b>조 제출 완료${state.open ? '' : ' · 마감됨'}</div>`;
-      // 문제 → (화살표) 보기 → (화살표) 제출현황, 세 단계로 나눠 보여준다
-      let body = `${badges(it)}<div class="q">${nl2br(it.question)}</div>`;
-      if (stage >= 1) body += `<div class="choices" style="--n:${n}">${ch}</div>`;
-      if (stage >= 2) body += `<div class="foot"><div class="tmeta">${stat}</div><div class="chips">${chips}</div></div>`;
-      return `<div class="qview ${stage < 2 ? 'centered' : ''}">${body}</div>`;
-    }
 
-    function viewReveal(it) {
-      const chArr = choicesFor(it);
-      const n = it.type === 'ox' ? 2 : chArr.length;
-      const ansForItem = answersForCurrent();
-      const total = Math.max(1, Object.keys(ansForItem).length);
-      const tally = chArr.map((_, i) => Object.values(ansForItem).filter(a => a.choice === i).length);
-      const ch = chArr.map((c, i) => {
-        const ok = i === it.answerIndex;
-        return `<div class="ch ${ok ? 'correct' : 'dimmed'}"><div class="n">${i + 1}</div><div class="t">${choiceHtml(c)}</div>
-          <div class="tally">${tally[i]}조 · ${Math.round(tally[i] / total * 100)}%</div>
-          ${ok ? `<div class="hl-inline">${esc(it.highlight)}</div>` : ''}</div>`;
-      }).join('');
-      const chips = teams.map(t => {
-        const a = ansForItem[t.no];
-        if (!a) return chip(t, '', '–');
-        return chip(t, a.choice === it.answerIndex ? 'done' : 'wrong', a.choice === it.answerIndex ? 'O' : 'X');
-      }).join('');
-      const okCount = Object.values(ansForItem).filter(a => a.choice === it.answerIndex).length;
-      return `${badges(it)}
-        <div class="rbottom">
-          <div class="rleft">
-            <div class="choices compact" style="--n:${n}">${ch}</div>
-            <div class="rtitle">조별 결과 · 정답 ${okCount}조</div>
-            <div class="chips">${chips}</div>
-          </div>
-          <div class="rright">
-            <div class="why">${sentences(it.explanation)}<div class="src">출처 · ${esc(it.source)}</div></div>
-          </div>
-        </div>`;
+      let body = `${badges(it)}<div class="q">${nl2br(it.question)}</div>`;
+      if (p >= 1) body += `<div class="choices" style="--n:${n}">${ch}</div>`;
+      if (revealed) body += `<div class="answerbox">${sentences(it.explanation)}<div class="src">출처 · ${esc(it.source)}</div></div>`;
+      const foot = p === 2 ? `<div class="foot"><div class="tmeta">${stat}</div><div class="chips">${chips}</div></div>` : '';
+      return `<div class="qview ${p < 2 ? 'centered' : ''} ${revealed ? 'revealed' : ''}">${body}
+        <div class="qbottom">${foot}${dots(it)}</div>
+      </div>`;
     }
 
     function viewChart(it) {
       // 데이터 해설은 그래프 "위"에 붙는다. chart.note가 따로 있으면 그걸(데이터 전용 해설),
       // 없으면 정답 화면과 같은 explanation을 그대로 재사용한다.
       const chart = { ...it.chart, note: it.chart.note || it.explanation };
-      return `${badges(it)}${renderChart(chart)}`;
+      return `<div class="qview">${badges(it)}${renderChart(chart)}
+        <div class="qbottom">${dots(it)}</div>
+      </div>`;
     }
 
     function viewFinal() {
@@ -243,26 +255,32 @@ export default {
         <div class="rank">${rowsHtml}</div>`;
     }
 
+    // 큰 버튼도 화살표(stepForward)와 똑같은 한 줄기 흐름을 따른다 — 라벨만 지금 페이지에 맞게 바뀐다
     function controlsFor() {
       const it = currentItem();
       const quizPhase = state.phase === 'quiz' && it;
-      const midStage = quizPhase && !state.revealed; // 문제/보기/제출현황 단계 중
+      const p = quizPhase ? pageNow() : -1;
+      const isLast = state.index >= ITEMS.length - 1;
       const btns = [
-        { label: '◀', onClick: stepBack, disabled: midStage ? (stage === 0 && state.index <= 0) : state.index <= 0 },
+        { label: '◀', onClick: stepBack, disabled: quizPhase ? (p === 0 && state.index <= 0) : state.index <= 0 },
       ];
       if (state.phase === 'final') {
         btns.push({ label: '토크콘서트로', variant: 'primary', onClick: () => ctx.goSession('talk') });
       } else if (!quizPhase) {
         btns.push({ label: '퀴즈 시작', variant: 'primary', onClick: () => selectIndex(0) });
-      } else if (!state.revealed) {
-        btns.push({ label: '정답 공개', variant: 'primary', ready: allAnswered(joinedNos(), answeredNos()), onClick: reveal });
-      } else if (it.chart && !state.showChart) {
-        btns.push({ label: '데이터 보기', variant: 'primary', onClick: showChart });
       } else {
-        const isLast = state.index >= ITEMS.length - 1;
-        btns.push({ label: isLast ? '최종 순위' : '다음 문제', variant: 'primary', onClick: () => (isLast ? goFinal() : selectIndex(state.index + 1)) });
+        const label = p === 0 ? '보기 보여주기'
+          : p === 1 ? '제출 현황'
+          : p === 2 ? '정답 공개'
+          : p === 3 && it.chart ? '데이터 보기'
+          : isLast ? '최종 순위' : '다음 문제';
+        btns.push({
+          label, variant: 'primary',
+          ready: p === 2 && allAnswered(joinedNos(), answeredNos()),
+          onClick: stepForward,
+        });
       }
-      btns.push({ label: '▶', onClick: stepForward, disabled: state.phase === 'final' || (!midStage && state.index >= ITEMS.length - 1) });
+      btns.push({ label: '▶', onClick: stepForward, disabled: state.phase === 'final' });
       btns.push({ label: '대기화면', variant: 'ghost', onClick: toLobby });
       btns.push({ label: '이 문제 답 초기화', variant: 'danger', onClick: resetQuestion, disabled: !it });
       btns.push({ label: '전체 초기화', variant: 'danger', onClick: resetAll });

@@ -17,12 +17,16 @@ export default {
   mount(ctx) {
     let data = null, index = -1; // -1 = 패널 소개, 0.. = rounds
 
+    // 화살표로 넘기는 페이지 수를 하단 노란 점으로 (패널 소개 1 + 라운드 수)
+    const dots = () => `<div class="pagedots">${Array.from({ length: data.rounds.length + 1 }, (_, i) =>
+      `<i class="${i === index + 1 ? 'on' : ''}"></i>`).join('')}</div>`;
+
     function renderPanels() {
       const cards = data.panels.map(p => `
         <div class="panel"><div class="name">${esc(p.name)}</div><div class="role">${esc(p.role)}</div></div>`).join('');
       ctx.root.innerHTML = `<div class="slide">
         <div class="kicker">토크콘서트</div><h2>농촌에서 청년으로 살아간다는 것</h2>
-        <div class="panels">${cards}</div></div>`;
+        <div class="panels">${cards}</div></div>${dots()}`;
     }
     function renderRound() {
       const r = data.rounds[index];
@@ -30,8 +34,7 @@ export default {
         <span class="round">${esc(r.kicker)}</span>
         <h2>${esc(r.title)}</h2>
         ${r.lines.filter(Boolean).map(l => `<p class="sub">${esc(l)}</p>`).join('')}
-        <div class="stepdots">${data.rounds.map((_, i) => `<i class="${i === index ? 'on' : ''}"></i>`).join('')}</div>
-      </div>`;
+      </div>${dots()}`;
     }
     function render() {
       index < 0 ? renderPanels() : renderRound();
