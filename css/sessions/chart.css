@@ -28,21 +28,22 @@
 .chartnote p+p{margin-top:clamp(6px,1vh,14px)}
 .chartnote strong{color:var(--beigeInk)}
 
-/* 막대그래프 */
-.bar-label{font-size:clamp(13px,1.05vw,19px);fill:var(--ink2);font-weight:600}
+/* 막대그래프 — 문제1이 유일한 사용처라 글자를 2배로 키우고(요청) 막대 두께도 같이 키웠다 */
+.bar-label{font-size:clamp(26px,2.1vw,38px);fill:var(--ink2);font-weight:600}
 .bar-label.hi{fill:var(--yellow);font-weight:800}
-.bar-value{font-size:clamp(13px,1.05vw,19px);fill:var(--ink);font-weight:700;font-variant-numeric:tabular-nums}
+.bar-value{font-size:clamp(26px,2.1vw,38px);fill:var(--ink);font-weight:700;font-variant-numeric:tabular-nums}
 .bar-value.hi{fill:var(--yellow);font-weight:800}
 .bar-rect{fill:var(--panel2)}
 .bar-rect.hi{fill:var(--yellow)}
 .bar-avgline{stroke:var(--ink3);stroke-dasharray:6 6;stroke-width:1.5}
 
-/* 선그래프(추이) */
+/* 선그래프(추이) — 문제3이 유일한 사용처라, 오른쪽 해설 박스 본문(.chartnote p)과
+   같은 크기로 맞췄다(요청) */
 .line-path{fill:none;stroke:var(--yellow);stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
 .line-dot{fill:var(--yellow)}
 .line-axis{stroke:var(--line);stroke-width:1}
-.line-tick{font-size:clamp(12px,1vw,17px);fill:var(--ink3);font-weight:600}
-.line-value{font-size:clamp(13px,1.05vw,19px);fill:var(--ink);font-weight:700}
+.line-tick{font-size:clamp(17px,1.75vw,30px);fill:var(--ink3);font-weight:600}
+.line-value{font-size:clamp(17px,1.75vw,30px);fill:var(--ink);font-weight:700}
 
 /* 표 */
 .dtable{width:100%;border-collapse:collapse;font-size:clamp(16px,1.5vw,27px)}

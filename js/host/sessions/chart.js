@@ -31,7 +31,8 @@ export function renderChart(chart) {
 }
 
 function renderBar(chart) {
-  const W = 1000, H = 520, padL = 220, padR = 70, padT = 20, padB = 20;
+  // 글자를 2배로 키운 만큼(css/sessions/chart.css) 왼쪽 라벨 자리와 막대 두께도 같이 키웠다
+  const W = 1000, H = 520, padL = 270, padR = 90, padT = 20, padB = 20;
   const rows = chart.rows;
   const max = Math.max(...rows.map(r => r.value)) * 1.08;
   const rowH = (H - padT - padB) / rows.length;
@@ -42,7 +43,7 @@ function renderBar(chart) {
     const isHi = hi.has(r.label);
     return `
       <text x="${padL - 14}" y="${y + rowH * 0.62}" text-anchor="end" class="bar-label ${isHi ? 'hi' : ''}">${esc(r.label)}</text>
-      <rect x="${padL}" y="${y + rowH * 0.18}" width="${Math.max(2, w)}" height="${rowH * 0.64}" rx="6" class="bar-rect ${isHi ? 'hi' : ''}"/>
+      <rect x="${padL}" y="${y + rowH * 0.09}" width="${Math.max(2, w)}" height="${rowH * 0.82}" rx="6" class="bar-rect ${isHi ? 'hi' : ''}"/>
       <text x="${padL + w + 12}" y="${y + rowH * 0.62}" class="bar-value ${isHi ? 'hi' : ''}">${r.value}${esc(chart.unit || '')}</text>`;
   }).join('');
   return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">${bars}</svg>`;
