@@ -77,8 +77,15 @@
 .boxrow.cols-2{grid-template-columns:repeat(2,1fr)}
 .boxrow.cols-3{grid-template-columns:repeat(3,1fr)}
 .boxrow.cols-4{grid-template-columns:repeat(4,1fr)}
+.boxrow.cols-5{grid-template-columns:repeat(5,1fr)}
 .qbox{background:var(--panel);border-radius:26px;padding:clamp(28px,4vh,56px) clamp(20px,2.4vw,36px);
   display:flex;flex-direction:column;justify-content:center;gap:clamp(12px,2vh,22px);text-align:center}
+/* 토크콘서트 ROUND 박스만 위쪽 정렬로 — 라운드마다 문구 줄 수가 달라서 가운데 정렬이면
+   박스마다 시작 높이가 들쭉날쭉해 보였다. 안의 글자는 그대로 가운데 정렬(.qbox 기본값). */
+.boxrow.cols-4 .qbox{justify-content:flex-start}
+/* 4단은 3단보다 박스가 좁아서 기본 qt 크기로는 강제 줄바꿈 앞 문구가 한 줄에 안 들어가고
+   한 번 더 꺾여 3줄이 됐다 — 이 박스에서만 글자를 살짝 줄여 의도한 2줄로 맞춘다 */
+.boxrow.cols-4 .qt{font-size:clamp(18px,1.9vw,34px)}
 .qbox .badge-step{align-self:flex-start;font-size:clamp(13px,1.1vw,18px);font-weight:800;letter-spacing:.08em;
   color:#2c2c2a;background:var(--yellow);padding:6px 16px;border-radius:999px}
 /* 목업 기준: 40px @1600px, 가운데 정렬 */

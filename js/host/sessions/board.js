@@ -1,8 +1,9 @@
 /* ───────────────────────────────────────
-   4. 원탁토론 — 진행자 화면. 인트로(제목) → 화살표 → STEP1~3 → 참고자료 5페이지(분야별).
+   4. 원탁토론 — 진행자 화면. 인트로(제목) → 화살표 → STEP1~3 → 참고자료 개요(5개 분야
+   박스 1장) → 참고자료 P1~P5(분야별 상세, 5장). 총 8페이지.
    참고자료는 STEP 화면에서 버튼으로 접었다 펼 수 있는 요약 패널과는 별개로,
-   화살표로 한 장씩 넘겨 보는 전용 페이지 5장이다(분야당 1장 — 일자리·교육·주거·
-   복지문화·참여권리). docs/청년정책_49개사업_분야별페이지_구상안.md의 구성을 그대로 옮겼다.
+   화살표로 한 장씩 넘겨 보는 전용 페이지들이다. docs/청년정책_49개사업_분야별페이지_구상안.md의
+   구성을 옮기되, 분야 상세 페이지 앞에 개요 페이지를 하나 더 두고 하단 인사이트 박스는 뺐다.
 
    사진 업로드·갤러리·하트("발표모드")는 이 세션이 아니라
    5. 대표정책(./policy.js)에서 다룬다 — 예전엔 이 세션 안의 모드였지만
@@ -26,14 +27,14 @@ export default {
   id: 'board',
   title: '원탁토론',
   mount(ctx) {
-    // 0 = 인트로, 1 = STEP1~3, 2~6 = 참고자료 P1~P5(분야별). 분야 수는 policies.fields.length로 정해진다.
+    // 0 = 인트로, 1 = STEP1~3, 2 = 참고자료 개요(5개 분야 박스), 3~7 = 참고자료 P1~P5(분야별).
+    // 분야 수는 policies.fields.length로 정해진다.
     let data = null, policies = null, index = ctx.resume ? lastIndex : 0;
     let refOpen = false;
 
     const fieldCount = () => policies?.fields.length || 0;
-    const totalPages = () => 2 + fieldCount();
-    const isFieldPage = () => index >= 2;
-    const fieldOf = () => policies.fields[index - 2];
+    const totalPages = () => 3 + fieldCount();
+    const fieldOf = () => policies.fields[index - 3];
 
     // 화살표로 넘기는 페이지 수를 하단 노란 점으로
     const dots = () => `<div class="pagedots">${Array.from({ length: totalPages() }, (_, i) =>
@@ -69,7 +70,19 @@ export default {
         ${refPanel}
       </div>${dots()}`;
     }
-    // 참고자료 P1~P5 — 분야당 한 페이지: 헤더(분야명·사업수·예산·비중) + 사업 표 + 하단 인사이트 한 줄
+    // 참고자료 개요 — P1~P5로 들어가기 전, 5개 분야를 한 화면에 박스로 보여준다
+    function renderOverview() {
+      const boxes = policies.fields.map(f => `
+        <div class="qbox">
+          <div class="qt">${esc(f.name)}</div>
+          <div class="qs">${esc(f.subtitle)}</div>
+        </div>`).join('');
+      ctx.root.innerHTML = `<div class="toppage">
+        <div class="toppage-head"><h2>2026 부안군 청년정책 시행계획</h2></div>
+        <div class="boxrow cols-5">${boxes}</div>
+      </div>${dots()}`;
+    }
+    // 참고자료 P1~P5 — 분야당 한 페이지: 헤더(노란 타원 안에 분야명 + 큰 제목은 소제목) + 사업 표
     function renderField() {
       const f = fieldOf();
       const rows = f.items.map(it => `
@@ -81,8 +94,8 @@ export default {
         </tr>`).join('');
       ctx.root.innerHTML = `<div class="refpage">
         <div class="refpage-head">
-          <div class="rf-no">P${f.no}</div>
-          <div class="rf-name">${esc(f.name)}<span class="rf-sub">${esc(f.subtitle)}</span></div>
+          <div class="rf-no">${esc(f.name)}</div>
+          <div class="rf-name">${esc(f.subtitle)}</div>
           <div class="rf-stats"><b>${f.count}개 사업</b><span>${esc(f.amount)}</span><span>${esc(f.pct)}</span></div>
         </div>
         <div class="reftable-wrap">
@@ -91,13 +104,13 @@ export default {
             <tbody>${rows}</tbody>
           </table>
         </div>
-        <div class="refinsight">💡 ${esc(f.insight)}</div>
       </div>${dots()}`;
     }
     function render() {
       lastIndex = index;
       if (index === 0) renderIntro();
       else if (index === 1) renderSteps();
+      else if (index === 2) renderOverview();
       else renderField();
       const btns = [
         { label: index === 0 ? '◀ 토크콘서트로' : '◀ 이전', onClick: prev },

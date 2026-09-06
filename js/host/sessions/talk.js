@@ -10,7 +10,7 @@
                                      opening.js·board.js와 공용)
    쓰는 것 ─ js/content.js(로더) · js/db.js(slides/talk.index 기록 — 팀 화면 동기화용)
    ─────────────────────────────────────── */
-import { esc } from '../../util.js';
+import { esc, nl2br } from '../../util.js';
 import { loadTalk } from '../../content.js';
 import { hostSet, path } from '../../db.js';
 
@@ -37,7 +37,7 @@ export default {
       const boxes = data.rounds.map(r => `
         <div class="qbox">
           <div class="badge-step">${esc(r.kicker)}</div>
-          <div class="qt">${esc(r.title)}</div>
+          <div class="qt">${nl2br(r.title)}</div>
           ${(r.lines || []).filter(Boolean).map(l => `<div class="qs">${esc(l)}</div>`).join('')}
         </div>`).join('');
       // 제목(토크콘서트)은 kicker 클래스라 자동으로 노란색이다(opening.js와 같은 스타일)
