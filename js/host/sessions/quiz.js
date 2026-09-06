@@ -70,10 +70,12 @@ export default {
     }
     function writeLive() {
       const it = currentItem();
+      // chart는 안 실어 보낸다 — 팀 화면은 그래프/표를 아예 안 그리고(진행자 화면 전용 연출),
+      // 표(table) 문항의 rows는 배열 안에 배열이 들어있는 모양이라 Firestore가 아예 거부한다
+      // (nested arrays not supported) — 예전엔 이 필드 때문에 이 문서 쓰기 자체가 조용히 실패했다.
       const reveal = state.revealed && it ? {
         answerIndex: it.answerIndex, answerLabel: it.answerLabel,
         highlight: it.highlight, explanation: it.explanation, source: it.source,
-        chart: state.showChart ? (it.chart || null) : null,
       } : null;
       hostSet(path('quiz', 'live'), {
         phase: state.phase, index: state.index, open: state.open, revealed: state.revealed,
