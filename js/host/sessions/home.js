@@ -13,8 +13,12 @@
    오늘 몇 조로 진행할지는 여기가 아니라 탭바 ☰ 메뉴(js/host/main.js)에서 고른다 —
    빔프로젝터에 그대로 뜨는 타이틀 화면에 조작 버튼을 안 두려고 일부러 뺐다.
 
+   타이틀 화면 네 줄(제목·부제·날짜·로고)은 모두 가로 가운데 정렬이다 —
+   left:50%+transform:translateX(-50%)로 폭이 얼마든 항상 무대 중앙에 온다.
+   top만 조절하면 세로 위치가 바뀐다.
+
    고칠 때 ─ 행사명·날짜·주제 문구   → content/forum.json
-             요소 위치(left/top)     → 아래 STAGE의 숫자 (1600×801 기준 px)
+             요소 위치(top, 세로만)  → 아래 STAGE의 숫자 (1600×801 기준 px)
              로고 이미지 파일         → assets/laain-logo-white-full.png
              카드 화면               → 아래 renderCards + css/sessions/slides.css
    ─────────────────────────────────────── */
@@ -36,10 +40,10 @@ export default {
       ctx.root.innerHTML = `
         <div class="stagewrap">
           <div class="stage1600" id="homeStage">
-            <h1 class="abs" style="left:542px;top:223px;font-size:56px;font-weight:800;letter-spacing:-.04em;line-height:1.2;color:var(--ink)">${esc(f.title)}</h1>
-            <span class="abs" style="left:276px;top:306px;font-size:76px;font-weight:700;letter-spacing:-.02em;color:var(--yellow)">${esc(f.subtitle || '')}</span>
-            <div class="abs" style="left:650px;top:471px;width:300px;text-align:center;font-size:25px;font-weight:800;letter-spacing:.14em;color:#D2D0CB">${esc(f.date || '')}</div>
-            <div class="abs homelogo" style="left:615px;top:622px;width:383px;height:88px">
+            <h1 class="abs" style="left:50%;top:223px;transform:translateX(-50%);white-space:nowrap;font-size:56px;font-weight:800;letter-spacing:-.04em;line-height:1.2;color:var(--ink)">${esc(f.title)}</h1>
+            <span class="abs" style="left:50%;top:306px;transform:translateX(-50%);white-space:nowrap;font-size:76px;font-weight:700;letter-spacing:-.02em;color:var(--yellow)">${esc(f.subtitle || '')}</span>
+            <div class="abs" style="left:50%;top:471px;width:300px;transform:translateX(-50%);text-align:center;font-size:25px;font-weight:800;letter-spacing:.14em;color:#D2D0CB">${esc(f.date || '')}</div>
+            <div class="abs homelogo" style="left:50%;top:622px;width:383px;height:88px;transform:translateX(-50%)">
               <img src="assets/laain-logo-white-full.png" alt="라인교육연구소" style="width:383px;height:88px"
                 onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
               <span style="display:none">라인교육연구소</span>

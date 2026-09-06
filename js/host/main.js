@@ -34,7 +34,7 @@ import awardSession from './sessions/award.js';
 // 배포할 때마다 올리는 표식. 탭바 오른쪽에 작게 보인다 —
 // 브라우저가 예전 파일을 캐시해서 보여주고 있는지 이 숫자로 바로 알 수 있다.
 // (GitHub Pages는 정적 파일을 10분간 캐시한다. 강력 새로고침은 Ctrl+Shift+R)
-const BUILD = 'v13';
+const BUILD = 'v14';
 
 const SESSIONS = [homeSession, openingSession, quizSession, talkSession, boardSession, policySession, awardSession];
 const byId = Object.fromEntries(SESSIONS.map(s => [s.id, s]));
