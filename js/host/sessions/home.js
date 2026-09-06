@@ -51,11 +51,11 @@ export default {
           </div>
         </div>`;
       stopFit = fitStage(document.getElementById('homeStage'));
-      ctx.root.onclick = goNext;
+      // 이 화면엔 카드 말고 다른 클릭 요소가 없으니, 빈 공간 클릭 → 다음으로 넘기는
+      // 처리는 main.js의 전역 처리(root 클릭 → ArrowRight)에 맡기고 여기서 따로 안 건다.
     }
 
     function renderCards() {
-      ctx.root.onclick = null;
       const cards = ctx.forum.sessions.map(s => `
         <div class="homecard" data-s="${s.id}">
           <div class="n">${s.no}</div>
@@ -64,7 +64,9 @@ export default {
         </div>`).join('');
       ctx.root.innerHTML = `<div class="homegrid">${cards}</div>`;
       ctx.root.querySelectorAll('.homecard').forEach(el => {
-        el.onclick = () => ctx.goSession(el.dataset.s);
+        // stopPropagation 필수 — 안 막으면 이 클릭이 main.js의 전역 "빈 공간 클릭 = 다음"
+        // 처리까지 버블링돼서, 카드를 눌러 들어간 세션이 곧장 한 단계 더 넘어가 버린다.
+        el.onclick = e => { e.stopPropagation(); ctx.goSession(el.dataset.s); };
       });
     }
 
@@ -82,6 +84,6 @@ export default {
     render();
     ctx.setKeys({ ' ': goNext, ArrowRight: goNext, ArrowLeft: goPrev });
 
-    return { unmount() { if (stopFit) stopFit(); ctx.root.onclick = null; } };
+    return { unmount() { if (stopFit) stopFit(); } };
   },
 };

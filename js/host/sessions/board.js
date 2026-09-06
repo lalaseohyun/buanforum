@@ -33,7 +33,7 @@ export default {
     function renderIntro() {
       const c = data.intro;
       ctx.root.innerHTML = `<div class="slide">
-        <h2>${esc(c.title)}</h2>
+        <h2 class="boardtitle">${esc(c.title)}</h2>
         <p class="sub">${esc(c.subtitle)}</p>
         <p>${esc(c.question)}</p>
       </div>${dots()}`;
@@ -53,7 +53,7 @@ export default {
         <table>${ref.byField.map(f => `<tr><td>${esc(f.field)}</td><td class="num">${esc(f.amount)} (${esc(f.pct)})</td></tr>`).join('')}</table>
       </div>` : '';
       ctx.root.innerHTML = `<div class="toppage">
-        <div class="toppage-head"><h2>${esc(c.title)}</h2><p>${esc(c.subtitle)}</p></div>
+        <div class="toppage-head"><h2 class="boardtitle">${esc(c.title)}</h2><p>${esc(c.subtitle)}</p></div>
         <div class="boxrow cols-3">${boxes}</div>
         ${refPanel}
       </div>${dots()}`;

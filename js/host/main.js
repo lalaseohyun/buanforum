@@ -16,6 +16,12 @@
        setControls(buttons)  — 하단 조작바를 갱신 (buttons: [{label,onClick,variant,ready,disabled}])
        setKeys(map)  — 이 세션이 떠 있는 동안의 단축키 (map: {' ':fn, 'ArrowRight':fn, ...})
        goSession(id) — 다른 세션으로 전환 (탭바를 직접 누른 것과 동일)
+
+   무대(#stage) 빈 공간을 클릭해도 ArrowRight와 똑같이 다음으로 넘어간다(무선 포인터 지원 —
+   맨 아래 root.addEventListener('click', ...) 참고). 세션 안에 자기만의 클릭 동작이 있는
+   요소(카드, 사진 확대 등)를 새로 만들 때는 그 요소의 onclick에서 꼭
+   e.stopPropagation()을 불러야 한다 — 안 그러면 그 클릭이 여기까지 버블링돼서
+   "다음으로 넘기기"가 같이 발동한다(home.js .homecard, policy.js .gcard 참고).
    ─────────────────────────────────────── */
 
 import { ensureAuth, getHostKey, hostSet, path, watch } from '../db.js';
@@ -34,7 +40,7 @@ import awardSession from './sessions/award.js';
 // 배포할 때마다 올리는 표식. 탭바 오른쪽에 작게 보인다 —
 // 브라우저가 예전 파일을 캐시해서 보여주고 있는지 이 숫자로 바로 알 수 있다.
 // (GitHub Pages는 정적 파일을 10분간 캐시한다. 강력 새로고침은 Ctrl+Shift+R)
-const BUILD = 'v15';
+const BUILD = 'v16';
 
 const SESSIONS = [homeSession, openingSession, quizSession, talkSession, boardSession, policySession, awardSession];
 const byId = Object.fromEntries(SESSIONS.map(s => [s.id, s]));
@@ -163,6 +169,15 @@ document.addEventListener('click', e => {
   if (!teamsMenuOpen) return;
   const panel = document.getElementById('teamsPanel'), btn = document.getElementById('bTeams');
   if (panel && !panel.contains(e.target) && e.target !== btn) toggleTeamsMenu(false);
+});
+
+// 무대(#stage) 안의 빈 공간을 클릭해도 오른쪽 화살표와 똑같이 다음으로 넘어간다 —
+// 프레젠테이션 클릭 넘김처럼, 무선 포인터(대부분 클릭이나 페이지다운을 보낸다)로도 진행할 수 있게.
+// 세션이 자기만의 동작을 두는 요소(카드 클릭, 사진 확대 등)는 그 요소의 클릭 핸들러가
+// stopPropagation()으로 여기까지 안 올라오게 막아 둔다.
+root.addEventListener('click', e => {
+  if (e.target.closest('button, a, input, textarea, select, [data-no-advance]')) return;
+  currentKeys.ArrowRight?.();
 });
 
 /* ---- 시작 ---- */

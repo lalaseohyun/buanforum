@@ -68,7 +68,10 @@ export default {
           <button class="close ghost" id="zoomClose">✕ 닫기</button>
           <img src="${esc(photos[zoomId].url)}">
         </div>` : '';
-      return `<div class="gallery" style="--cols:${teamCount <= 4 ? 2 : 3}">${cards}</div>
+      return `<div class="toppage">
+        <div class="toppage-head"><h2>대표정책 제안</h2></div>
+        <div class="gallery" style="--cols:${teamCount <= 4 ? 2 : 3}">${cards}</div>
+      </div>
         <input type="file" accept="image/*" id="fileUp" hidden>
         ${uploading ? `<div class="uploading">사진 올리는 중…</div>` : ''}${zoom}
         <div class="pagedots"><i class="on"></i><i></i></div>`;
@@ -106,8 +109,11 @@ export default {
     function wire() {
       if (page === 0) {
         const f = document.getElementById('fileUp');
+        // 아래 셋 다 stopPropagation 필수 — 안 막으면 main.js의 전역 "빈 공간 클릭 = 다음"
+        // 처리로 버블링돼서, 사진을 올리거나 확대/닫는 클릭이 동시에 다음 페이지로도 넘겨버린다.
         ctx.root.querySelectorAll('.gcard').forEach(card => {
-          card.onclick = () => {
+          card.onclick = e => {
+            e.stopPropagation();
             const no = Number(card.dataset.t);
             const p = photoOf(no);
             if (p) { zoomId = p.id; render(); return; }   // 이미 있으면 크게 보기
@@ -116,9 +122,9 @@ export default {
           };
         });
         const close = document.getElementById('zoomClose');
-        if (close) close.onclick = () => { zoomId = null; render(); };
+        if (close) close.onclick = e => { e.stopPropagation(); zoomId = null; render(); };
         const layer = document.getElementById('zoomLayer');
-        if (layer) layer.onclick = e => { if (e.target === layer) { zoomId = null; render(); } };
+        if (layer) layer.onclick = e => { e.stopPropagation(); if (e.target === layer) { zoomId = null; render(); } };
       } else {
         const holder = document.getElementById('voteQr');
         if (holder && window.QRCode) {

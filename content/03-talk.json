@@ -7,11 +7,6 @@
   ],
   "rounds": [
     {
-      "kicker": "오프닝",
-      "title": "한 단어 소개",
-      "lines": [""]
-    },
-    {
       "kicker": "Round 1 · 현재",
       "title": "실태조사 숫자",
       "lines": [""]
@@ -29,11 +24,6 @@
     {
       "kicker": "Round 4 · 미래",
       "title": "5년 뒤 부안",
-      "lines": [""]
-    },
-    {
-      "kicker": "클로징",
-      "title": "가장 먼저 바꿀 한 가지",
       "lines": [""]
     }
   ]

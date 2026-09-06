@@ -18,8 +18,15 @@ export function renderChart(chart) {
     : chart.type === 'line' ? renderLine(chart)
     : chart.type === 'table' ? renderTable(chart)
     : '';
-  // 해설은 제목과 그래프 "사이"에 둔다 — 먼저 읽고 그래프로 확인하는 순서가 낫다.
   const note = chart.note ? `<div class="chartnote">${sentences(chart.note)}</div>` : '';
+  // 막대·꺾은선 그래프는 왼쪽에 그래프를 꽉 채우고 오른쪽에 해설을 두는 좌우 2단 구성.
+  // 표(table)는 이미 글자 위주라 예전처럼 위(해설)·아래(표) 구성을 그대로 쓴다.
+  if (chart.type === 'bar' || chart.type === 'line') {
+    return `<div class="chartwrap chartwrap-split">
+      <div class="chartleft"><h3>${esc(chart.title)}</h3><div class="chartbox">${body}</div></div>
+      <div class="chartright">${note}</div>
+    </div>`;
+  }
   return `<div class="chartwrap"><h3>${esc(chart.title)}</h3>${note}<div class="chartbox">${body}</div></div>`;
 }
 
