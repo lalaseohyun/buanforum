@@ -108,8 +108,7 @@
 .lsub{font-size:clamp(19px,2.1vw,38px);color:var(--ink2);font-weight:600;margin-bottom:clamp(8px,1.2vh,16px)}
 .lsub b{color:var(--yellow)}
 /* 대기화면 — 오늘 진행할 조 수 고르기 */
-.teamsel{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:clamp(10px,1.6vh,20px) 0;
-  font-size:clamp(14px,1.25vw,21px);color:var(--ink2);font-weight:600}
+/* 조 수 버튼(.tcbtn) — 탭바 ☰ 메뉴(js/host/main.js)가 쓰는 전역 클래스라 여기 남겨 둔다 */
 .tcbtn{background:var(--panel);color:var(--ink2);font-weight:800;border:none;border-radius:12px;
   padding:8px 16px;font-size:clamp(15px,1.3vw,22px);cursor:pointer;transition:.15s}
 .tcbtn:hover{background:var(--panel2)}

@@ -3,6 +3,7 @@
 
    고칠 때 ─ 세션 하나의 내용/흐름   → js/host/sessions/<해당 세션>.js
              셸 자체(탭바 위치 등)   → 이 파일 + css/host.css
+             오늘 진행할 조 수 선택  → 탭바 ☰ 메뉴(renderTeamsMenu/toggleTeamsMenu, 이 파일 안)
    세션 모듈 계약(모든 세션이 이 모양을 따른다) ─
      default export = {
        id, title,
@@ -17,7 +18,7 @@
        goSession(id) — 다른 세션으로 전환 (탭바를 직접 누른 것과 동일)
    ─────────────────────────────────────── */
 
-import { ensureAuth, getHostKey, hostSet, path } from '../db.js';
+import { ensureAuth, getHostKey, hostSet, path, watch } from '../db.js';
 import { loadForum } from '../content.js';
 import { esc } from '../util.js';
 import { renderControls } from './controls.js';
@@ -33,7 +34,7 @@ import awardSession from './sessions/award.js';
 // 배포할 때마다 올리는 표식. 탭바 오른쪽에 작게 보인다 —
 // 브라우저가 예전 파일을 캐시해서 보여주고 있는지 이 숫자로 바로 알 수 있다.
 // (GitHub Pages는 정적 파일을 10분간 캐시한다. 강력 새로고침은 Ctrl+Shift+R)
-const BUILD = 'v10';
+const BUILD = 'v11';
 
 const SESSIONS = [homeSession, openingSession, quizSession, talkSession, boardSession, policySession, awardSession];
 const byId = Object.fromEntries(SESSIONS.map(s => [s.id, s]));
@@ -49,6 +50,12 @@ let hostKey = getHostKey();
 let current = null;        // 현재 마운트된 세션의 { unmount } 핸들
 let currentKeys = {};
 let stageMode = false;
+
+// 오늘 진행할 조 수 — 탭바 ☰ 메뉴에서 고른다(세션이 아니라 셸이 갖고 있어야
+// 어느 화면에 있든 항상 조작할 수 있다). 값 자체는 Firestore forum 문서에 저장되고,
+// 퀴즈·대표정책·공감투표 세션은 각자 이 문서를 구독해서 따라간다.
+let teamCount = 0;
+let teamsMenuOpen = false;
 
 function offline(bad) {
   document.body.classList.toggle('offline', bad);
@@ -66,11 +73,43 @@ function renderTabbar() {
   tabbar.innerHTML = buttons.join('') + '<div class="sp"></div>' +
     `<span class="build">${BUILD}</span>` +
     `<span class="pill"><span class="dot" id="dot"></span><span id="connTxt">연결 중</span></span>` +
+    `<span class="teammenu"><button id="bTeams" title="오늘 진행할 조 수">☰</button>
+      <div class="teammenu-panel" id="teamsPanel"></div></span>` +
     `<button id="bFs">⛶ 전체화면</button>`;
   tabbar.querySelectorAll('button[data-s]').forEach(b => {
     b.onclick = () => goSession(b.dataset.s);
   });
   document.getElementById('bFs').onclick = toggleStage;
+  // renderTabbar()가 세션을 넘어갈 때마다 이 안쪽을 통째로 새로 그리므로, ☰ 메뉴는
+  // 세션이 바뀌면 자동으로 닫힌 채 다시 생긴다(의도된 동작) — 같은 세션 안에서
+  // 화살표로만 움직일 때는 탭바가 다시 그려지지 않아 열림 상태가 그대로 유지된다.
+  document.getElementById('bTeams').onclick = () => toggleTeamsMenu();
+  renderTeamsMenu();
+}
+
+// 오늘 진행할 조 수 — ☰ 패널 안의 버튼 목록을 그린다(값이 바뀔 때마다 다시 호출)
+function renderTeamsMenu() {
+  const panel = document.getElementById('teamsPanel');
+  if (!panel || !forum) return;
+  const opts = [3, 4, 5, 6, 7, 8].filter(n => n <= forum.teams.length);
+  panel.innerHTML = `<div class="httl">오늘 진행할 조 수</div>
+    <div class="htbtns">${opts.map(n =>
+      `<button class="tcbtn ${n === teamCount ? 'on' : ''}" data-n="${n}">${n}</button>`).join('')}</div>`;
+  panel.querySelectorAll('.tcbtn').forEach(b => {
+    b.onclick = e => {
+      // renderTeamsMenu()가 패널 안쪽을 통째로 새로 그리면서 지금 누른 버튼을 DOM에서 떼어내므로,
+      // 이 클릭이 document까지 버블링되면 "바깥 클릭"으로 오인돼 패널이 곧장 닫혀버린다 — 막는다.
+      e.stopPropagation();
+      teamCount = Number(b.dataset.n);
+      hostSet(path(), { teamCount });
+      renderTeamsMenu();
+    };
+  });
+}
+function toggleTeamsMenu(force) {
+  teamsMenuOpen = force !== undefined ? force : !teamsMenuOpen;
+  document.getElementById('teamsPanel')?.classList.toggle('open', teamsMenuOpen);
+  document.getElementById('bTeams')?.classList.toggle('active', teamsMenuOpen);
 }
 
 const ctx = () => ({
@@ -107,10 +146,19 @@ function toggleStage() {
 document.addEventListener('keydown', e => {
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.isContentEditable) return;
   if (e.key === 'f' || e.key === 'F') { toggleStage(); return; }
+  if (e.key === 'Escape' && teamsMenuOpen) { toggleTeamsMenu(false); return; }
   if (e.key === 'Escape' && stageMode) { toggleStage(); return; }
   if (e.key === 'h' || e.key === 'H') { ctl.classList.toggle('hidden'); return; }
   const fn = currentKeys[e.key] || currentKeys[e.code];
   if (fn) { e.preventDefault(); fn(); }
+});
+
+// ☰ 메뉴 바깥을 클릭하면 닫는다. 여기서 한 번만 등록해 두면(renderTabbar가 아니라)
+// 탭바가 몇 번을 다시 그려져도 리스너가 중복으로 쌓이지 않는다.
+document.addEventListener('click', e => {
+  if (!teamsMenuOpen) return;
+  const panel = document.getElementById('teamsPanel'), btn = document.getElementById('bTeams');
+  if (panel && !panel.contains(e.target) && e.target !== btn) toggleTeamsMenu(false);
 });
 
 /* ---- 시작 ---- */
@@ -123,6 +171,7 @@ document.addEventListener('keydown', e => {
   try {
     forum = await loadForum();
     document.title = forum.title + ' · 진행자';
+    teamCount = forum.teamCount || forum.teams.length;
   } catch (e) {
     root.innerHTML = `<div class="slide"><h2>content/forum.json 로드 실패</h2><p class="sub">${esc(e.message)}</p></div>`;
     return;
@@ -130,4 +179,9 @@ document.addEventListener('keydown', e => {
   await ensureAuth();
   offline(false);
   goSession('home');
+  // 조 수가 다른 경로(예: 예전 세션이 저장해 둔 값)로 바뀌어도 ☰ 메뉴가 항상 최신값을 보여주도록
+  watch(path(), snap => {
+    const n = Number(snap?.teamCount);
+    if (n && n !== teamCount) { teamCount = n; renderTeamsMenu(); }
+  });
 })();

@@ -17,6 +17,17 @@ main{flex:1;min-height:0;padding:clamp(40px,6.5vh,100px) clamp(28px,4.5vw,90px) 
 /* 배포 표식 — 캐시된 옛 화면을 보고 있는지 확인용(js/host/main.js의 BUILD) */
 .tabbar .build{font-size:11px;font-weight:700;color:var(--ink3);opacity:.55;letter-spacing:.06em}
 
+/* 오늘 진행할 조 수 ☰ 메뉴 — 빔프로젝터 화면(=이 탭바)에 큰 버튼을 안 두려고
+   여기 눌러야만 열리는 작은 패널에 넣었다(js/host/main.js renderTeamsMenu/toggleTeamsMenu) */
+.teammenu{position:relative}
+.tabbar #bTeams.active{background:var(--panel);color:var(--yellow)}
+.teammenu-panel{position:absolute;bottom:calc(100% + 10px);right:0;background:var(--panel);
+  border-radius:14px;padding:14px 16px;box-shadow:0 8px 24px rgba(0,0,0,.4);
+  display:none;z-index:50;white-space:nowrap}
+.teammenu-panel.open{display:block}
+.teammenu-panel .httl{font-size:13px;font-weight:700;color:var(--ink2);margin-bottom:10px;letter-spacing:.04em}
+.teammenu-panel .htbtns{display:flex;gap:8px}
+
 /* 하단 조작바 — 세션이 controls()로 준 버튼을 여기 그린다 */
 .ctl{flex:0 0 auto;padding:12px 22px;border-top:1px solid var(--line2);background:#252523}
 .ctl.hidden{display:none}

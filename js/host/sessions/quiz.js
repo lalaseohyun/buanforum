@@ -32,7 +32,7 @@ export default {
   id: 'quiz',
   title: '청년정책 퀴즈',
   mount(ctx) {
-    // 오늘 진행할 조 수는 진행자가 대기화면에서 고른다(Firestore forum 문서의 teamCount).
+    // 오늘 진행할 조 수는 탭바 ☰ 메뉴에서 고른다(Firestore forum 문서의 teamCount) — 여기서는 읽기만 한다.
     let teamCount = ctx.forum.teamCount || ctx.forum.teams.length;
     const teams = () => ctx.forum.teams.slice(0, teamCount);
     let data = null, ITEMS = [];
@@ -187,10 +187,6 @@ export default {
         <div>
           <h2>휴대폰으로 <span>QR</span>을 찍고<br>우리 조 번호를 눌러주세요</h2>
           <div class="lsub">조당 한 분만 접속하시면 됩니다</div>
-          <div class="teamsel">오늘 진행할 조 수
-            ${[3, 4, 5, 6, 7, 8].filter(n => n <= ctx.forum.teams.length).map(n =>
-              `<button class="tcbtn ${n === teamCount ? 'on' : ''}" data-n="${n}">${n}</button>`).join('')}
-          </div>
           <div class="lsub">접속한 조 <b>${joined.length}</b> / ${teams().length}</div>
           <div class="chips">${chips}</div>
         </div>
@@ -202,14 +198,6 @@ export default {
         holder.innerHTML = '';
         new QRCode(holder, { text: location.href.replace(/host\.html.*$/, ''), width: 300, height: 300, colorDark: '#2c2c2a', colorLight: '#ffffff' });
       }
-      // 오늘 진행할 조 수 — 여기서 정하면 퀴즈·대표정책·투표가 모두 이 수만큼만 쓴다
-      ctx.root.querySelectorAll('.tcbtn').forEach(b => {
-        b.onclick = () => {
-          teamCount = Number(b.dataset.n);
-          hostSet(path(), { teamCount });
-          render();
-        };
-      });
     }
 
     // 하단 노란 점 — 이 문항을 넘기는 데 몇 번 남았는지 한눈에 보여준다
