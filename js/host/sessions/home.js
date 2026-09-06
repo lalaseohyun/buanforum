@@ -18,8 +18,8 @@ export default {
       if (!showCards) {
         ctx.root.innerHTML = `
           <div class="slide">
-            <div class="kicker">${esc(ctx.forum.date || '')}</div>
-            <h2>${esc(ctx.forum.title)}</h2>
+            <div class="homekicker">${esc(ctx.forum.date || '')}</div>
+            <h2 class="hometitle">${esc(ctx.forum.title)}</h2>
             <p class="homesub">${esc(ctx.forum.subtitle || '')}</p>
           </div>
           <div class="homelogo">

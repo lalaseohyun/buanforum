@@ -22,7 +22,7 @@
        화살표를 누를 때마다 한 단계씩 더 보여준다(stage 0/1/2). Firestore에는
        안 남기는 진행자 화면만의 연출이라 팀 화면과는 무관하다.
    ─────────────────────────────────────── */
-import { esc, sentences, fitInto } from '../../util.js';
+import { esc, nl2br, sentences, fitInto } from '../../util.js';
 import { loadQuiz } from '../../content.js';
 import { watch, watchCollection, hostSet, hostReset, path } from '../../db.js';
 import { computeRanking, allAnswered } from '../../score.js';
@@ -41,6 +41,13 @@ export default {
     const unsubs = [];
 
     const choicesFor = it => it.type === 'ox' ? ['O', 'X'] : it.choices;
+    // "약 9,400명 — 100명 중 20명"처럼 " — "가 있으면 핵심 숫자(main)와 부연(sub)을 나눠
+    // sub를 작고 노란 글자로 강조한다. 구분자가 없는 보기(OX, 짧은 보기)는 그대로 한 줄.
+    const choiceHtml = c => {
+      const i = c.indexOf(' — ');
+      if (i === -1) return esc(c);
+      return `${esc(c.slice(0, i))}<br><span class="sub">${esc(c.slice(i + 3))}</span>`;
+    };
     const orderOf = it => it.scored ? ITEMS.filter(q => q.scored).indexOf(it) + 1 : 0;
     const joinedNos = () => Object.entries(teamsMap).filter(([, v]) => v && v.joinedAt).map(([k]) => Number(k));
     const currentItem = () => (state.index >= 0 && state.index < ITEMS.length ? ITEMS[state.index] : null);
@@ -169,7 +176,7 @@ export default {
     function viewQuestion(it) {
       const n = it.type === 'ox' ? 2 : it.choices.length;
       const chArr = choicesFor(it);
-      const ch = chArr.map((c, i) => `<div class="ch"><div class="n">${i + 1}</div><div class="t">${esc(c)}</div></div>`).join('');
+      const ch = chArr.map((c, i) => `<div class="ch"><div class="n">${i + 1}</div><div class="t">${choiceHtml(c)}</div></div>`).join('');
       const ansForItem = answersForCurrent();
       const chips = teams.map(t => {
         const a = t.no in ansForItem;
@@ -180,7 +187,7 @@ export default {
         : cnt === teams.length ? `<div class="tstat done">전체 제출 완료!</div>`
         : `<div class="tstat"><b>${cnt}</b>조 제출 완료${state.open ? '' : ' · 마감됨'}</div>`;
       // 문제 → (화살표) 보기 → (화살표) 제출현황, 세 단계로 나눠 보여준다
-      let body = `${badges(it)}<div class="q">${esc(it.question)}</div>`;
+      let body = `${badges(it)}<div class="q">${nl2br(it.question)}</div>`;
       if (stage >= 1) body += `<div class="choices" style="--n:${n}">${ch}</div>`;
       if (stage >= 2) body += `<div class="foot"><div class="tmeta">${stat}</div><div class="chips">${chips}</div></div>`;
       return `<div class="qview ${stage < 2 ? 'centered' : ''}">${body}</div>`;
@@ -194,8 +201,9 @@ export default {
       const tally = chArr.map((_, i) => Object.values(ansForItem).filter(a => a.choice === i).length);
       const ch = chArr.map((c, i) => {
         const ok = i === it.answerIndex;
-        return `<div class="ch ${ok ? 'correct' : 'dimmed'}"><div class="n">${i + 1}</div><div class="t">${esc(c)}</div>
-          <div class="tally">${tally[i]}조 · ${Math.round(tally[i] / total * 100)}%</div></div>`;
+        return `<div class="ch ${ok ? 'correct' : 'dimmed'}"><div class="n">${i + 1}</div><div class="t">${choiceHtml(c)}</div>
+          <div class="tally">${tally[i]}조 · ${Math.round(tally[i] / total * 100)}%</div>
+          ${ok ? `<div class="hl-inline">${esc(it.highlight)}</div>` : ''}</div>`;
       }).join('');
       const chips = teams.map(t => {
         const a = ansForItem[t.no];
@@ -211,14 +219,16 @@ export default {
             <div class="chips">${chips}</div>
           </div>
           <div class="rright">
-            <div class="answer"><div class="lb">정 답</div><div class="v">${esc(it.answerLabel)}</div><div class="hl">${esc(it.highlight)}</div></div>
             <div class="why">${sentences(it.explanation)}<div class="src">출처 · ${esc(it.source)}</div></div>
           </div>
         </div>`;
     }
 
     function viewChart(it) {
-      return `${badges(it)}${renderChart(it.chart)}<div class="chartnote">${sentences(it.explanation)}</div>`;
+      // 데이터 해설은 그래프 "위"에 붙는다. chart.note가 따로 있으면 그걸(데이터 전용 해설),
+      // 없으면 정답 화면과 같은 explanation을 그대로 재사용한다.
+      const chart = { ...it.chart, note: it.chart.note || it.explanation };
+      return `${badges(it)}${renderChart(chart)}`;
     }
 
     function viewFinal() {

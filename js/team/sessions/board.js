@@ -7,7 +7,7 @@
    고칠 때 ─ 문구           → content/04-board.json
              화면 구성       → 이 파일
    ─────────────────────────────────────── */
-import { esc } from '../../util.js';
+import { esc, nl2br } from '../../util.js';
 import { loadBoard } from '../../content.js';
 
 export default {
@@ -17,7 +17,7 @@ export default {
       const boxes = data.steps.map(s => `
         <div class="qbox">
           <div class="badge-step">STEP ${s.no}</div>
-          <div class="qt">${esc(s.text)}</div>
+          <div class="qt">${nl2br(s.text)}</div>
           ${s.note ? `<div class="qnote">${esc(s.note)}</div>` : ''}
         </div>`).join('');
       ctx.root.innerHTML = `

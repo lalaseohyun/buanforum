@@ -12,7 +12,7 @@
              참고자료 패널 스타일         → css/sessions/board.css
    쓰는 것 ─ js/content.js(로더) · js/db.js(slides/board.index 기록 — 팀 화면 동기화용)
    ─────────────────────────────────────── */
-import { esc } from '../../util.js';
+import { esc, nl2br } from '../../util.js';
 import { loadBoard } from '../../content.js';
 import { hostSet, path } from '../../db.js';
 
@@ -36,7 +36,7 @@ export default {
       const boxes = data.steps.map(s => `
         <div class="qbox">
           <div class="badge-step">STEP ${s.no}</div>
-          <div class="qt">${esc(s.text)}</div>
+          <div class="qt">${nl2br(s.text)}</div>
           ${s.note ? `<div class="qnote">${esc(s.note)}</div>` : ''}
         </div>`).join('');
       const ref = data.reference;

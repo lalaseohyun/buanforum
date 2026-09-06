@@ -12,7 +12,7 @@
    (전파 지연만큼의 오차는 남지만 모든 팀에 비슷하게 적용되어 크게 불공정하지 않다.)
    ─────────────────────────────────────── */
 import { watch, submitAnswer, path } from '../../db.js';
-import { esc } from '../../util.js';
+import { esc, sentences } from '../../util.js';
 
 export default {
   id: 'quiz',
@@ -84,7 +84,7 @@ export default {
         </div>
         <div class="opts">${opts}</div>
         <div class="card hl"><div class="lb">핵심 숫자</div><div class="v">${esc(r.highlight)}</div></div>
-        <div class="card"><p>${esc(r.explanation)}</p><div class="src">출처 · ${esc(r.source)}</div></div>
+        <div class="card">${sentences(r.explanation)}<div class="src">출처 · ${esc(r.source)}</div></div>
         ${it.scored && mr ? `<div class="scorebar">
           <div class="sb"><div class="k">우리 조 점수</div><div class="v">${mr.score}</div></div>
           <div class="sb"><div class="k">현재 순위</div><div class="v">${mr.rank}위</div></div>

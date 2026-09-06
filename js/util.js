@@ -5,10 +5,14 @@
 
 export const esc = s => String(s ?? '').replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
 
-// 해설을 문장 단위로 끊어 한 줄씩 보여준다.
+// content/*.json 문구 안에 \n으로 강제 줄바꿈, **글자**로 강조를 쓸 수 있게 한다.
+// esc()로 이스케이프부터 한 뒤에 무늬만 바꾸는 거라 안전하다(진짜 HTML은 못 심는다).
+export const nl2br = s => esc(s).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+
+// 해설을 문장 단위로 끊어 한 줄씩 보여준다(문장에 \n이 있으면 그 안에서도 줄바꿈).
 // 따옴표 안의 마침표는 문장 끝으로 보지 않는다 (정읍에서 검증된 정규식).
 export const sentences = t => String(t ?? '').split(/(?<=[.?!])\s+(?=[^\s])/)
-  .filter(Boolean).map(x => `<p>${esc(x)}</p>`).join('');
+  .filter(Boolean).map(x => `<p>${nl2br(x)}</p>`).join('');
 
 // 카드 안에 텍스트가 넘치면(scrollHeight > clientHeight) 글자 크기를 0.5px씩 줄여 잘리지 않게 한다.
 export function fitInto(selector, minPx = 14) {

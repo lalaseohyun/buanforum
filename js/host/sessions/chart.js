@@ -10,7 +10,7 @@
              색·크기                 → css/sessions/chart.css
    라이브러리 없이 순수 SVG로 그린다. renderChart(chart) → HTML 문자열.
    ─────────────────────────────────────── */
-import { esc } from '../../util.js';
+import { esc, sentences } from '../../util.js';
 
 export function renderChart(chart) {
   if (!chart) return '';
@@ -18,7 +18,9 @@ export function renderChart(chart) {
     : chart.type === 'line' ? renderLine(chart)
     : chart.type === 'table' ? renderTable(chart)
     : '';
-  return `<div class="chartwrap"><h3>${esc(chart.title)}</h3><div class="chartbox">${body}</div></div>`;
+  // 해설은 제목과 그래프 "사이"에 둔다 — 먼저 읽고 그래프로 확인하는 순서가 낫다.
+  const note = chart.note ? `<div class="chartnote">${sentences(chart.note)}</div>` : '';
+  return `<div class="chartwrap"><h3>${esc(chart.title)}</h3>${note}<div class="chartbox">${body}</div></div>`;
 }
 
 function renderBar(chart) {
