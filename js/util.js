@@ -14,6 +14,24 @@ export const nl2br = s => esc(s).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>'
 export const sentences = t => String(t ?? '').split(/(?<=[.?!])\s+(?=[^\s])/)
   .filter(Boolean).map(x => `<p>${nl2br(x)}</p>`).join('');
 
+// 목업(1600×801 무대)에서 좌표로 자유 배치한 화면을 그대로 옮겨 쓰기 위한 스케일러.
+// 무대 크기는 CSS가 고정해 두고(.stage1600), 화면 크기에 맞춰 통째로 비율 유지한 채
+// 확대/축소한다 — 글자·간격·좌표가 전부 같은 비율로 움직이므로 목업과 100% 같은 그림이 된다.
+// 반환값은 정리 함수(unmount에서 호출).
+export function fitStage(el) {
+  if (!el || !el.parentElement) return () => {};
+  const wrap = el.parentElement;
+  const apply = () => {
+    const w = wrap.clientWidth, h = wrap.clientHeight;
+    if (!w || !h || !el.offsetWidth || !el.offsetHeight) return;
+    el.style.transform = `scale(${Math.min(w / el.offsetWidth, h / el.offsetHeight)})`;
+  };
+  apply();
+  const ro = new ResizeObserver(apply);
+  ro.observe(wrap);
+  return () => ro.disconnect();
+}
+
 // 카드 안에 텍스트가 넘치면(scrollHeight > clientHeight) 글자 크기를 0.5px씩 줄여 잘리지 않게 한다.
 export function fitInto(selector, minPx = 14) {
   const el = document.querySelector(selector);

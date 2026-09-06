@@ -30,10 +30,13 @@
 .ch .n{width:clamp(42px,3.4vw,62px);height:clamp(42px,3.4vw,62px);border-radius:50%;background:var(--panel2);
   display:grid;place-items:center;font-weight:800;font-size:clamp(19px,1.7vw,30px);color:var(--ink2)}
 .ch .t{font-size:clamp(23px,2.7vw,50px);font-weight:700;letter-spacing:-.028em;line-height:1.24}
-.ch .t .sub{font-size:.68em;font-weight:700;color:var(--yellow)}
+/* 보기 부연설명 — 목업에서 지정한 부드러운 노랑(#F6D049), 본문의 0.7배 */
+.ch .t .sub{font-size:.7em;font-weight:700;color:#F6D049}
 .ch .tally{font-size:clamp(14px,1.25vw,21px);font-weight:700;color:var(--ink3);font-variant-numeric:tabular-nums}
-/* 정답 공개 — 정답 카드 안에 핵심 수치를 바로 붙인다(오른쪽 answer 카드를 따로 안 둔다) */
-.ch .hl-inline{width:100%;font-size:clamp(13px,1.15vw,19px);font-weight:800;color:var(--fillInk);opacity:.7;margin-top:2px}
+/* 정답 공개 — 정답 카드 안에 핵심 수치를 바로 붙인다(오른쪽 answer 카드를 따로 안 둔다).
+   목업 기준(1600px 폭): 25px · 빨강 #C60909 · 카드 폭 전체에 가운데 정렬 · 윗줄 구분선 */
+.ch .hl-inline{width:100%;font-size:clamp(15px,1.56vw,27px);font-weight:800;line-height:1.35;
+  color:#C60909;text-align:center;border-top:2px solid rgba(44,44,42,.22);padding-top:11px;margin-top:2px}
 
 /* 정답 공개 화면 — 보기 결과를 왼쪽에 세로로 눕혀 정답·해설에 자리를 몰아준다 */
 .choices.compact{grid-template-columns:1fr;gap:clamp(8px,1.2vh,14px)}
@@ -41,13 +44,21 @@
   padding:clamp(10px,1.5vh,20px) clamp(14px,1.4vw,26px);border-radius:16px}
 .choices.compact .ch .n{width:clamp(30px,2.2vw,42px);height:clamp(30px,2.2vw,42px);font-size:clamp(14px,1.2vw,21px)}
 .choices.compact .ch .t{font-size:clamp(16px,1.6vw,29px);flex:1;text-align:left}
-.ch.correct{background:var(--fill);border-color:var(--fill)}
+/* 정답 카드 — 목업에서 지정한 노랑 배경(#F6D049)에, 오답 카드보다 크게 강조한다
+   (번호 원 50px · 보기 글자 35px @1600px 기준) */
+.ch.correct{background:#F6D049;border-color:#F6D049}
 .ch.correct .n{background:var(--fillInk);color:var(--fill)}
 .ch.correct .t,.ch.correct .tally{color:var(--fillInk)}
+.ch.correct .t .sub{color:var(--fillInk);opacity:.72}
+.choices.compact .ch.correct{align-items:flex-start}
+.choices.compact .ch.correct .n{width:clamp(32px,3.13vw,54px);height:clamp(32px,3.13vw,54px);font-size:clamp(16px,1.5vw,26px)}
+.choices.compact .ch.correct .t{font-size:clamp(20px,2.19vw,38px)}
 .ch.dimmed{opacity:.4}
 
-/* 보기 아래 여백 + 제출 현황 */
-.foot{margin-top:auto;padding-top:clamp(22px,4vh,76px);flex:0 0 auto}
+/* 보기 아래 여백 + 제출 현황.
+   목업 프레임에는 하단 조작바가 없었지만 실제 화면에는 탭바+조작바(약 135px)가 더 있어서,
+   조 원이 가려지지 않도록 이 아래 여백과 조 원 크기를 목업보다 조금 줄여 잡았다. */
+.foot{margin-top:auto;padding-top:clamp(18px,3vh,54px);flex:0 0 auto}
 .tmeta{display:flex;justify-content:center}
 .tstat{font-size:clamp(21px,2.1vw,38px);font-weight:700;color:var(--ink2)}
 .tstat b{color:var(--yellow)}
@@ -56,8 +67,8 @@
 /* 팀 원 — 6팀 = 6칸 1줄 */
 .chips{display:grid;grid-template-columns:repeat(6,1fr);
   gap:clamp(8px,1.2vh,18px) clamp(10px,1.2vw,20px);
-  width:100%;max-width:min(100%,860px);
-  margin:clamp(18px,2.8vh,44px) auto 0;flex:0 0 auto}
+  width:100%;max-width:min(100%,680px);
+  margin:clamp(12px,2vh,32px) auto 0;flex:0 0 auto}
 .chip{width:100%;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;position:relative;
   background:var(--panel);color:var(--ink3);
   font-weight:800;font-size:clamp(15px,1.6vw,28px);letter-spacing:-.02em;transition:.2s}
@@ -75,7 +86,7 @@
   flex:1;min-height:0;margin-top:clamp(10px,1.6vh,26px)}
 .rleft{display:flex;flex-direction:column;min-height:0;gap:clamp(12px,1.8vh,24px)}
 .rtitle{font-size:clamp(13px,1.2vw,19px);font-weight:700;color:var(--ink3);letter-spacing:.02em;flex:0 0 auto}
-.rbottom .chips{margin:0;max-width:100%;gap:clamp(6px,1vh,12px) clamp(7px,.8vw,14px)}
+.rbottom .chips{margin:0;max-width:min(100%,560px);gap:clamp(6px,1vh,12px) clamp(7px,.8vw,14px)}
 .rbottom .chip{font-size:clamp(11px,1.05vw,18px)}
 
 .rright{display:flex;flex-direction:column;min-height:0;gap:clamp(10px,1.6vh,20px)}
@@ -87,12 +98,13 @@
 .answer .v{font-size:clamp(28px,3.2vw,58px);font-weight:800;letter-spacing:-.04em;line-height:1.15}
 .answer .hl{font-size:clamp(16px,1.55vw,28px);font-weight:800;line-height:1.35;
   border-top:2px solid rgba(44,44,42,.22);padding-top:clamp(8px,1.2vh,16px);width:100%}
+/* 해설 카드 — 목업 기준 35px @1600×900 */
 .why{background:var(--beige);color:var(--beigeInk);border-radius:24px;
   padding:clamp(16px,2.2vh,32px) clamp(20px,2vw,38px);
-  font-size:clamp(22px,min(2.5vw,4.3vh),46px);line-height:1.5;font-weight:500;letter-spacing:-.02em;
+  font-size:clamp(22px,min(2.19vw,3.9vh),40px);line-height:1.5;font-weight:500;letter-spacing:-.02em;
   flex:1;min-height:0;overflow:auto;text-align:left}
 .why p+p{margin-top:clamp(7px,1.1vh,18px)}
-.why .src{font-size:clamp(14px,1.3vw,20px);color:rgba(58,58,56,.5);margin-top:clamp(10px,1.5vh,20px);font-weight:600}
+.why .src{font-size:clamp(14px,1.38vw,24px);color:rgba(58,58,56,.5);margin-top:clamp(10px,1.5vh,20px);font-weight:600}
 .why strong{color:var(--yellow)}
 
 /* 대기화면(lobby) */

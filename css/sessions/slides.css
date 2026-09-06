@@ -30,17 +30,20 @@
 /* 큐시트(라운드) 배지 */
 .round{font-size:clamp(13px,1.2vw,19px);font-weight:700;padding:8px 20px;border-radius:999px;background:var(--panel);color:var(--ink2)}
 
-/* 홈 — 타이틀 화면. 행사 주제 문구(.homesub)를 행사명(h2)보다 오히려 크게 키워
-   그 문구가 화면의 주인공이 되도록 뒤집었다 — 날짜(.homekicker)도 같이 커졌다. */
-.homekicker{font-size:clamp(16px,1.6vw,26px);font-weight:800;letter-spacing:.14em;color:var(--ink3)}
-.slide h2.hometitle{font-size:clamp(28px,3.4vw,58px)}
-.homesub{font-size:clamp(40px,5vw,80px);color:var(--yellow);font-weight:800;letter-spacing:-.02em;line-height:1.3}
+/* ───────────────────────────────────────
+   고정 무대 — 디자인 캔버스 목업(1600×801)에서 좌표로 자유 배치한 화면을
+   좌표 그대로 옮겨 쓰기 위한 틀. 화면 크기에 맞춰 통째로 확대/축소되므로
+   (js/util.js의 fitStage) 어느 해상도에서든 목업과 똑같은 그림이 나온다.
+   위치를 옮기고 싶으면 해당 세션 js의 left/top 숫자만 고치면 된다.
+   ─────────────────────────────────────── */
+.stagewrap{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;overflow:hidden;
+  margin:calc(-1 * clamp(40px,6.5vh,100px)) calc(-1 * clamp(28px,4.5vw,90px)) calc(-1 * clamp(24px,3.6vh,54px))}
+.stage1600{position:relative;flex:0 0 auto;width:1600px;height:801px;transform-origin:center center}
+.stage1600 .abs{position:absolute;margin:0}
 
-/* 홈 — 로고. 화면 맨 아래에 따로 떨어뜨리지 않고 날짜 바로 아래에 붙여 한 덩어리로 둔다 */
-.homelogo{flex:0 0 auto;display:flex;justify-content:center;align-items:center;gap:10px;
-  margin-top:clamp(10px,2vh,30px)}
-.homelogo img{height:clamp(48px,9vh,96px);width:auto;opacity:.92}
-.homelogo span{color:var(--ink3);font-weight:700;font-size:14px;letter-spacing:.04em}
+/* 홈 — 타이틀 화면(목업 좌표 그대로) */
+.homelogo img{display:block;opacity:.92}
+.homelogo span{color:var(--ink3);font-weight:700;font-size:20px;letter-spacing:.04em}
 
 /* 홈 — 2x2(5개면 자동으로 3줄) 진행순서 카드 */
 .homegrid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(2,1fr);grid-auto-rows:1fr;gap:clamp(16px,2vw,32px)}
@@ -68,6 +71,7 @@
   display:flex;flex-direction:column;justify-content:center;gap:clamp(12px,2vh,22px);text-align:left}
 .qbox .badge-step{align-self:flex-start;font-size:clamp(13px,1.1vw,18px);font-weight:800;letter-spacing:.08em;
   color:#2c2c2a;background:var(--yellow);padding:6px 16px;border-radius:999px}
-.qbox .qt{font-size:clamp(24px,2.6vw,42px);font-weight:800;letter-spacing:-.03em;line-height:1.32}
+/* 목업 기준: 40px @1600px, 가운데 정렬 */
+.qbox .qt{font-size:clamp(22px,2.5vw,42px);font-weight:800;letter-spacing:-.03em;line-height:1.32;text-align:center}
 .qbox .qs{font-size:clamp(15px,1.4vw,22px);color:var(--ink2);font-weight:500;line-height:1.5}
 .qbox .qnote{font-size:clamp(14px,1.25vw,19px);color:var(--yellow);font-weight:700}

@@ -17,7 +17,10 @@
   padding:clamp(14px,2vh,26px) clamp(18px,2vw,32px);
   font-size:clamp(16px,1.5vw,24px);line-height:1.5;font-weight:500;letter-spacing:-.02em;
   max-height:32vh;overflow:auto;text-align:left}
+/* 목업 기준: 본문 28px @1600px, 가운데 정렬 */
+.chartnote p{font-size:clamp(17px,1.75vw,30px);text-align:center}
 .chartnote p+p{margin-top:clamp(6px,1vh,14px)}
+.chartnote strong{color:var(--beigeInk)}
 
 /* 막대그래프 */
 .bar-label{font-size:clamp(13px,1.05vw,19px);fill:var(--ink2);font-weight:600}
