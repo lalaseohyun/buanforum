@@ -36,9 +36,9 @@
 .slide h2.hometitle{font-size:clamp(28px,3.4vw,58px)}
 .homesub{font-size:clamp(40px,5vw,80px);color:var(--yellow);font-weight:800;letter-spacing:-.02em;line-height:1.3}
 
-/* 홈 — 하단 중앙 로고 */
+/* 홈 — 로고. 화면 맨 아래에 따로 떨어뜨리지 않고 날짜 바로 아래에 붙여 한 덩어리로 둔다 */
 .homelogo{flex:0 0 auto;display:flex;justify-content:center;align-items:center;gap:10px;
-  padding:clamp(18px,2.6vh,36px) 0 clamp(4px,.8vh,10px)}
+  margin-top:clamp(10px,2vh,30px)}
 .homelogo img{height:clamp(48px,9vh,96px);width:auto;opacity:.92}
 .homelogo span{color:var(--ink3);font-weight:700;font-size:14px;letter-spacing:.04em}
 

@@ -4,7 +4,7 @@
 
    고칠 때 ─ 행사명·세션 이름       → content/forum.json
              카드 배치·타이틀 화면  → 이 파일 + css/sessions/slides.css
-             로고 이미지 파일        → assets/laain-logo-white.png (검정 배경용 흰색 버전)
+             로고 이미지 파일        → assets/laain-logo-white-full.png (검정 배경용 흰색 버전)
    ─────────────────────────────────────── */
 import { esc } from '../../util.js';
 
@@ -16,16 +16,17 @@ export default {
 
     function render() {
       if (!showCards) {
+        // 목업과 같은 순서·묶음: 제목 → 주제 문구 → 날짜 → 로고를 한 덩어리로 가운데 모은다
         ctx.root.innerHTML = `
           <div class="slide">
-            <div class="homekicker">${esc(ctx.forum.date || '')}</div>
             <h2 class="hometitle">${esc(ctx.forum.title)}</h2>
             <p class="homesub">${esc(ctx.forum.subtitle || '')}</p>
-          </div>
-          <div class="homelogo">
-            <img src="assets/laain-logo-white.png" alt="라인교육연구소"
-              onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
-            <span style="display:none">라인교육연구소</span>
+            <div class="homekicker">${esc(ctx.forum.date || '')}</div>
+            <div class="homelogo">
+              <img src="assets/laain-logo-white-full.png" alt="라인교육연구소"
+                onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+              <span style="display:none">라인교육연구소</span>
+            </div>
           </div>`;
         ctx.root.onclick = () => { showCards = true; render(); };
       } else {
