@@ -1,19 +1,22 @@
 /* ───────────────────────────────────────
-   4. 원탁토론 — 진행자 화면. 인트로(제목) → 화살표 → STEP1~3.
-   참고자료(예산표)는 STEP 화면에서 버튼으로 접었다 펼 수 있다.
+   4. 원탁토론 — 진행자 화면. 인트로(제목) → 화살표 → STEP1~3 → 참고자료 5페이지(분야별).
+   참고자료는 STEP 화면에서 버튼으로 접었다 펼 수 있는 요약 패널과는 별개로,
+   화살표로 한 장씩 넘겨 보는 전용 페이지 5장이다(분야당 1장 — 일자리·교육·주거·
+   복지문화·참여권리). docs/청년정책_49개사업_분야별페이지_구상안.md의 구성을 그대로 옮겼다.
 
    사진 업로드·갤러리·하트("발표모드")는 이 세션이 아니라
    5. 대표정책(./policy.js)에서 다룬다 — 예전엔 이 세션 안의 모드였지만
    독립 탭으로 분리됐다.
 
-   고칠 때 ─ 첫 화면 문구·STEP·참고자료   → content/04-board.json
-             넘기는 방식·버튼             → 이 파일
-             STEP 박스 레이아웃           → css/sessions/slides.css (.toppage/.boxrow/.qbox)
-             참고자료 패널 스타일         → css/sessions/board.css
+   고칠 때 ─ 첫 화면 문구·STEP·요약 패널   → content/04-board.json
+             분야별 참고자료 사업 목록      → src/data/policies-2026.json
+             넘기는 방식·버튼               → 이 파일
+             STEP 박스 레이아웃             → css/sessions/slides.css (.toppage/.boxrow/.qbox)
+             참고자료 패널·페이지 스타일    → css/sessions/board.css
    쓰는 것 ─ js/content.js(로더) · js/db.js(slides/board.index 기록 — 팀 화면 동기화용)
    ─────────────────────────────────────── */
 import { esc, nl2br } from '../../util.js';
-import { loadBoard } from '../../content.js';
+import { loadBoard, loadPolicies } from '../../content.js';
 import { hostSet, path } from '../../db.js';
 
 // opening.js와 같은 이유로, 화살표로 이어서 들어올 때만(ctx.resume) 마지막 페이지를 쓴다.
@@ -23,11 +26,17 @@ export default {
   id: 'board',
   title: '원탁토론',
   mount(ctx) {
-    let data = null, index = ctx.resume ? lastIndex : 0; // 0 = 인트로, 1 = STEP1~3
+    // 0 = 인트로, 1 = STEP1~3, 2~6 = 참고자료 P1~P5(분야별). 분야 수는 policies.fields.length로 정해진다.
+    let data = null, policies = null, index = ctx.resume ? lastIndex : 0;
     let refOpen = false;
 
-    // 화살표로 넘기는 페이지 수를 하단 노란 점으로 (전체 2페이지)
-    const dots = () => `<div class="pagedots">${[0, 1].map(i =>
+    const fieldCount = () => policies?.fields.length || 0;
+    const totalPages = () => 2 + fieldCount();
+    const isFieldPage = () => index >= 2;
+    const fieldOf = () => policies.fields[index - 2];
+
+    // 화살표로 넘기는 페이지 수를 하단 노란 점으로
+    const dots = () => `<div class="pagedots">${Array.from({ length: totalPages() }, (_, i) =>
       `<i class="${i === index ? 'on' : ''}"></i>`).join('')}</div>`;
 
     function renderIntro() {
@@ -60,22 +69,49 @@ export default {
         ${refPanel}
       </div>${dots()}`;
     }
+    // 참고자료 P1~P5 — 분야당 한 페이지: 헤더(분야명·사업수·예산·비중) + 사업 표 + 하단 인사이트 한 줄
+    function renderField() {
+      const f = fieldOf();
+      const rows = f.items.map(it => `
+        <tr class="${it.highlight ? 'hi' : ''}">
+          <td class="num">${it.no}</td>
+          <td class="name">${esc(it.name)}${it.isNew ? '<span class="tag-new">신규</span>' : ''}${it.note ? `<span class="tag-note">${esc(it.note)}</span>` : ''}</td>
+          <td class="num">${esc(it.amount)}</td>
+          <td>${esc(it.dept)}</td>
+        </tr>`).join('');
+      ctx.root.innerHTML = `<div class="refpage">
+        <div class="refpage-head">
+          <div class="rf-no">P${f.no}</div>
+          <div class="rf-name">${esc(f.name)}<span class="rf-sub">${esc(f.subtitle)}</span></div>
+          <div class="rf-stats"><b>${f.count}개 사업</b><span>${esc(f.amount)}</span><span>${esc(f.pct)}</span></div>
+        </div>
+        <div class="reftable-wrap">
+          <table class="reftable">
+            <thead><tr><th>#</th><th>사업명</th><th>예산</th><th>담당부서</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+        <div class="refinsight">💡 ${esc(f.insight)}</div>
+      </div>${dots()}`;
+    }
     function render() {
       lastIndex = index;
-      index === 0 ? renderIntro() : renderSteps();
+      if (index === 0) renderIntro();
+      else if (index === 1) renderSteps();
+      else renderField();
       const btns = [
         { label: index === 0 ? '◀ 토크콘서트로' : '◀ 이전', onClick: prev },
-        { label: index >= 1 ? '대표정책으로' : '다음 ▶', onClick: next, variant: 'primary' },
+        { label: index >= totalPages() - 1 ? '대표정책으로' : (index === 1 ? '참고자료 보기 ▶' : '다음 ▶'), onClick: next, variant: 'primary' },
       ];
-      if (index === 1) btns.push({ label: refOpen ? '참고자료 접기' : '참고자료 보기', variant: 'ghost', onClick: () => { refOpen = !refOpen; render(); } });
+      if (index === 1) btns.push({ label: refOpen ? '참고자료 접기' : '요약 보기', variant: 'ghost', onClick: () => { refOpen = !refOpen; render(); } });
       ctx.setControls(btns);
       hostSet(path('slides', 'board'), { index });
     }
-    function next() { if (index < 1) { index++; render(); } else ctx.goSession('policy', { resume: true }); }
+    function next() { if (index < totalPages() - 1) { index++; render(); } else ctx.goSession('policy', { resume: true }); }
     function prev() { if (index > 0) { index--; render(); } else ctx.goSession('talk', { resume: true }); }
 
-    loadBoard().then(d => { data = d; render(); })
-      .catch(e => { ctx.root.innerHTML = `<div class="slide"><h2>content/04-board.json 로드 실패</h2><p class="sub">${esc(e.message)}</p></div>`; });
+    Promise.all([loadBoard(), loadPolicies()]).then(([d, p]) => { data = d; policies = p; render(); })
+      .catch(e => { ctx.root.innerHTML = `<div class="slide"><h2>원탁토론 자료 로드 실패</h2><p class="sub">${esc(e.message)}</p></div>`; });
 
     ctx.setKeys({ ArrowRight: next, ArrowLeft: prev, ' ': next });
     return { unmount() {} };

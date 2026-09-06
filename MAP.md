@@ -11,7 +11,8 @@
 | 오프닝 스몰토크 카드 문구 | [content/01-opening.json](content/01-opening.json) |
 | 퀴즈 문항·정답·해설·그래프 수치 | [content/02-quiz.json](content/02-quiz.json) |
 | 토크콘서트 큐시트·패널 소개 | [content/03-talk.json](content/03-talk.json) |
-| 원탁토론 첫 화면·STEP1~3·참고자료(예산표) | [content/04-board.json](content/04-board.json) |
+| 원탁토론 첫 화면·STEP1~3·참고자료 요약(예산표) | [content/04-board.json](content/04-board.json) |
+| 원탁토론 참고자료 P1~P5(분야별 49개 사업 목록) | [src/data/policies-2026.json](src/data/policies-2026.json) — `content/`가 아니라 여기 있다(가공된 슬라이드 문구가 아니라 시행계획 원자료라 구분) |
 
 `content/*.json`은 GitHub 저장소에서 웹으로 직접 열어 고치고 저장하면 끝난다. 로컬 개발 환경이 필요 없다.
 
@@ -44,7 +45,7 @@
 | 2. 청년정책 퀴즈 | [js/host/sessions/quiz.js](js/host/sessions/quiz.js) | [js/team/sessions/quiz.js](js/team/sessions/quiz.js) |
 | ⭐ 정답 뒤 그래프 화면 | [js/host/sessions/chart.js](js/host/sessions/chart.js) (quiz.js가 불러 씀, 독립 세션 아님) | — |
 | 3. 토크콘서트 | [js/host/sessions/talk.js](js/host/sessions/talk.js) | wait.js 공용 |
-| 4. 원탁토론(첫화면+STEP1~3, 사진 없음) | [js/host/sessions/board.js](js/host/sessions/board.js) | [js/team/sessions/board.js](js/team/sessions/board.js) |
+| 4. 원탁토론(첫화면+STEP1~3+참고자료 P1~P5, 사진 없음) | [js/host/sessions/board.js](js/host/sessions/board.js) | [js/team/sessions/board.js](js/team/sessions/board.js) |
 | 5. 대표정책(사진 갤러리 → 공감투표) | [js/host/sessions/policy.js](js/host/sessions/policy.js) | [js/team/sessions/vote.js](js/team/sessions/vote.js) (투표 화면. `?vote=1`로 들어온 폰만 뜬다) |
 | 6. 우수정책 시상 | [js/host/sessions/award.js](js/host/sessions/award.js) | wait.js 공용 |
 
