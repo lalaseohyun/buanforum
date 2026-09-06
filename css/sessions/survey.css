@@ -1,0 +1,70 @@
+/* ───────────────────────────────────────
+   7. 만족도조사 — 진행자 화면(QR·실시간 오픈엔디드) + survey.html·admin.html 공용 일부.
+
+   고칠 때 ─ 카드 애니메이션 타이밍(3초·4초·70자) → js/host/sessions/surveyWall.js CONFIG
+             문항 문구                            → content/07-survey.json
+             색·크기                              → 이 파일
+   ─────────────────────────────────────── */
+
+/* ── 5-1. QR + 실시간 응답 수 ── */
+.surveyintro .qrbox{background:#fff;border-radius:24px;padding:clamp(14px,1.4vw,22px);
+  line-height:0;margin:clamp(20px,3vh,36px) 0}
+.surveyintro .qrbox img{width:clamp(220px,22vw,340px);display:block}
+.surveycount{font-size:clamp(18px,1.8vw,30px);font-weight:700;color:var(--ink2)}
+.surveycount b{color:var(--yellow);font-weight:800;font-variant-numeric:tabular-nums}
+
+/* ── 5-2. 실시간 오픈엔디드 2분할 ── */
+.wallwrap{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;gap:clamp(20px,2.8vw,48px);position:relative}
+.wallcol{position:relative;min-width:0;min-height:0;display:flex;flex-direction:column;gap:clamp(12px,1.8vh,22px);
+  border-right:1px solid var(--line2);padding-right:clamp(20px,2.8vw,48px)}
+.wallcol:last-child{border-right:none;padding-right:0}
+.wallhead{flex:0 0 auto;display:flex;align-items:baseline;justify-content:space-between;
+  font-size:clamp(20px,2.2vw,36px);font-weight:800;letter-spacing:-.02em}
+.wallhead .wallcount{font-size:clamp(15px,1.4vw,22px);color:var(--ink3);font-weight:700;font-variant-numeric:tabular-nums}
+.walllist{flex:1;min-height:0;display:flex;flex-direction:column;gap:clamp(10px,1.6vh,18px);overflow:hidden}
+.wallcard{background:var(--panel);border-radius:18px;padding:clamp(16px,2vh,26px) clamp(18px,1.8vw,28px);
+  font-size:clamp(17px,1.7vw,26px);font-weight:600;line-height:1.45;letter-spacing:-.015em;
+  animation:wallcardin .4s ease-out backwards}
+@keyframes wallcardin{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+/* 새 응답 — 화면 중앙에 크게 3초 단독 표시(하이브리드 C안의 ①) */
+.wallhighlight{position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;
+  text-align:center;background:var(--bg);border-radius:24px;
+  padding:clamp(24px,4vh,48px);font-size:clamp(26px,2.8vw,44px);font-weight:800;line-height:1.4;
+  letter-spacing:-.02em;color:var(--yellow);animation:wallcardin .4s ease-out}
+.wallhighlight[hidden]{display:none}
+
+.wallpaused{position:absolute;left:50%;bottom:clamp(70px,9vh,110px);transform:translateX(-50%);
+  background:var(--panel2);color:var(--ink);padding:12px 26px;border-radius:999px;font-weight:800;
+  font-size:clamp(14px,1.3vw,19px)}
+
+/* ── survey.html — 참여자 설문 폼(모바일 전용) ── */
+.q{margin-bottom:30px}
+.qtitle{font-size:17px;font-weight:800;letter-spacing:-.02em;line-height:1.4;margin-bottom:12px}
+.qnote{font-size:12.5px;color:var(--ink3);font-weight:600;margin-bottom:10px}
+.optgrid{display:flex;flex-direction:column;gap:9px}
+.optcard{display:flex;align-items:center;gap:12px;background:var(--panel);border:2px solid transparent;
+  border-radius:16px;padding:14px 16px;cursor:pointer;transition:.15s}
+.optcard input{width:19px;height:19px;accent-color:var(--yellow);flex:0 0 auto}
+.optcard span{font-size:15.5px;font-weight:600;letter-spacing:-.01em}
+.optcard:has(input:checked){background:rgba(253,206,15,.16);border-color:var(--yellow)}
+.optcard:has(input:disabled:not(:checked)){opacity:.4;cursor:not-allowed}
+textarea{width:100%;background:var(--panel);border:2px solid transparent;border-radius:16px;
+  color:var(--ink);font:inherit;font-size:15px;padding:14px 16px;min-height:84px;resize:vertical}
+textarea:focus{outline:none;border-color:var(--yellow)}
+textarea::placeholder{color:var(--ink3)}
+
+/* ── admin.html — 진행자 관리 화면 ── */
+.adminbar{display:flex;align-items:center;gap:14px;padding:16px 20px;border-bottom:1px solid var(--line2);
+  position:sticky;top:0;background:var(--bg);z-index:5;flex-wrap:wrap}
+.admincount{margin-left:auto;font-size:14px;color:var(--ink3);font-weight:700}
+.adminlist{padding:18px 20px 40px;display:flex;flex-direction:column;gap:14px;max-width:900px;margin:0 auto;width:100%}
+.adminempty{padding:40px 20px;text-align:center;color:var(--ink3);font-weight:600}
+.adminrow{background:var(--panel);border-radius:18px;padding:16px 18px;display:flex;flex-direction:column;gap:10px}
+.adminmeta{display:flex;gap:14px;font-size:12px;color:var(--ink3);font-weight:700}
+.admincell{display:flex;flex-direction:column;gap:6px}
+.hidetoggle{display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:700;color:var(--no);cursor:pointer;width:fit-content}
+.hidetoggle input{accent-color:var(--no)}
+.admintext{font-size:14.5px;line-height:1.5;color:var(--ink)}
+.admintext.ishidden{color:var(--ink3);text-decoration:line-through}
+.admintext i{color:var(--ink3);font-style:normal;font-weight:500}

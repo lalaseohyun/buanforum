@@ -21,8 +21,13 @@ export default {
 
     ctx.setControls([
       { label: '◀ 대표정책', onClick: () => ctx.goSession('policy', { resume: true }) },
+      { label: '만족도조사 ▶', variant: 'primary', onClick: () => ctx.goSession('survey', { resume: true }) },
     ]);
-    ctx.setKeys({ ArrowLeft: () => ctx.goSession('policy', { resume: true }) });
+    ctx.setKeys({
+      ArrowLeft: () => ctx.goSession('policy', { resume: true }),
+      ArrowRight: () => ctx.goSession('survey', { resume: true }),
+      ' ': () => ctx.goSession('survey', { resume: true }),
+    });
     return { unmount() {} };
   },
 };

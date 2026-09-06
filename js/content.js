@@ -21,6 +21,7 @@ export const loadOpening = () => load('01-opening');
 export const loadQuiz = () => load('02-quiz');
 export const loadTalk = () => load('03-talk');
 export const loadBoard = () => load('04-board');
+export const loadSurvey = () => load('07-survey');
 // 원탁토론 참고자료(분야별 5페이지)의 사업 원자료 — 4번의 나머지 content/*.json과
 // 달리 src/data/에 둔다(가공된 슬라이드 문구가 아니라 시행계획 원자료라 구분).
 export const loadPolicies = () => loadPath('policies-2026', 'src/data/policies-2026.json');

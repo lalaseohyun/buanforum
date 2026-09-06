@@ -59,6 +59,14 @@
       "title": "우수정책팀 시상",
       "subtitle": "청년이 그리는 부안의 현재와 미래",
       "kind": "award"
+    },
+    {
+      "id": "survey",
+      "no": 7,
+      "short": "만족도조사",
+      "title": "만족도조사",
+      "subtitle": "오늘 어떠셨나요?",
+      "kind": "survey"
     }
   ],
 

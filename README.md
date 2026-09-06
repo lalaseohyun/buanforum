@@ -15,8 +15,10 @@ GitHub Pages에 올려 씁니다. **주소가 고정**이라 QR을 행사 전에
 |---|---|
 | 참여자 | https://lalaseohyun.github.io/buanforum/ |
 | 진행자 | https://lalaseohyun.github.io/buanforum/host.html?k=2026 |
+| 만족도조사 설문(참여자, QR용) | https://lalaseohyun.github.io/buanforum/survey.html |
+| 만족도조사 관리(진행자) | https://lalaseohyun.github.io/buanforum/admin.html?k=2026 |
 
-Firebase 프로젝트: `buanforum` (Firestore·Storage 모두 asia-northeast3/무료 위치로 생성 완료, Storage는 Blaze 요금제).
+Firebase 프로젝트: `buanforum` (Firestore·Storage 모두 asia-northeast3/무료 위치로 생성 완료, Storage는 Blaze 요금제). Realtime Database는 별도 설정이 필요합니다 — 아래 "만족도조사(Realtime Database) 설정" 참고.
 
 ---
 
@@ -46,6 +48,28 @@ Firebase 프로젝트: `buanforum` (Firestore·Storage 모두 asia-northeast3/�
 ### 4. QR 인쇄
 참여자 주소를 QR로 만들어 미리 인쇄해도 됩니다 — 주소가 고정이라 행사 당일 바뀌지 않습니다.
 (진행자 화면 대기화면에도 같은 QR이 실시간으로 뜹니다.)
+
+---
+
+## 만족도조사(Realtime Database) 설정 — 한 번만
+
+7번 세션(만족도조사)만 위 Firestore·Storage와 **다른 Firebase 제품**인 **Realtime Database**를 씁니다.
+아래를 안 하면 설문 제출·진행자 실시간 화면·관리 화면(`admin.html`)이 전부 "불러오는 중…"에서
+멈춥니다. 나머지 세션(1~6번)은 이 설정 없이도 그대로 잘 작동합니다.
+
+1. Firebase 콘솔(같은 프로젝트) → 왼쪽 메뉴 **Realtime Database** → **데이터베이스 만들기**
+   → 위치 선택(가까운 리전, 예: `asia-southeast1`) → 보안 규칙은 아무거나 선택하고 일단 만듭니다
+   (바로 다음 단계에서 우리 규칙으로 덮어씁니다)
+2. 만들어진 데이터베이스 화면 상단에 뜨는 주소를 복사합니다 —
+   `https://<프로젝트id>-default-rtdb.<리전>.firebasedatabase.app` 형태입니다
+3. [js/firebase.js](js/firebase.js)를 열어 `databaseURL` 값을 방금 복사한 진짜 주소로 교체합니다
+   (지금은 안내 주석과 함께 placeholder 값이 들어 있습니다)
+4. Realtime Database 콘솔 ▸ **규칙** 탭에 [firebase/database.rules.json](firebase/database.rules.json)
+   내용을 붙여넣고 **게시**
+5. 이후 `host.html?k=<진행자키>`의 마지막(7번) 탭에서 QR·실시간 화면이, `survey.html`에서
+   설문 폼이, `admin.html?k=<진행자키>`에서 관리 화면(숨김·일시정지·엑셀 다운로드)이 작동합니다.
+   설문 QR이 가리키는 주소는 참여자 주소가 아니라 `.../survey.html`이니, 7번 탭의 QR을
+   그대로 화면에 띄우고 참여자가 그걸 찍게 하면 됩니다.
 
 ---
 
@@ -111,7 +135,8 @@ MAP.md                 뭘 바꾸려면 어디를 여는지 — 가장 먼저 �
 content/                문항·문구·팀 구성 원본 (코드 아님, 여기만 고치면 반영됨)
 css/                    화면 스타일
 js/                     진행 로직
-firebase/               Firestore·Storage 보안 규칙
+firebase/               Firestore·Storage·Realtime Database 보안 규칙
 tools/test-score.js     채점 규칙 회귀 검증 (npm test)
 host.html / index.html  진행자 / 참여자 화면
+survey.html / admin.html  만족도조사 설문 폼 / 진행자 관리 화면(세션 라우터 밖의 별도 페이지)
 ```

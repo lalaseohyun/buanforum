@@ -38,6 +38,7 @@ import {
 import { firebaseConfig, FORUM_ID } from "./firebase.js";
 
 const app = initializeApp(firebaseConfig);
+export { app };
 export const auth = getAuth(app);
 export const fs = getFirestore(app);
 

@@ -13,6 +13,7 @@
 | 토크콘서트 큐시트·패널 소개 | [content/03-talk.json](content/03-talk.json) |
 | 원탁토론 첫 화면·STEP1~3·참고자료 요약(예산표) | [content/04-board.json](content/04-board.json) |
 | 원탁토론 참고자료 P1~P5(분야별 49개 사업 목록) | [src/data/policies-2026.json](src/data/policies-2026.json) — `content/`가 아니라 여기 있다(가공된 슬라이드 문구가 아니라 시행계획 원자료라 구분) |
+| 만족도조사 문항 문구(설문 폼·실시간 화면 공용) | [content/07-survey.json](content/07-survey.json) |
 
 `content/*.json`은 GitHub 저장소에서 웹으로 직접 열어 고치고 저장하면 끝난다. 로컬 개발 환경이 필요 없다.
 
@@ -32,6 +33,7 @@
 | 원탁토론 참고자료 패널 모양 | [css/sessions/board.css](css/sessions/board.css) |
 | 대표정책(사진 갤러리·확대·공감투표 표) 모양 | [css/sessions/policy.css](css/sessions/policy.css) |
 | 6. 우수정책 시상 타이틀 모양 | [css/sessions/slides.css](css/sessions/slides.css) 의 `.awardslide` 부분 |
+| 만족도조사(QR·실시간 화면·설문 폼·관리 화면) 모양 | [css/sessions/survey.css](css/sessions/survey.css) |
 
 ## 진행 흐름·버튼 로직 (세션별로 완전히 분리돼 있다)
 
@@ -48,8 +50,21 @@
 | 4. 원탁토론(첫화면+STEP1~3+참고자료 P1~P5, 사진 없음) | [js/host/sessions/board.js](js/host/sessions/board.js) | [js/team/sessions/board.js](js/team/sessions/board.js) |
 | 5. 대표정책(사진 갤러리 → 공감투표) | [js/host/sessions/policy.js](js/host/sessions/policy.js) | [js/team/sessions/vote.js](js/team/sessions/vote.js) (투표 화면. `?vote=1`로 들어온 폰만 뜬다) |
 | 6. 우수정책 시상 | [js/host/sessions/award.js](js/host/sessions/award.js) | wait.js 공용 |
+| 7. 만족도조사(QR·카운터 → 실시간 오픈엔디드) | [js/host/sessions/survey.js](js/host/sessions/survey.js) + [js/host/sessions/surveyWall.js](js/host/sessions/surveyWall.js)(카드 애니메이션) | 참여자는 이 탭이 아니라 별도 페이지로 들어온다 — 아래 "만족도조사 전용 페이지" 참고 |
 
 세션을 하나 더 추가하려면: `js/host/sessions/새이름.js` 작성(아래 계약 참고) → [js/host/main.js](js/host/main.js)의 `SESSIONS` 배열에 한 줄 등록 → `content/forum.json`의 `sessions`에 한 항목 추가. 기존 세션 파일은 하나도 안 건드린다.
+
+## 만족도조사 전용 페이지 — 세션 라우터 밖에 있다
+
+QR·실시간 화면(위 7번)은 host.html 안의 세션이지만, **설문 폼과 진행자 관리 화면은 완전히 별도의 정적 페이지**다(참가자가 조 선택 없이 바로 들어오고, 관리 화면은 참가자에게 아예 안 보여야 하기 때문).
+
+| 파일 | 역할 |
+|---|---|
+| [survey.html](survey.html) + [js/surveyForm.js](js/surveyForm.js) | 참여자 설문 폼(모바일 전용). `survey.html` 그 자체가 QR이 가리키는 주소 |
+| [admin.html](admin.html) + [js/adminPanel.js](js/adminPanel.js) | 진행자 관리 화면 — 응답별 숨김 토글·전체 일시정지·엑셀 다운로드(SheetJS). `admin.html?k=진행자키`로 열어야 조작 버튼이 뜬다(host.html과 같은 방식) |
+| [js/survey.js](js/survey.js) | 응답 저장·구독 래퍼 — 이 셋(7번 세션·survey.html·admin.html)이 전부 이 파일을 통해서만 데이터를 만진다 |
+
+**⚠ 만족도조사는 Firestore가 아니라 별도 제품인 Realtime Database를 쓴다.** 아직 Firebase 콘솔에서 켜지 않았다면 [README.md](README.md)의 "만족도조사(Realtime Database) 설정" 을 먼저 볼 것 — 안 켜면 설문 제출·실시간 화면·관리 화면이 전부 "불러오는 중"에서 안 넘어간다.
 
 ## 셸(모든 세션이 공유하는 틀) — 어지간해선 안 열어도 되는 파일
 

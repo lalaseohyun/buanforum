@@ -1,0 +1,16 @@
+{
+  "//": "만족도조사(Realtime Database) 보안 규칙 — Firebase 콘솔 ▸ Realtime Database ▸ 규칙 탭에 이 파일 내용을 그대로 붙여넣고 게시한다. firebase/firestore.rules와 같은 신뢰 모델: 하룻밤 행사용 내부 도구라 익명 인증만 확인하고, 진행자 전용 조작(숨김·일시정지)은 admin.html 화면 쪽에서만 막는다(문서 구조를 바꾸면 js/survey.js도 같이 고칠 것).",
+  "rules": {
+    "survey": {
+      ".read": "auth != null",
+      "responses": {
+        "$id": {
+          ".write": "auth != null"
+        }
+      },
+      "paused": {
+        ".write": "auth != null"
+      }
+    }
+  }
+}
