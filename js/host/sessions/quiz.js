@@ -182,6 +182,19 @@ export default {
     }
 
     /* ---- 렌더 ---- */
+    // Firestore 구독 4개(quiz/state·forum teamCount·teams·quizAnswers)가 마운트 직후
+    // 거의 동시에 각자 첫 스냅샷을 들고 도착한다. 각 콜백이 곧장 render()를 부르면
+    // 같은 화면을 몇 분의 1초 사이에 3~4번 다시 그리게 되고, 특히 대기화면에서는
+    // QR 코드를 그때마다 새로 그려서 눈에 띄게 버벅인다 — 한 프레임에 몰아서 한 번만 그린다.
+    // setTimeout(0)을 쓴다 — requestAnimationFrame은 이 브라우저 탭이 안 보이는 동안
+    // (다른 창에 가려짐 등) 완전히 멈춰버려서, 그 사이 화면이 계속 빈 채로 남는
+    // 진짜 버그가 될 수 있다. setTimeout은 숨겨진 탭에서도 결국은 실행된다.
+    let renderQueued = false;
+    function scheduleRender() {
+      if (renderQueued) return;
+      renderQueued = true;
+      setTimeout(() => { renderQueued = false; render(); }, 0);
+    }
     function render() {
       if (!data) { ctx.root.innerHTML = `<div class="slide"><h2>불러오는 중…</h2></div>`; return; }
       const it = currentItem();
@@ -367,7 +380,10 @@ export default {
     loadQuiz().then(d => {
       data = d;
       ITEMS = [data.practice, ...data.questions];
-      render();
+      // 여기서 바로 render()를 부르지 않는다 — 아직 Firestore 진짜 상태를 한 번도 못
+      // 받아서(state는 기본값인 대기화면) 그걸로 한 번 그렸다가, 곧이어 진짜 상태가
+      // 도착하면 또 그리는 이중 렌더(= QR 코드 두 번 그리기)가 됐었다. 아래 첫 구독
+      // 콜백이 도착하는 순간이 곧 "믿을 수 있는 첫 렌더"다.
       unsubs.push(watch(path('quiz', 'state'), snap => {
         if (snap) state = { ...state, ...snap };
         // 탭바에서 직접 눌러 들어왔는데(ctx.resume 아님) 실제 진행 상황을 처음 받아보니
@@ -378,14 +394,14 @@ export default {
           // 순서로 실제 진행 지점까지 따라잡는다(stepForward의 캐치업 로직 참고).
           if (!ctx.resume && state.phase !== 'lobby' && ITEMS.length) previewIndex = -1;
         }
-        render();
+        scheduleRender();
       }));
       unsubs.push(watch(path(), snap => {
         const n = Number(snap?.teamCount);
-        if (n && n !== teamCount) { teamCount = n; render(); }
+        if (n && n !== teamCount) { teamCount = n; scheduleRender(); }
       }));
-      unsubs.push(watchCollection(path('teams'), snap => { teamsMap = snap; render(); }));
-      unsubs.push(watchCollection(path('quizAnswers'), snap => { answersAll = snap; render(); }));
+      unsubs.push(watchCollection(path('teams'), snap => { teamsMap = snap; scheduleRender(); }));
+      unsubs.push(watchCollection(path('quizAnswers'), snap => { answersAll = snap; scheduleRender(); }));
     }).catch(e => {
       ctx.root.innerHTML = `<div class="slide"><h2>content/02-quiz.json 로드 실패</h2><p class="sub">${esc(e.message)}</p></div>`;
     });
