@@ -7,7 +7,10 @@
      3팀 이하   1순위만        (1표)
      4팀 이상   1순위 2표 · 2순위 1표
 
-   한 번 낸 표는 이 기기에서 다시 못 낸다(문서 ID가 기기별 voterId).
+   1인 1표 제한은 없다(진행자 요청으로 뺐다 — 같은 기기로 몇 번이든 다시 투표할
+   수 있다). 다만 기기별 voterId는 그대로라, 같은 기기가 다시 내면 그 기기의
+   "이전 표"가 새 표로 교체될 뿐 중복으로 더해지지는 않는다(js/db.js submitVote가
+   voterId 문서를 덮어쓰기 때문 — merge:false).
 
    고칠 때 ─ 규칙        → js/db.js voteWeights
              화면·문구   → 이 파일 + css/sessions/policy.css
@@ -20,7 +23,6 @@ function getVoterId() {
   if (!id) { id = crypto.randomUUID(); localStorage.setItem('voterId', id); }
   return id;
 }
-const doneKey = () => 'voted:' + (location.host + location.pathname);
 
 export default {
   id: 'vote',
@@ -29,7 +31,9 @@ export default {
     let live = null;                 // policy/live { open, names }
     let teamCount = ctx.forum.teamCount || ctx.forum.teams.length;
     let picks = [];                  // 1순위부터 순서대로 담긴 조 번호
-    let done = localStorage.getItem(doneKey()) === '1';
+    // 새로고침하면(또는 "다시 투표하기"를 누르면) 다시 투표할 수 있다 — 이 세션이
+    // 떠 있는 동안만 기억하는 값이라 새로고침하면 자동으로 false로 돌아온다.
+    let done = false;
     let sending = false;
     const unsubs = [];
 
@@ -40,8 +44,10 @@ export default {
       if (done) {
         ctx.root.innerHTML = `<div class="center">
           <div class="big">투표해 주셔서 고맙습니다</div>
-          <div class="sub">이 휴대폰에서는 한 번만 투표할 수 있어요.<br>결과는 앞 화면에서 함께 확인해요.</div>
+          <div class="sub">결과는 앞 화면에서 함께 확인해요.</div>
+          <button class="ghost" id="voteAgain" style="margin-top:22px">다시 투표하기</button>
         </div>`;
+        document.getElementById('voteAgain').onclick = () => { picks = []; done = false; render(); };
         return;
       }
       if (!live || !live.open) {
@@ -91,7 +97,6 @@ export default {
       sending = true; render();
       try {
         await submitVote(voterId, picks);
-        localStorage.setItem(doneKey(), '1');
         done = true;
       } catch (e) {
         alert('투표를 보내지 못했습니다: ' + e.message);

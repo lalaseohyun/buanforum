@@ -6,7 +6,8 @@
    구조(forums/{FORUM_ID} 아래) ─
      (forum 문서 자체)      { session, teamCount }  ← 지금 진행 중인 세션 id + 오늘 진행할 조 수. 팀 화면 전체가 구독한다
      policy/live            { page, open, names:{ [teamNo]: "정책명" } }  대표정책 화면 상태(팀·투표 화면이 구독)
-     policyVotes/{voterId}  { ranks:[조번호…], at }   공감투표. 문서 ID가 기기별 voterId라 1인 1회로 묶인다
+     policyVotes/{voterId}  { ranks:[조번호…], at }   공감투표. 문서 ID가 기기별 voterId — 같은 기기가
+                            다시 내면 이전 표가 새 표로 덮어써진다(1인 1표 제한은 없음, 진행자 요청)
      quiz/state          { phase, index, open, revealed, showChart, openedAt, asked{} }  진행자 전용 상태
      quiz/live             { phase, index, open, revealed, item{...정답 없음}, reveal{...정답 공개 시에만} }  팀이 구독
      quizAnswers/{qid}      { "1":{choice,ms}, "2":{...} }      문항당 문서 1개, 팀 번호가 필드명

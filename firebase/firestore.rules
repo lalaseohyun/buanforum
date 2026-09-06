@@ -75,7 +75,8 @@ service cloud.firestore {
         allow write: if isHost(forumId);
       }
       // 공감투표 — 문서 ID가 기기별 voterId다. 자기 문서만 쓰게 막을 로그인 체계가 없으므로
-      // (위 신뢰 모델 참고) 익명 인증만 확인하고, 1인 1회는 화면 쪽에서 막는다.
+      // (위 신뢰 모델 참고) 익명 인증만 확인한다. 1인 1표 제한은 없다(진행자 요청) —
+      // 같은 기기가 다시 내면 이 문서가 새 표로 덮어써질 뿐이다.
       // 초기화는 진행자가 빈 문서로 덮어쓴다.
       match /policyVotes/{voterId} {
         allow read: if signedIn();
