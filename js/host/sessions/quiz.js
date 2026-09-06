@@ -22,10 +22,11 @@
        화살표를 누를 때마다 한 단계씩 더 보여준다(stage 0/1/2). Firestore에는
        안 남기는 진행자 화면만의 연출이라 팀 화면과는 무관하다.
      · 탭바에서 "2.퀴즈"를 직접 눌러 들어오면(이미 진행 중이었어도) 진행자 화면만
-       1번 문제부터 되돌아본다(previewIndex) — 실제 진행 상황·참가자 화면·점수는
-       전혀 안 건드린다. 화살표로 계속 넘기면 실제 진행 지점까지 따라잡고 자동으로
-       원래 흐름에 합류한다. 화살표로 옆 세션에서 이어서 들어올 때(ctx.resume)는
-       이 되돌아보기 없이 실제 상태를 바로 보여준다.
+       QR 대기화면(연습문제 전 단계)부터 되돌아본다(previewIndex, -1=대기화면) —
+       실제 진행 상황·참가자 화면·점수는 전혀 안 건드린다. 화살표로 계속 넘기면
+       연습문제→1번→2번…으로 실제 진행 지점까지 따라잡고 자동으로 원래 흐름에
+       합류한다. 화살표로 옆 세션에서 이어서 들어올 때(ctx.resume)는 이 되돌아보기
+       없이 실제 상태를 바로 보여준다.
    ─────────────────────────────────────── */
 import { esc, nl2br, sentences, fitInto } from '../../util.js';
 import { loadQuiz } from '../../content.js';
@@ -46,8 +47,9 @@ export default {
     let answersAll = {};  // { [qid]: { [no]: {choice, ms} } }
     let stage = 0;        // 0=문제만 1=+보기 2=+제출현황 — 진행자 화면 전용, Firestore에 안 남긴다
     // 탭바에서 "2.퀴즈"를 직접 눌러 들어왔는데(ctx.resume 아님) 이미 진행 중이었다면,
-    // 실제 진행 상황(참가자 화면·점수)은 그대로 둔 채 진행자 화면만 1번 문제부터 되돌아본다.
-    // null이면 "미리보기 아님, 실제 state를 그대로 보여준다". Firestore에는 절대 안 쓴다.
+    // 실제 진행 상황(참가자 화면·점수)은 그대로 둔 채 진행자 화면만 QR 대기화면부터
+    // 되돌아본다. -1=대기화면, 0 이상=ITEMS의 그 문제. null이면 "미리보기 아님,
+    // 실제 state를 그대로 보여준다". Firestore에는 절대 안 쓴다.
     let previewIndex = null;
     let firstSync = true; // 이번 마운트에서 Firestore 값을 처음 받은 순간에만 미리보기 여부를 정한다
     const unsubs = [];
@@ -148,7 +150,7 @@ export default {
     }
     function stepBack() {
       if (previewIndex !== null) {
-        if (previewIndex > 0) { previewIndex--; render(); }
+        if (previewIndex > -1) { previewIndex--; render(); }
         return;
       }
       if (state.phase === 'lobby') { ctx.goSession('opening', { resume: true }); return; }
@@ -184,8 +186,10 @@ export default {
       if (!data) { ctx.root.innerHTML = `<div class="slide"><h2>불러오는 중…</h2></div>`; return; }
       const it = currentItem();
       const previewing = previewIndex !== null;
-      // 미리보기 중에는 실제 phase가 무엇이든(대기화면·최종순위 포함) 항상 문제 화면으로 보여준다.
-      if (!previewing && (state.phase === 'lobby' || state.index < 0)) { ctx.root.innerHTML = viewLobby(); wireLobby(); }
+      // 미리보기 중엔 previewIndex 하나로만 판단한다(-1이면 대기화면, 0 이상이면 그 문제) —
+      // 실제 phase가 무엇이든(최종순위 포함) 미리보기 중에는 그쪽을 안 본다.
+      const showLobby = previewing ? previewIndex < 0 : (state.phase === 'lobby' || state.index < 0);
+      if (showLobby) { ctx.root.innerHTML = viewLobby(); wireLobby(); }
       else if (!previewing && state.phase === 'final') ctx.root.innerHTML = viewFinal();
       else if (!previewing && state.showChart && it?.chart) ctx.root.innerHTML = viewChart(it);
       else ctx.root.innerHTML = viewQuestion(it); // 정답 공개도 같은 화면에서(정답만 노랗게 + 해설박스)
@@ -316,8 +320,8 @@ export default {
       // "지난 문제 넘겨보기"용 버튼만 보여준다 — 실제 진행에는 손 못 대게 막는다.
       if (previewIndex !== null) {
         return [
-          { label: '◀ 이전 문제', onClick: stepBack, disabled: previewIndex === 0 },
-          { label: '다음 문제 ▶', variant: 'primary', onClick: stepForward },
+          { label: '◀ 이전', onClick: stepBack, disabled: previewIndex <= -1 },
+          { label: '다음 ▶', variant: 'primary', onClick: stepForward },
           { label: '대기화면', variant: 'ghost', onClick: toLobby },
         ];
       }
@@ -370,11 +374,9 @@ export default {
         // 이미 대기화면을 지나 있었다면 — 그 진행은 그대로 두고 화면만 1번 문제로 되돌린다.
         if (firstSync) {
           firstSync = false;
-          // "1번 문제"는 화면에 찍히는 번호(문제 1/9) 기준이라 연습문제(P0)는 건너뛴다
-          if (!ctx.resume && state.phase !== 'lobby' && ITEMS.length) {
-            const first = ITEMS.findIndex(q => q.scored);
-            previewIndex = first >= 0 ? first : 0;
-          }
+          // -1 = QR 대기화면(연습문제 전 단계)부터. 화살표로 계속 넘기면 연습문제→1번…
+          // 순서로 실제 진행 지점까지 따라잡는다(stepForward의 캐치업 로직 참고).
+          if (!ctx.resume && state.phase !== 'lobby' && ITEMS.length) previewIndex = -1;
         }
         render();
       }));
