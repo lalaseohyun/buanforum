@@ -36,10 +36,13 @@ export default {
     // 참여자 화면은 이 탭 안이 아니라 별도 정적 페이지(survey.html)다
     const surveyUrl = () => location.href.replace(/host\.html.*$/, '') + 'survey.html';
 
+    // 응답 문서의 실제 필드명(js/surveyForm.js·admin.html과 반드시 맞춰야 함): q3_memorable / q5_free
+    const RESPONSE_FIELD = { q3: 'q3_memorable', q5: 'q5_free' };
     function visibleItems(field) {
+      const key = RESPONSE_FIELD[field];
       return Object.entries(responses)
         .filter(([, r]) => r && !r[`hidden_${field}`])
-        .map(([id, r]) => ({ id, text: r[field] }))
+        .map(([id, r]) => ({ id, text: r[key] }))
         .filter(it => it.text);
     }
 
