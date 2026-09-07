@@ -3,7 +3,7 @@
      0) 정책 갤러리(메인페이지) — 위에 "대표정책" kicker + 제목 + 안내문이 있고,
         그 아래 진행자가 자기 컴퓨터에서 조별 사진을 올리는 칸이 있다.
         사진을 누르면 전체화면으로 크게 띄우고, 거기서 "사진 바꾸기"로 다시 올릴 수 있다.
-     1) 공감투표 — 투표 전용 QR + 조별 정책명(진행자가 직접 기입) + 실시간 집계.
+     1) 공감투표 — 참여자 허브 안내 QR + 조별 정책명(진행자가 직접 기입) + 실시간 집계.
         표 수만큼 동그란 점이 박스 안에 콕콕 찍히는 방식(멘티미터 스타일, 막대 아님).
         조가 적을수록(예: 3개) 한 줄이 세로로 더 크게 — 화면을 항상 채우도록
         css/sessions/policy.css의 .voterow가 flex:1로 남는 세로 공간을 나눠 가진다.
@@ -35,7 +35,10 @@ export default {
       .filter(([, p]) => p && p.teamNo === no && p.url)
       .map(([id, p]) => ({ id, ...p }))[0];
 
-    const voteUrl = () => location.href.replace(/host\.html.*$/, '') + '?vote=1';
+    // 예전엔 투표 전용 QR(?vote=1, 조 선택 없이 바로 투표 화면)이었지만, 지금은 참여자
+    // 허브(루트 주소)의 "대표정책" 타일이 진행 단계(activeSession=proposal_vote)를 보고
+    // 알아서 투표 화면을 띄운다 — 그래서 그냥 허브 주소를 가리키면 된다.
+    const hubUrl = () => location.href.replace(/host\.html.*$/, '');
 
     function render() {
       // 투표가 들어올 때마다 다시 그리는데, 그 순간 진행자가 정책명을 치고 있을 수 있다.
@@ -114,7 +117,7 @@ export default {
         <div class="voteleft">
           <div class="votetitle">공감투표</div>
           <div class="qrbox"><div id="voteQr"></div></div>
-          <div class="votesub">휴대폰으로 QR을 찍고<br>마음에 드는 정책을 골라주세요</div>
+          <div class="votesub">휴대폰 허브 화면에서<br>"대표정책"을 눌러 투표해주세요</div>
           <div class="voterule">${w.length === 1 ? '한 팀에 1표' : w.map((v, i) => `${i + 1}순위 ${v}표`).join(' · ')}</div>
           <div class="votecount">투표한 사람 <b>${Object.keys(votes).length}</b>명</div>
         </div>
@@ -157,7 +160,7 @@ export default {
         const holder = document.getElementById('voteQr');
         if (holder && window.QRCode) {
           holder.innerHTML = '';
-          new QRCode(holder, { text: voteUrl(), width: 260, height: 260, colorDark: '#2c2c2a', colorLight: '#ffffff' });
+          new QRCode(holder, { text: hubUrl(), width: 260, height: 260, colorDark: '#2c2c2a', colorLight: '#ffffff' });
         }
         // 정책명은 타이핑이 끝난 뒤(포커스가 빠질 때) 저장한다 — 글자마다 저장하면 커서가 튄다
         ctx.root.querySelectorAll('.votetable input').forEach(inp => {

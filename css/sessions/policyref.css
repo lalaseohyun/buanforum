@@ -1,0 +1,38 @@
+/* ───────────────────────────────────────
+   시행계획 참여자 화면(js/team/sessions/policyBrowse.js) — 분야 목록 + 분야별 사업 카드.
+   진행자 화면(css/sessions/board.css)과는 완전히 다른 모바일 전용 레이아웃이라 분리했다.
+
+   고칠 때 ─ 사업 목록 자체   → src/data/policies-2026.json
+             색·크기          → 이 파일
+   ─────────────────────────────────────── */
+
+/* ── 분야 목록 5줄 ── */
+.pflist{display:flex;flex-direction:column;gap:10px;margin-top:20px}
+.pfrow{display:flex;align-items:center;gap:12px;width:100%;text-align:left;
+  background:var(--panel);border-radius:18px;padding:16px 16px}
+.pfrow-main{flex:1;min-width:0}
+.pfrow-name{font-size:16px;font-weight:800;letter-spacing:-.02em}
+.pfrow-sub{font-size:12px;color:var(--ink3);font-weight:500;margin-top:3px}
+.pfrow-meta{flex:0 0 auto;text-align:right;font-size:11.5px;color:var(--ink2);font-weight:600}
+.pfrow-meta b{display:block;font-size:15px;color:var(--yellow);font-weight:800}
+.pfrow-arrow{flex:0 0 auto;font-size:20px;color:var(--ink3)}
+
+/* ── 분야별 사업 카드(세로 스크롤) ── */
+.pfhead{padding-bottom:16px}
+.pfhead-pill{display:inline-block;background:var(--yellow);color:#2c2c2a;font-weight:800;
+  font-size:13px;padding:5px 14px;border-radius:999px}
+.pfhead-sub{font-size:13.5px;color:var(--ink2);font-weight:600;margin-top:10px}
+.pfhead-stats{display:flex;gap:12px;margin-top:8px;font-size:12.5px;color:var(--ink3);font-weight:700}
+.pfhead-stats b{color:var(--ink)}
+
+.pfcards{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:10px;
+  -webkit-overflow-scrolling:touch;padding-bottom:6px}
+.pfcard{background:var(--panel);border-radius:16px;padding:14px 16px}
+.pfcard.hi{background:rgba(253,206,15,.12)}
+.pfcard-head{display:flex;align-items:baseline;gap:9px}
+.pfcard-no{font-size:11.5px;color:var(--ink3);font-weight:700;flex:0 0 auto}
+.pfcard-name{font-size:14.5px;font-weight:700;letter-spacing:-.01em;line-height:1.4}
+.pfcard-name .tag-new{margin-left:7px;font-size:10px;font-weight:800;color:#2c2c2a;
+  background:var(--yellow);padding:2px 8px;border-radius:999px;vertical-align:middle}
+.pfcard-note{font-size:11.5px;color:var(--yellow);font-weight:700;margin-top:4px}
+.pfcard-meta{display:flex;gap:12px;margin-top:8px;font-size:12px;color:var(--ink2);font-weight:600}

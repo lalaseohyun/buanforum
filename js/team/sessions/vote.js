@@ -1,7 +1,8 @@
 /* ───────────────────────────────────────
    공감투표 — 참여자(모바일) 화면.
-   조 대표가 아니라 "참가자 전원"이 투표 전용 QR(주소 끝에 ?vote=1)로 들어온다.
-   그래서 조 선택을 거치지 않는다.
+   허브의 "대표정책" 타일에서, 진행 단계가 proposal_vote일 때 들어온다
+   (js/team/main.js가 고른다). ctx.team이 있으면 자기 조는 목록에서 뺀다
+   (자기 팀 정책엔 투표 못 하게).
 
    투표 규칙(js/db.js voteWeights) ─
      3팀 이하   1순위만        (1표)
@@ -38,22 +39,25 @@ export default {
     let sending = false;
     const unsubs = [];
 
-    const teams = () => ctx.forum.teams.slice(0, teamCount);
+    // 자기 팀 정책엔 투표 못 하게 — ctx.team이 있을 때만(예전 ?vote=1 익명 플로우 호환용으로
+    // ctx.team이 없으면 전체 조를 그대로 보여준다).
+    const teams = () => ctx.forum.teams.slice(0, teamCount).filter(t => !ctx.team || t.no !== ctx.team);
     const weights = () => voteWeights(teamCount);
 
     function render() {
+      const back = ctx.backToHub ? `<div class="subhead"><span class="backlink" id="back">← 허브로</span></div>` : '';
       if (done) {
-        ctx.root.innerHTML = `<div class="center">
+        ctx.root.innerHTML = `${back}<div class="center">
           <div class="big">투표해 주셔서 고맙습니다</div>
           <div class="sub">결과는 앞 화면에서 함께 확인해요.</div>
         </div>`;
-        return;
+        wireBack(); return;
       }
       if (!live || !live.open) {
-        ctx.root.innerHTML = `<div class="center"><div class="pulse"></div>
+        ctx.root.innerHTML = `${back}<div class="center"><div class="pulse"></div>
           <div class="big">곧 투표가 열립니다</div>
           <div class="sub">진행자 화면을 봐주세요</div></div>`;
-        return;
+        wireBack(); return;
       }
       const w = weights();
       // 골랐다는 표시를 글자 배지 대신, 진행자 화면과 같은 노란 점으로 보여준다 —
@@ -75,7 +79,7 @@ export default {
       const guide = w.length === 1
         ? '가장 마음에 드는 정책 <b>1팀</b>을 골라주세요'
         : `마음에 드는 순서대로 <b>${w.length}팀</b>을 골라주세요 (${w.map((v, i) => `${i + 1}순위 ${v}표`).join(' · ')})`;
-      ctx.root.innerHTML = `
+      ctx.root.innerHTML = `${back}
         <div class="h">공감투표</div>
         <div class="sub">${guide}</div>
         <div class="votelist">${cards}</div>
@@ -85,6 +89,7 @@ export default {
             ${sending ? '보내는 중…' : `투표하기 (${picks.length}/${w.length})`}
           </button>
         </div>`;
+      wireBack();
       ctx.root.querySelectorAll('.votecard').forEach(b => {
         b.onclick = () => {
           const no = Number(b.dataset.t);
@@ -96,6 +101,11 @@ export default {
       });
       document.getElementById('clr').onclick = () => { picks = []; render(); };
       document.getElementById('send').onclick = send;
+    }
+
+    function wireBack() {
+      const b = document.getElementById('back');
+      if (b) b.onclick = ctx.backToHub;
     }
 
     async function send() {

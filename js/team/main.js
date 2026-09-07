@@ -1,90 +1,79 @@
 /* ───────────────────────────────────────
-   참여자(모바일) 셸 — 조 선택 · 진행자가 지금 띄운 세션을 그대로 따라간다.
+   참여자(모바일) 셸 — 루트 주소는 이제 "허브"다(hub.js). 예전처럼 진행자가 지금
+   띄운 세션을 그대로 따라가는 방식이 아니라, 참여자가 직접 타일을 눌러 들어간다
+   (docs/참여자용페이지_구상안.md). 이 파일은 그 사이를 잇는 얇은 라우터일 뿐이고,
+   조 상태·진행 단계 판단은 전부 hub.js 안에 있다.
 
-   고칠 때 ─ 세션 하나의 내용/흐름   → js/team/sessions/<해당 세션>.js
-             셸 자체(상단바 등)      → 이 파일 + css/team.css
+   고칠 때 ─ 허브 화면(타일·조 확인)   → js/team/sessions/hub.js
+             타일 하나의 내용/흐름     → js/team/sessions/<해당 화면>.js
+             셸 자체(상단바 등)        → 이 파일 + css/team.css
    세션 모듈 계약 ─
      default export = { id, mount(ctx) → { unmount() } }
-     ctx로 넘겨주는 것: root, forum, team(조 번호), leaveTeam()
-   라우팅 규칙 ─ 진행자가 goSession()할 때마다 forum 문서의 session 필드가 바뀐다.
-   그 값이 'quiz'|'board'|'policy'면 해당 팀 세션 모듈을, 그 외(home/opening/talk)는
-   공용 대기화면(wait.js)을 띄운다 — 참가자는 스스로 진행하지 않는다.
+     ctx로 넘겨주는 것: root, forum, team(조 번호, 없으면 null), backToHub(), leaveTeam(),
+                        enterTile(id, opts) — hub.js만 쓴다(다른 타일 화면에서 부를 일 없음)
+   라우팅 규칙 ─ hub.js가 조 선택·확인까지 끝내고 enterTile(id)을 부르면
+   그 id에 맞는 화면을 마운트한다. 'policy'는 그 순간의 진행 단계(opts.mode)에 따라
+   제출/투표 중 하나로 갈린다. 'survey'는 화면이 아니라 별도 페이지(survey.html) 이동이다.
    ─────────────────────────────────────── */
-import { ensureAuth, watch, teamSet, path } from '../db.js';
+import { ensureAuth } from '../db.js';
 import { loadForum } from '../content.js';
 import { esc } from '../util.js';
+import { getMyTeam, clearMyTeam } from './teamId.js';
 
-import waitSession from './sessions/wait.js';
+import hubSession from './sessions/hub.js';
 import quizSession from './sessions/quiz.js';
-import boardSession from './sessions/board.js';
+import policyBrowseSession from './sessions/policyBrowse.js';
+import proposalSubmitSession from './sessions/proposalSubmit.js';
 import voteSession from './sessions/vote.js';
-
-// 대표정책(5번)은 진행자가 사진을 올리므로 참여자 화면은 공감투표만 담당한다
-const byId = { quiz: quizSession, board: boardSession, policy: voteSession };
-
-// 투표 전용 QR(주소 끝 ?vote=1)로 들어오면 조 선택을 건너뛰고 바로 투표 화면으로 간다
-const VOTE_ONLY = new URLSearchParams(location.search).get('vote') === '1';
 
 const root = document.getElementById('app');
 const bar = { title: document.getElementById('ttl'), myteam: document.getElementById('mt'), foot: document.getElementById('foot') };
 
 let forum = null;
-let team = Number(localStorage.getItem('team')) || null;
-let currentSessionId = null;
 let mounted = null;
-let liveTeamCount = null;   // 진행자가 정한 오늘의 조 수(Firestore forum 문서)
-const teamCount = () => liveTeamCount || forum.teamCount || forum.teams.length;
+let policyMode = null;   // 'proposal_submit' | 'proposal_vote' — 대표정책 타일에 들어간 순간의 진행 단계
 
 function renderBar() {
   bar.title.textContent = forum.title;
-  const me = forum.teams.find(t => t.no === team);
-  if (team) { bar.myteam.hidden = false; bar.myteam.textContent = me ? me.label + '조' : String(team); }
+  const no = getMyTeam();
+  const me = no && forum.teams.find(t => t.no === no);
+  if (no) { bar.myteam.hidden = false; bar.myteam.textContent = (me ? me.label : String(no)) + '조'; }
   else bar.myteam.hidden = true;
-  bar.foot.innerHTML = team
+  bar.foot.innerHTML = no
     ? `${esc(forum.subtitle || '')} · <span class="link" id="leave">조 다시 선택</span>`
     : esc(forum.subtitle || '');
   const leave = document.getElementById('leave');
-  if (leave) leave.onclick = leaveTeam;
+  if (leave) leave.onclick = () => {
+    if (!confirm('조 선택을 다시 하시겠어요?')) return;
+    clearMyTeam();
+    renderBar();
+  };
 }
 
-function leaveTeam() {
-  if (!confirm('조 선택을 다시 하시겠어요?')) return;
-  localStorage.removeItem('team');
-  team = null;
-  route();
+function backToHub() { mountScreen('hub'); }
+function leaveTeam() { clearMyTeam(); backToHub(); }
+
+function ctxFor() {
+  return { root, forum, team: getMyTeam(), backToHub, leaveTeam, enterTile };
 }
 
-function renderJoin() {
-  // 오늘 진행하는 조 수만큼만 보여준다(진행자가 대기화면에서 고른 값)
-  const cards = forum.teams.slice(0, teamCount()).map(t => `
-    <div class="tcard" data-no="${t.no}"><div class="n">${esc(t.label)}조</div><div class="a">${esc(t.name || '')}</div></div>`).join('');
-  root.innerHTML = `<div class="h">우리 조 번호를 눌러주세요</div>
-    <div class="sub">테이블에 붙은 번호와 같은 것을 고르시면 됩니다</div>
-    <div class="grid">${cards}</div>`;
-  root.querySelectorAll('.tcard').forEach(el => {
-    el.onclick = async () => {
-      const no = Number(el.dataset.no);
-      team = no; localStorage.setItem('team', no);
-      await teamSet(path('teams', String(no)), { joinedAt: Date.now() });
-      route();
-    };
-  });
-}
-
-function route() {
-  renderBar();
-  // 투표 전용 QR로 들어온 사람은 조와 상관이 없다 — 바로 투표 화면
-  if (VOTE_ONLY) { mountSession('vote'); return; }
-  if (!team) { if (mounted?.unmount) mounted.unmount(); mounted = null; currentSessionId = null; renderJoin(); return; }
-  const wantId = byId[currentSessionId] ? currentSessionId : 'wait';
-  mountSession(wantId);
-}
-
-function mountSession(id) {
-  const mod = id === 'wait' ? waitSession : id === 'vote' ? voteSession : byId[id];
+function mountScreen(id) {
   if (mounted?.unmount) { try { mounted.unmount(); } catch (e) { console.error(e); } }
   root.innerHTML = '';
-  mounted = mod.mount({ root, forum, team, leaveTeam }) || {};
+  const mod = id === 'hub' ? hubSession
+    : id === 'quiz' ? quizSession
+    : id === 'board' ? policyBrowseSession
+    : id === 'policy' ? (policyMode === 'proposal_submit' ? proposalSubmitSession : voteSession)
+    : null;
+  if (!mod) { mountScreen('hub'); return; }
+  mounted = mod.mount(ctxFor()) || {};
+  renderBar();
+}
+
+function enterTile(id, opts = {}) {
+  if (id === 'survey') { location.href = 'survey.html'; return; }   // 별도 페이지 — 화면 전환이 아니라 이동
+  if (id === 'policy') policyMode = opts.mode || policyMode;
+  mountScreen(id);
 }
 
 (async function start() {
@@ -96,20 +85,5 @@ function mountSession(id) {
     return;
   }
   await ensureAuth();
-
-  watch(path(), snap => {
-    const n = Number(snap?.teamCount) || null;
-    const countChanged = n && n !== liveTeamCount;
-    liveTeamCount = n || liveTeamCount;
-    const sid = snap?.session || 'home';
-    if (VOTE_ONLY) return;                       // 투표 화면은 세션 전환을 따라가지 않는다
-    if (sid !== currentSessionId) {
-      currentSessionId = sid;
-      if (team) mountSession(byId[sid] ? sid : 'wait');
-    } else if (countChanged && !team) {
-      renderJoin();                              // 조 선택 화면이면 조 수 변경을 바로 반영
-    }
-  });
-
-  route();
+  mountScreen('hub');
 })();

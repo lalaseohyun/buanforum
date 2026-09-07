@@ -64,10 +64,11 @@ service cloud.firestore {
         allow read: if signedIn();
         allow write: if isHost(forumId);
       }
-      // 정책 사진 — 이제 진행자가 자기 컴퓨터에서 올린다(참가자 업로드 없음)
+      // 정책 사진 — 참여자가 허브(대표정책 타일)에서 직접 올린다(진행자도 화면에서 대신 올릴 수 있음).
+      // 팀 번호를 검증할 로그인 체계가 없다(위 신뢰 모델 참고) — quizAnswers·policyVotes와 같은 수준.
       match /boardPhotos/{photoId} {
         allow read: if signedIn();
-        allow write: if isHost(forumId);
+        allow write: if signedIn();
       }
       // 공감투표 화면 상태(조별 정책명 포함) — 진행자만 쓴다
       match /policy/live {
