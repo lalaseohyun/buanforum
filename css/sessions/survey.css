@@ -13,12 +13,12 @@
 
 /* ── 5-2. 실시간 오픈엔디드 2분할 ── */
 .wallhead2{flex:0 0 auto;text-align:center;font-size:clamp(20px,2.2vw,36px);font-weight:800;
-  color:var(--yellow);letter-spacing:-.02em;margin-bottom:clamp(10px,1.6vh,20px)}
+  color:var(--yellow);letter-spacing:-.02em;margin-bottom:clamp(24px,3.6vh,48px)}
 .wallwrap{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;gap:clamp(20px,2.8vw,48px);position:relative}
 .wallcol{position:relative;min-width:0;min-height:0;display:flex;flex-direction:column;gap:clamp(12px,1.8vh,22px);
   border-right:1px solid var(--line2);padding-right:clamp(20px,2.8vw,48px)}
 .wallcol:last-child{border-right:none;padding-right:0}
-.wallhead{flex:0 0 auto;display:flex;align-items:baseline;justify-content:space-between;
+.wallhead{flex:0 0 auto;display:flex;align-items:baseline;justify-content:center;gap:10px;
   font-size:clamp(20px,2.2vw,36px);font-weight:800;letter-spacing:-.02em}
 .wallhead .wallcount{font-size:clamp(15px,1.4vw,22px);color:var(--ink3);font-weight:700;font-variant-numeric:tabular-nums}
 .walllist{flex:1;min-height:0;display:flex;flex-direction:column;gap:clamp(10px,1.6vh,18px);overflow:hidden}

@@ -84,14 +84,13 @@
 /* 토크콘서트 ROUND 박스만 위쪽 정렬로 — 라운드마다 문구 줄 수가 달라서 가운데 정렬이면
    박스마다 시작 높이가 들쭉날쭉해 보였다. 안의 글자는 그대로 가운데 정렬(.qbox 기본값). */
 .boxrow.cols-4 .qbox{justify-content:flex-start}
-/* 토크콘서트 ROUND 박스 — 박스 안을 최대한 채우도록 기본 qt(42px 기준)의 2배 크기.
-   4단이라 3단보다 좁은데도 글자를 이만큼 키운 만큼, 강제 줄바꿈된 두 줄이 박스 폭에
-   딱 맞게 줄바꿈 지점을 content/03-talk.json에서 미리 잡아 두었다(talk.js 참고). */
-.boxrow.cols-4 .qt{font-size:clamp(36px,5vw,84px);word-break:keep-all}
-/* 원탁토론 참고자료 개요(5개 분야 박스)만 남는 세로 공간을 끝까지 채우지 않고 내용
-   높이만큼만 차지하게 해서(align-content:start) 박스 세로 길이를 살짝 줄인다.
-   토크콘서트 ROUND 박스(cols-4)는 반대로 세로로 길게 — 기본값(stretch)대로 행 전체를 채운다. */
-.boxrow.cols-5{align-content:start}
+/* 4단은 3단보다 박스가 좁아서 기본 qt 크기로는 강제 줄바꿈 앞 문구가 한 줄에 안 들어가고
+   한 번 더 꺾여 3줄이 됐다 — 이 박스에서만 글자를 살짝 줄여 의도한 2줄로 맞춘다.
+   (word-break:keep-all은 그대로 — 단어 중간에서 안 끊기게) */
+.boxrow.cols-4 .qt{font-size:clamp(18px,1.9vw,34px);word-break:keep-all}
+/* 토크콘서트 ROUND·원탁토론 참고자료 개요 박스 둘 다 — 남는 세로 공간을 끝까지
+   채우지 않고 내용 높이만큼만 차지하게 해서(align-content:start) 박스 세로 길이를 줄인다. */
+.boxrow.cols-4,.boxrow.cols-5{align-content:start}
 .qbox .badge-step{align-self:flex-start;font-size:clamp(13px,1.1vw,18px);font-weight:800;letter-spacing:.08em;
   color:#2c2c2a;background:var(--yellow);padding:6px 16px;border-radius:999px}
 /* ROUND 박스 안의 노란 타원(Round N · ○○)은 좌측 정렬 대신 가운데 정렬로 */

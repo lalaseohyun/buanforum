@@ -35,7 +35,7 @@ export default {
           <div class="pfrow-arrow">›</div>
         </button>`).join('');
       ctx.root.innerHTML = `
-        <div class="subhead"><span class="backlink" id="back">← 허브로</span></div>
+        <div class="subhead"><span class="backlink" id="back">← 홈으로</span></div>
         <div class="h">${esc(policies.meta.title)}</div>
         <div class="sub">${policies.meta.totalCount}개 사업 · ${esc(policies.meta.totalAmount)}</div>
         <div class="pflist">${rows}</div>`;

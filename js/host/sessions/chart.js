@@ -37,13 +37,17 @@ function renderBar(chart) {
   const max = Math.max(...rows.map(r => r.value)) * 1.08;
   const rowH = (H - padT - padB) / rows.length;
   const hi = new Set(chart.highlight || []);
+  // 막대 두께를 rowH의 64%로(예전엔 82%) 줄여서, 그만큼 막대 사이 세로 간격이
+  // 2배로 넓어진다(막대가 많은 문항일수록 다닥다닥 붙어 보이던 문제).
+  // 위아래로 남는 18%씩을 띄우는 것이라 막대 중심은 그대로라(0.18+0.32=0.5)
+  // 라벨·수치 글자의 y좌표(0.62, 아래)는 안 건드려도 된다.
   const bars = rows.map((r, i) => {
     const y = padT + i * rowH;
     const w = (r.value / max) * (W - padL - padR);
     const isHi = hi.has(r.label);
     return `
       <text x="${padL - 14}" y="${y + rowH * 0.62}" text-anchor="end" class="bar-label ${isHi ? 'hi' : ''}">${esc(r.label)}</text>
-      <rect x="${padL}" y="${y + rowH * 0.09}" width="${Math.max(2, w)}" height="${rowH * 0.82}" rx="6" class="bar-rect ${isHi ? 'hi' : ''}"/>
+      <rect x="${padL}" y="${y + rowH * 0.18}" width="${Math.max(2, w)}" height="${rowH * 0.64}" rx="6" class="bar-rect ${isHi ? 'hi' : ''}"/>
       <text x="${padL + w + 12}" y="${y + rowH * 0.62}" class="bar-value ${isHi ? 'hi' : ''}">${r.value}${esc(chart.unit || '')}</text>`;
   }).join('');
   return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">${bars}</svg>`;

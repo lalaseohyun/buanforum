@@ -45,7 +45,7 @@ export default {
     const weights = () => voteWeights(teamCount);
 
     function render() {
-      const back = ctx.backToHub ? `<div class="subhead"><span class="backlink" id="back">← 허브로</span></div>` : '';
+      const back = ctx.backToHub ? `<div class="subhead"><span class="backlink" id="back">← 홈으로</span></div>` : '';
       if (done) {
         ctx.root.innerHTML = `${back}<div class="center">
           <div class="big">투표해 주셔서 고맙습니다</div>

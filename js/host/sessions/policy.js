@@ -218,6 +218,10 @@ export default {
       if (!confirm('올린 사진과 투표를 모두 지웁니다. 정말 초기화할까요?')) return;
       Object.keys(photos).forEach(id => hostReset(path('boardPhotos', id), {}));
       Object.keys(votes).forEach(id => hostReset(path('policyVotes', id), {}));
+      // 사진을 지우는데 정책명 입력칸에 이전 값이 그대로 남아있으면 헷갈린다 — 같이 비운다.
+      // hostSet은 merge라서 names 필드만 빈 객체로 갈아끼우고 page/open은 안 건드린다.
+      names = {};
+      hostSet(path('policy', 'live'), { names: {} });
     }
 
     function controlsFor() {

@@ -27,7 +27,7 @@ export default {
 
     function render() {
       ctx.root.innerHTML = `
-        <div class="subhead"><span class="backlink" id="back">← 허브로</span></div>
+        <div class="subhead"><span class="backlink" id="back">← 홈으로</span></div>
         <div class="h">대표정책 제출</div>
         <div class="sub">논의결과 종이를 사진찍어서 올려주세요!</div>
         <input type="file" accept="image/*" id="fileUp" hidden>

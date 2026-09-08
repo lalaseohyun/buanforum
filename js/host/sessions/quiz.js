@@ -311,7 +311,6 @@ export default {
     }
 
     // 최종 순위 — 한 번이라도 접속한 조만 올린다(안 온 조가 0점으로 자리를 채우면 시상에 방해).
-    // 조가 적을수록 칸이 커지도록 줄 수를 조 수에 맞춰 잡는다.
     function viewFinal() {
       const rows = computeRanking(ITEMS, answersAll, rankTeams());
       const scoredTotal = ITEMS.filter(i => i.scored).length;
@@ -320,7 +319,9 @@ export default {
           <div class="r">${r.rank}위</div><div class="tm">${esc(r.name || r.label)}</div>
           <div class="sc">${r.score}<small> / ${scoredTotal}</small></div>
         </div>`).join('');
-      const cols = rows.length > 4 ? 2 : 1;
+      // 팀이 하나뿐일 때만 1단 — 그 외엔 항상 2단(팀이 적으면 한 줄짜리 박스가
+      // 가로로 화면 끝까지 늘어져 너무 길어 보였다).
+      const cols = rows.length > 1 ? 2 : 1;
       return `<div class="finaltitle">최종 순위</div>
         <div class="rank" style="--cols:${cols};--rows:${Math.ceil(rows.length / cols)}">${rowsHtml}</div>`;
     }

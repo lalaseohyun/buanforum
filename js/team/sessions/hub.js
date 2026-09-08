@@ -128,7 +128,7 @@ export default {
     function renderPickQuiz() {
       const g = teamGrid(selectQuizTeam);
       ctx.root.innerHTML = `
-        <div class="subhead"><span class="backlink" id="back">← 허브로</span></div>
+        <div class="subhead"><span class="backlink" id="back">← 홈으로</span></div>
         <div class="h">우리 조 번호를 눌러주세요</div>
         <div class="sub">퀴즈는 조당 대표 한 분만 참여해요</div>
         ${g.html}`;
@@ -168,7 +168,7 @@ export default {
     function renderPickPolicy() {
       const g = teamGrid(no => { setMyTeam(no); ctx.enterTile('policy', { mode: pendingPolicyMode }); });
       ctx.root.innerHTML = `
-        <div class="subhead"><span class="backlink" id="back">← 허브로</span></div>
+        <div class="subhead"><span class="backlink" id="back">← 홈으로</span></div>
         <div class="h">우리 조 번호를 눌러주세요</div>
         ${g.html}`;
       document.getElementById('back').onclick = () => { view = 'grid'; render(); };
@@ -177,7 +177,7 @@ export default {
 
     function renderPolicyClosed() {
       ctx.root.innerHTML = `
-        <div class="subhead"><span class="backlink" id="back">← 허브로</span></div>
+        <div class="subhead"><span class="backlink" id="back">← 홈으로</span></div>
         <div class="center"><div class="big">공감투표가 마감됐어요</div><div class="sub">결과는 진행자 화면에서 확인해주세요</div></div>`;
       document.getElementById('back').onclick = () => { view = 'grid'; render(); };
     }
