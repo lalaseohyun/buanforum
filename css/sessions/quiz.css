@@ -25,17 +25,19 @@
 
 /* 문제 — 여기도 화면 전체 확대를 그대로 곱하면(63~149px) 문제 2줄 + 보기 4개 조합에서
    페이지 점(.pagedots)이 화면 아래로 밀려 안 보였다(2026-09-08 실측) — 조금만 덜 키움 */
-.q{font-size:clamp(40px,5.7vw,99px);font-weight:800;line-height:1.3;letter-spacing:-.038em;
-  text-align:center;margin-bottom:clamp(28px,4.6vh,64px);flex:0 0 auto}
+.q{font-size:clamp(42px,6.1vw,116px);font-weight:800;line-height:1.3;letter-spacing:-.038em;
+  text-align:center;margin-bottom:clamp(28px,4.4vh,64px);flex:0 0 auto}
 
 /* 보기 — 개수(--n)에 따라 가로 등분. 기본 3, OX는 2, 4지선다는 4 */
 .choices{display:grid;grid-template-columns:repeat(var(--n,3),1fr);gap:clamp(18px,2.3vw,44px);flex:0 0 auto}
 .ch{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(12px,1.8vh,24px);
   background:var(--panel);border:2px solid transparent;border-radius:22px;
-  padding:clamp(22px,3.4vh,48px) clamp(20px,2vw,36px);text-align:center;transition:.25s}
-.ch .n{width:clamp(55px,4.4vw,81px);height:clamp(55px,4.4vw,81px);border-radius:50%;background:var(--panel2);
-  display:grid;place-items:center;font-weight:800;font-size:clamp(25px,2.2vw,39px);color:var(--ink2)}
-.ch .t{font-size:clamp(30px,3.5vw,65px);font-weight:700;letter-spacing:-.028em;line-height:1.24}
+  padding:clamp(22px,3.4vh,48px) clamp(14px,1.4vw,26px);text-align:center;transition:.25s}
+.ch .n{width:clamp(58px,4.7vw,90px);height:clamp(58px,4.7vw,90px);border-radius:50%;background:var(--panel2);
+  display:grid;place-items:center;font-weight:800;font-size:clamp(27px,2.4vw,44px);color:var(--ink2)}
+/* 보기 글자 — 이 이상 키우면 "약 6,700명" 같은 보기가 칸 안에서 두 줄로 꺾인다
+   (칸 폭 402px, 좌우 여백 뺀 글자 자리 ≈350px @1920, 2026-09-08 실측) */
+.ch .t{font-size:clamp(31px,3.6vw,68px);font-weight:700;letter-spacing:-.028em;line-height:1.24}
 /* 보기 부연설명 — 목업에서 지정한 부드러운 노랑(#F6D049), 본문의 0.7배 */
 .ch .t .sub{font-size:.7em;font-weight:700;color:#F6D049}
 .ch .tally{font-size:clamp(27px,2.44vw,41px);font-weight:700;color:var(--ink3);font-variant-numeric:tabular-nums}
@@ -70,6 +72,18 @@
    정답 페이지에서는 해설 박스가 남는 자리를 다 쓰므로 auto 여백을 빼준다. */
 .qbottom{margin-top:auto;flex:0 0 auto}
 .qview.revealed .qbottom{margin-top:0}
+/* ⚠ 문제만/문제+보기 단계(.centered)에서는 margin-top:auto를 쓰면 안 된다 —
+   남는 세로 공간을 이 요소가 전부 먹어버려서 justify-content:center가 무력화되고,
+   문제가 화면 위쪽에 붙어 보였다(2026-09-08). 이 단계에서는 고정 간격만 주고,
+   문제+보기 묶음 전체가 화면 세로 가운데에 오게 한다. */
+.qview.centered .qbottom{margin-top:clamp(20px,3vh,44px)}
+/* 제출현황 단계(.centered도 .revealed도 아닌 상태)만 — 문제·보기에 조 원까지 한 화면에
+   다 들어가야 해서 가장 빡빡하다. 글자 크기는 앞 단계와 똑같이 두고(넘어갈 때 크기가
+   튀지 않게), 박스 안쪽 여백과 문제 아래 간격만 줄여 자리를 만든다(2026-09-08 실측). */
+.qview:not(.centered):not(.revealed) .q{margin-bottom:clamp(16px,2.2vh,32px)}
+.qview:not(.centered):not(.revealed) .badges{margin-bottom:clamp(8px,1.2vh,16px)}
+.qview:not(.centered):not(.revealed) .ch{padding:clamp(14px,2.2vh,32px) clamp(14px,1.4vw,26px);
+  gap:clamp(6px,1vh,12px)}
 /* 정답 페이지 — 이미 읽은 문제와 보기를 조금 줄여 해설 박스 자리를 만든다
    (배치는 그대로, 크기만 한 단계 낮춘다) */
 .qview.revealed .q{font-size:clamp(41px,4.88vw,86px);margin-bottom:clamp(12px,1.8vh,26px)}
@@ -82,12 +96,12 @@
 /* 보기 아래 여백 + 제출 현황.
    목업 프레임에는 하단 조작바가 없었지만 실제 화면에는 탭바+조작바(약 135px)가 더 있어서,
    조 원이 가려지지 않도록 이 아래 여백과 조 원 크기를 목업보다 조금 줄여 잡았다. */
-.foot{padding-top:clamp(18px,3vh,54px);flex:0 0 auto}
+.foot{padding-top:clamp(12px,1.6vh,28px);flex:0 0 auto}
 .tmeta{display:flex;justify-content:center}
 /* ⚠ 이 아래(팀 원 칩)도 화면 전체 확대를 그대로 곱하면 칩이 189px까지 커져서
    "제출 현황" 페이지(문제+보기+칩이 한 화면에 다 있음)에서 칩 줄이 화면 아래로
    넘쳐 잘렸다(2026-09-08 실측) — 조금만 덜 키움. */
-.tstat{font-size:clamp(27px,2.7vw,50px);font-weight:700;color:var(--ink2)}
+.tstat{font-size:clamp(22px,2.2vw,40px);font-weight:700;color:var(--ink2)}
 .tstat b{color:var(--yellow)}
 .tstat.done{color:var(--yellow)}
 
@@ -96,8 +110,8 @@
 .chips{display:flex;flex-wrap:wrap;justify-content:center;
   gap:clamp(8px,1.2vh,18px) clamp(14px,1.6vw,26px);
   max-width:min(100%,680px);
-  margin:clamp(12px,2vh,32px) auto 0;flex:0 0 auto}
-.chip{width:clamp(50px,6.5vw,90px);flex:0 0 auto;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;position:relative;
+  margin:clamp(8px,1vh,14px) auto 0;flex:0 0 auto}
+.chip{width:clamp(44px,5vw,68px);flex:0 0 auto;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;position:relative;
   background:var(--panel);color:var(--ink3);
   font-weight:800;font-size:clamp(16px,1.7vw,28px);letter-spacing:-.02em;transition:.2s}
 .chip.on{background:var(--yellow);color:#2c2c2a}
