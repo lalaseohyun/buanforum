@@ -59,6 +59,18 @@
 .warnbox{background:rgba(232,112,95,.14);color:var(--no);border-radius:14px;padding:12px 16px;
   font-size:13px;font-weight:700;margin-bottom:14px;line-height:1.5}
 
+/* ── 대표정책 타일 안에서 "정책 제출 / 공감투표" 고르기(hub.js renderPickPolicyMode) ──
+   진행자의 진행상태에 해당하는 쪽에 "지금 진행 중" 표시가 붙지만, 둘 다 언제든 누를 수 있다. */
+.modelist{display:flex;flex-direction:column;gap:14px;margin-top:14px}
+.modecard{background:var(--panel);border:2px solid transparent;border-radius:20px;
+  padding:22px 20px;text-align:left;width:100%;color:inherit;font:inherit;cursor:pointer;transition:.15s}
+.modecard:active{transform:scale(.985)}
+.modecard.rec{border-color:var(--yellow);background:rgba(253,206,15,.1)}
+.modecard .mt{font-size:19px;font-weight:800;letter-spacing:-.02em}
+.modecard .ms{font-size:13.5px;font-weight:600;color:var(--ink2);margin-top:6px;line-height:1.45}
+.modecard .mnow{display:inline-block;margin-top:11px;font-size:11.5px;font-weight:800;letter-spacing:.06em;
+  color:#2c2c2a;background:var(--yellow);padding:4px 11px;border-radius:999px}
+
 /* ── 대표정책 제출(js/team/sessions/proposalSubmit.js) ── */
 .uploadbox{background:var(--panel);border:2px dashed var(--line2);border-radius:22px;
   padding:48px 20px;text-align:center;font-size:14.5px;font-weight:700;color:var(--ink2);

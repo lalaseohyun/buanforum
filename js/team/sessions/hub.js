@@ -67,6 +67,7 @@ export default {
     function render() {
       if (view === 'pickQuiz') return renderPickQuiz();
       if (view === 'confirmQuiz') return renderConfirmQuiz();
+      if (view === 'pickPolicyMode') return renderPickPolicyMode();
       if (view === 'pickPolicy') return renderPickPolicy();
       if (view === 'policyClosed') return renderPolicyClosed();
       renderGrid();
@@ -85,7 +86,7 @@ export default {
       const tiles = [
         tileHtml('quiz', '청년정책 퀴즈', '조별 대표자 1명만 클릭', statusOf('quiz', activeSession)),
         tileHtml('board', '청년정책 시행계획', boardSub, 'active'),
-        tileHtml('policy', '대표정책 제안', '우리 그룹이 제안하는 정책', statusOf('policy', activeSession)),
+        tileHtml('policy', '대표정책 · 공감투표', '제출하고 다른 조에 투표해요', statusOf('policy', activeSession)),
         tileHtml('survey', '청년포럼 만족도조사', '오늘 어떠셨나요?', statusOf('survey', activeSession)),
       ].join('');
       ctx.root.innerHTML = `
@@ -110,12 +111,11 @@ export default {
       }
       if (id === 'policy') {
         if (status === 'done') { view = 'policyClosed'; render(); return; }
-        // 잠금이 꺼져 있는 동안은(위 statusOf) activeSession이 proposal_submit/vote가
-        // 아닌 값(예: waiting)일 수도 있다 — 그때는 투표 화면보다 제출 화면이 자연스러운
-        // 기본값이라, 명시적으로 proposal_vote일 때만 투표로 보낸다.
-        pendingPolicyMode = activeSession === 'proposal_vote' ? 'proposal_vote' : 'proposal_submit';
-        if (getMyTeam()) { ctx.enterTile('policy', { mode: pendingPolicyMode }); return; }
-        view = 'pickPolicy'; render(); return;
+        // ⚠ 예전엔 activeSession 값만 보고 제출/투표를 자동으로 골랐는데, 진행상태가
+        // proposal_vote가 아니면 공감투표로 갈 길이 아예 없었다("공감투표가 참여자 화면에
+        // 없다", 2026-09-08). 이제 참여자가 직접 고른다 — 진행상태는 어느 쪽을 크게
+        // 강조할지(권장)만 정한다.
+        view = 'pickPolicyMode'; render(); return;
       }
     }
 
@@ -163,6 +163,31 @@ export default {
         try { await claimTeam(confirmTeam, deviceId); } catch (e) { console.error(e); }
         ctx.enterTile('quiz');
       };
+    }
+
+    // 대표정책 타일 안에서 "정책 제출"과 "공감투표" 중 하나를 고른다
+    function renderPickPolicyMode() {
+      const rec = activeSession === 'proposal_vote' ? 'proposal_vote' : 'proposal_submit';
+      const btn = (mode, title, sub) => `
+        <button class="modecard ${mode === rec ? 'rec' : ''}" data-mode="${mode}">
+          <div class="mt">${esc(title)}</div><div class="ms">${esc(sub)}</div>
+          ${mode === rec ? '<div class="mnow">지금 진행 중</div>' : ''}
+        </button>`;
+      ctx.root.innerHTML = `
+        <div class="subhead"><span class="backlink" id="back">← 홈으로</span></div>
+        <div class="h">무엇을 하시겠어요?</div>
+        <div class="modelist">
+          ${btn('proposal_submit', '우리 조 정책 제출', '조에서 정한 대표정책을 사진으로 올려요')}
+          ${btn('proposal_vote', '공감투표 하기', '다른 조 정책에 1~3순위를 골라요')}
+        </div>`;
+      document.getElementById('back').onclick = () => { view = 'grid'; render(); };
+      ctx.root.querySelectorAll('.modecard').forEach(el => {
+        el.onclick = () => {
+          pendingPolicyMode = el.dataset.mode;
+          if (getMyTeam()) { ctx.enterTile('policy', { mode: pendingPolicyMode }); return; }
+          view = 'pickPolicy'; render();
+        };
+      });
     }
 
     function renderPickPolicy() {

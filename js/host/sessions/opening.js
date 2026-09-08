@@ -53,7 +53,7 @@ export default {
       index === 0 ? renderIntro() : renderQuestions();
       // 질문 박스 글자를 이 화면에 딱 맞게 (css/sessions/slides.css의 --bs).
       // 창이 뒤에 가려져 있으면 requestAnimationFrame은 안 돌기 때문에 setTimeout을 쓴다.
-      if (index === 1) setTimeout(() => fitScale(ctx.root.querySelector('.boxrow'), { min: .5, max: 1.7, prop: '--bs' }), 0);
+      if (index === 1) setTimeout(() => fitScale(ctx.root.querySelector('.boxrow'), { min: .5, max: 1, prop: '--bs' }), 0);
       ctx.setControls([
         { label: index === 0 ? '◀ 홈으로' : '◀ 이전', onClick: prev },
         { label: index >= 1 ? '오프닝 끝' : '다음 ▶', onClick: next, variant: 'primary' },
@@ -64,7 +64,7 @@ export default {
     // 첫 화면은 언제나 QR 대기화면이어야 한다. 리허설 등으로 퀴즈가 이미 진행돼 있었다면
     // 퀴즈 쪽이 "되돌아보기"로 받아서 대기화면부터 보여주고(실제 진행 상황은 안 건드림),
     // 화살표를 계속 누르면 진행 지점까지 따라잡는다(quiz.js previewIndex 참고).
-    function next() { if (index < 1) { index++; render(); } else ctx.goSession('quiz'); }
+    function next() { if (index < 1) { index++; render(); } else ctx.goSession('quiz', { fromStart: true }); }
     function prev() { if (index > 0) { index--; render(); } else ctx.goSession('home', { resume: true }); }
 
     loadOpening().then(d => { data = d; render(); })

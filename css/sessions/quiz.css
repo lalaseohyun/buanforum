@@ -185,6 +185,19 @@
 .row.p2 .r,.row.p3 .r{color:var(--cream)}
 
 /* ── 팀(모바일) 전용 ── */
+/* 문제 문구 — 예전에는 보기만 보여줬는데, 손에 든 화면에서 문제를 읽고 바로 고를 수
+   있어야 해서 추가했다(2026-09-08 요청). 진행자 화면의 큰 문제 글자와 같은 문장이다. */
+.tq{font-size:22px;font-weight:800;letter-spacing:-.03em;line-height:1.38;text-align:center;
+  margin:4px 0 18px;word-break:keep-all}
+/* 제출한 뒤 · 마감된 뒤 "기다려주세요" 안내 */
+.waitbox{background:var(--panel);border-radius:20px;padding:26px 18px;text-align:center;margin-bottom:18px}
+.waitbox.slim{padding:18px 16px}
+.waitbox .pulse{width:34px;height:34px;border-width:3px;margin:0 auto 12px}
+.waitbox.slim .pulse{width:26px;height:26px;margin-bottom:9px}
+.waitbox .wt{font-size:18px;font-weight:800;color:var(--fill);letter-spacing:-.02em}
+.waitbox.slim .wt{font-size:16px}
+.waitbox .ws{font-size:14px;font-weight:600;color:var(--ink2);line-height:1.5;margin-top:7px}
+
 .opts{display:flex;flex-direction:column;gap:13px}
 .opt{display:flex;align-items:center;gap:16px;background:var(--panel);border:2px solid transparent;border-radius:20px;
   padding:22px 18px;text-align:left;width:100%;cursor:pointer;transition:.15s;color:inherit;font:inherit}

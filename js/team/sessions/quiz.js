@@ -12,7 +12,7 @@
    (전파 지연만큼의 오차는 남지만 모든 팀에 비슷하게 적용되어 크게 불공정하지 않다.)
    ─────────────────────────────────────── */
 import { watch, submitAnswer, path } from '../../db.js';
-import { esc, sentences } from '../../util.js';
+import { esc, nl2br, sentences } from '../../util.js';
 
 export default {
   id: 'quiz',
@@ -42,17 +42,37 @@ export default {
     function renderQuestion() {
       const it = live.item;
       const choice = pending !== null ? pending : myChoice;
+
+      // 마감됐는데 아직 정답 공개 전 — 여기서는 더 할 게 없으니 기다리는 화면만 보여준다.
+      if (!live.open) {
+        ctx.root.innerHTML = `${badges(it)}
+          <div class="tq">${nl2br(it.question)}</div>
+          <div class="waitbox">
+            <div class="pulse"></div>
+            <div class="wt">${choice !== null ? `${choice + 1}번으로 제출했어요` : '답을 제출하지 못했어요'}</div>
+            <div class="ws">잠시만 기다려주세요<br>곧 정답을 공개합니다</div>
+          </div>`;
+        return;
+      }
+
+      // ⚠ 진행자 화면은 문제 → 보기 → 제출현황 순서로 한 단계씩 여는데, 참여자 화면은
+      // 문제와 보기를 같이 준다 — 손에 든 화면에서 문제를 읽고 바로 고를 수 있어야
+      // 하기 때문(2026-09-08 요청으로 문제 문구를 추가). 문제가 바뀌는 시점 자체는
+      // 진행자가 다음으로 넘길 때다(quiz/live).
       const opts = it.choices.map((c, i) => `
-        <button class="opt ${choice === i ? 'sel' : ''}" ${live.open ? '' : 'disabled'} data-i="${i}">
+        <button class="opt ${choice === i ? 'sel' : ''}" data-i="${i}">
           <span class="n">${i + 1}</span><span class="t">${esc(c)}</span></button>`).join('');
-      const st = !live.open
-        ? `<div class="status">답변이 마감되었습니다${choice !== null ? ' · 제출 완료' : ''}</div>`
-        : choice !== null
-          ? `<div class="status ok">✓ ${choice + 1}번 제출 완료 · 마감 전까지 바꿀 수 있어요</div>`
-          : `<div class="status">답을 골라주세요</div>`;
+      const head = choice !== null
+        ? `<div class="waitbox slim">
+             <div class="pulse"></div>
+             <div class="wt">✓ ${choice + 1}번 제출 완료</div>
+             <div class="ws">다른 조가 제출하는 동안 기다려주세요<br>마감 전까지 다시 고를 수 있어요</div>
+           </div>`
+        : `<div class="status">답을 골라주세요 · 조당 대표 한 분만</div>`;
       ctx.root.innerHTML = `${badges(it)}
-        <div style="text-align:center;font-size:13px;color:var(--ink3);font-weight:600;margin-bottom:8px">조당 대표 한 분만 눌러주세요</div>
-        <div class="opts">${opts}</div>${st}`;
+        <div class="tq">${nl2br(it.question)}</div>
+        ${head}
+        <div class="opts">${opts}</div>`;
       ctx.root.querySelectorAll('.opt').forEach(btn => {
         btn.onclick = () => answer(Number(btn.dataset.i));
       });
@@ -77,6 +97,7 @@ export default {
       }).join('');
       const mr = (r.ranking || []).find(x => x.team === ctx.team);
       ctx.root.innerHTML = `${badges(it)}
+        <div class="tq">${nl2br(it.question)}</div>
         <div class="verdict ${my === null ? '' : ok ? 'ok' : 'no'}">
           <div class="mk">${my === null ? '–' : ok ? 'O' : 'X'}</div>
           <div class="lb">${my === null ? '답을 제출하지 않았어요' : ok ? '정답입니다!' : '아쉬워요'}</div>

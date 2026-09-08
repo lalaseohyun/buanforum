@@ -450,7 +450,10 @@ export default {
           firstSync = false;
           // -1 = QR 대기화면(연습문제 전 단계)부터. 화살표로 계속 넘기면 연습문제→1번…
           // 순서로 실제 진행 지점까지 따라잡는다(stepForward의 캐치업 로직 참고).
-          if (!ctx.resume && state.phase !== 'lobby' && ITEMS.length) previewIndex = -1;
+          // ⚠ 오직 1.오프닝에서 화살표로 넘어온 경우(ctx.fromStart)에만 되돌아본다.
+          // 예전엔 "탭바를 눌러 들어온 모든 경우"가 대상이라, 진행 중에 2.퀴즈 탭을 누르면
+          // 되돌아보기(=항상 정답 화면)로 들어가 제출현황이 사라진 것처럼 보였다(2026-09-08).
+          if (ctx.fromStart && state.phase !== 'lobby' && ITEMS.length) previewIndex = -1;
         }
         scheduleRender();
       }));

@@ -118,7 +118,7 @@ export default {
       else if (index === 2) renderOverview();
       // STEP 3개(1페이지)·분야 5개(2페이지) 박스 글자를 그 화면에 딱 맞게 (slides.css의 --bs)
       if (index === 1 || index === 2) {
-        setTimeout(() => fitScale(ctx.root.querySelector('.boxrow'), { min: .5, max: 1.7, prop: '--bs' }), 0);
+        setTimeout(() => fitScale(ctx.root.querySelector('.boxrow'), { min: .5, max: 1, prop: '--bs' }), 0);
       }
       if (index >= 3) {
         renderField();
@@ -126,7 +126,7 @@ export default {
         // flex로 높이가 정해진 뒤에 재야 하므로 한 박자 뒤에 — requestAnimationFrame이 아니라
         // setTimeout인 이유: 진행자 창이 뒤에 가려져 있으면 rAF는 아예 안 돌아서 크기 조정이
         // 통째로 건너뛰어진다(2026-09-08에 실제로 그랬다). setTimeout은 가려져도 실행된다.
-        setTimeout(() => fitScale(ctx.root.querySelector('.reftable-wrap'), { min: 0.32, max: 2.2, prop: '--rs' }), 0);
+        setTimeout(() => fitScale(ctx.root.querySelector('.reftable-wrap'), { min: 0.32, max: 1.15, prop: '--rs' }), 0);
       }
       const btns = [
         { label: index === 0 ? '◀ 토크콘서트로' : '◀ 이전', onClick: prev },

@@ -45,7 +45,7 @@ import surveySession from './sessions/survey.js';
 // (GitHub Pages는 정적 파일을 10분간 캐시한다. 강력 새로고침은 Ctrl+Shift+R)
 // ⚠ 이 숫자를 올릴 때 host.html·index.html·survey.html·admin.html의
 //    CSS 주소 끝 ?v=숫자도 같이 올릴 것 — 안 그러면 CSS만 옛날 게 캐시된다.
-const BUILD = 'v40';
+const BUILD = 'v41';
 
 const SESSIONS = [homeSession, openingSession, quizSession, talkSession, boardSession, policySession, awardSession, surveySession];
 const byId = Object.fromEntries(SESSIONS.map(s => [s.id, s]));
@@ -166,6 +166,11 @@ const ctx = (opts = {}) => ({
   // false/생략이면 "탭바를 직접 눌러 들어옴" — 이때는 그 세션의 첫 페이지부터 보여준다.
   // 어느 쪽을 볼지는 opening.js/talk.js/board.js/home.js가 각자 판단한다.
   resume: !!opts.resume,
+  // "행사 흐름을 따라 앞에서 넘어왔다"는 표시 — 지금은 1.오프닝 → 2.퀴즈 하나뿐이다.
+  // 퀴즈는 이 표시가 있을 때만 QR 대기화면부터 되돌아본다(js/host/sessions/quiz.js).
+  // 탭바를 눌러 들어올 때는 이 표시가 없어서 지금 진행 중인 화면이 그대로 나온다 —
+  // 진행 중에 탭을 눌렀는데 제출현황이 안 보이던 문제를 이걸로 갈랐다(2026-09-08).
+  fromStart: !!opts.fromStart,
 });
 
 async function goSession(id, opts = {}) {
