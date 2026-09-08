@@ -28,14 +28,17 @@ const RANGE = {
   policy: ['proposal_submit', 'proposal_vote'],
   survey: ['survey', 'ended'],   // 포럼이 끝나도(ended) 만족도조사는 계속 연다
 };
-function statusOf(tileId, activeSession) {
-  if (!RANGE[tileId]) return 'active';   // 시행계획 — 항상 활성
-  const cur = ORDER.indexOf(activeSession);
-  const [a, b] = RANGE[tileId].map(x => ORDER.indexOf(x));
-  if (cur < 0 || cur < a) return 'locked';
-  if (cur > b) return 'done';
-  return 'active';
-}
+// ⚠ 2026-09-08 요청으로 잠금을 껐다 — 네 타일 다 항상 "진행 중"으로 열어둔다(테스트 편의).
+// 원래대로 activeSession 값에 따라 잠그고 싶으면 아래 주석을 풀고 이 줄만 지우면 된다.
+function statusOf(/* tileId, activeSession */) { return 'active'; }
+// function statusOf(tileId, activeSession) {
+//   if (!RANGE[tileId]) return 'active';   // 시행계획 — 항상 활성
+//   const cur = ORDER.indexOf(activeSession);
+//   const [a, b] = RANGE[tileId].map(x => ORDER.indexOf(x));
+//   if (cur < 0 || cur < a) return 'locked';
+//   if (cur > b) return 'done';
+//   return 'active';
+// }
 
 export default {
   id: 'hub',
@@ -81,7 +84,7 @@ export default {
     function renderGrid() {
       const tiles = [
         tileHtml('quiz', '청년정책 퀴즈', '조별 대표자 1명만 클릭', statusOf('quiz', activeSession)),
-        tileHtml('board', '2026 부안군 청년정책 시행계획', boardSub, 'active'),
+        tileHtml('board', '청년정책 시행계획', boardSub, 'active'),
         tileHtml('policy', '대표정책 제안', '우리 그룹이 제안하는 정책', statusOf('policy', activeSession)),
         tileHtml('survey', '청년포럼 만족도조사', '오늘 어떠셨나요?', statusOf('survey', activeSession)),
       ].join('');
@@ -107,7 +110,10 @@ export default {
       }
       if (id === 'policy') {
         if (status === 'done') { view = 'policyClosed'; render(); return; }
-        pendingPolicyMode = activeSession;
+        // 잠금이 꺼져 있는 동안은(위 statusOf) activeSession이 proposal_submit/vote가
+        // 아닌 값(예: waiting)일 수도 있다 — 그때는 투표 화면보다 제출 화면이 자연스러운
+        // 기본값이라, 명시적으로 proposal_vote일 때만 투표로 보낸다.
+        pendingPolicyMode = activeSession === 'proposal_vote' ? 'proposal_vote' : 'proposal_submit';
         if (getMyTeam()) { ctx.enterTile('policy', { mode: pendingPolicyMode }); return; }
         view = 'pickPolicy'; render(); return;
       }
