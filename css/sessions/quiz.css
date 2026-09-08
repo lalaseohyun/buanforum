@@ -96,16 +96,16 @@
 .qview.revealed .ch .hl-inline{font-size:calc(clamp(26px,2.54vw,45px) * var(--cs,1));padding-top:7px}
 
 /* 정답 공개 화면 하단 — 제출 현황 대신 "누가 맞혔는지"(조 원마다 O/X)를 보여준다.
-   조 원은 여기서 아주 작게(참고용 표시일 뿐) — 해설 박스(.answerbox)가 이 화면의
-   주인공이라 자리를 뺏기면 해설 글자가 억지로 더 작아진다(2026-09-08 실측:
-   4지선다처럼 보기 글자가 원래 2줄인 문항에서 해설이 18px까지 눌렸다). */
-.qview.revealed .foot{padding-top:calc(clamp(6px,.9vh,14px) * var(--cs,1))}
-.qview.revealed .foot .tmeta{margin-bottom:calc(clamp(4px,.6vh,10px) * var(--cs,1))}
-.qview.revealed .foot .tstat{font-size:calc(clamp(17px,1.6vw,26px) * var(--cs,1))}
-.qview.revealed .foot .chips{gap:calc(clamp(5px,.7vh,10px) * var(--cs,1)) clamp(8px,.9vw,15px);
+   너무 작다는 지적으로 한 단계 키웠다(2026-09-08) — 해설 박스(.answerbox)와 자리를
+   나눠 쓰므로, 2줄짜리 보기 문항처럼 자리가 빠듯하면 fitQuestion()이 --cs를 더
+   낮춰 여기·해설 둘 다 화면 안에 맞춘다(js/host/sessions/quiz.js). */
+.qview.revealed .foot{padding-top:calc(clamp(8px,1.1vh,18px) * var(--cs,1))}
+.qview.revealed .foot .tmeta{margin-bottom:calc(clamp(5px,.7vh,12px) * var(--cs,1))}
+.qview.revealed .foot .tstat{font-size:calc(clamp(23px,2.2vw,36px) * var(--cs,1))}
+.qview.revealed .foot .chips{gap:calc(clamp(7px,.9vh,14px) * var(--cs,1)) clamp(10px,1.1vw,19px);
   margin-top:0}
-.qview.revealed .foot .chip{width:calc(clamp(34px,3.6vw,52px) * var(--cs,1));
-  font-size:calc(clamp(13px,1.3vw,20px) * var(--cs,1))}
+.qview.revealed .foot .chip{width:calc(clamp(90px,10vw,140px) * var(--cs,1));
+  font-size:calc(clamp(34px,3.6vw,56px) * var(--cs,1))}
 .qview.revealed .foot .chip .mk{font-size:.7em}
 
 /* 보기 아래 여백 + 제출 현황.
