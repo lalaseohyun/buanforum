@@ -12,7 +12,7 @@
    (전파 지연만큼의 오차는 남지만 모든 팀에 비슷하게 적용되어 크게 불공정하지 않다.)
    ─────────────────────────────────────── */
 import { watch, submitAnswer, path } from '../../db.js';
-import { esc, nl2br, sentences } from '../../util.js';
+import { esc } from '../../util.js';
 
 export default {
   id: 'quiz',
@@ -39,6 +39,14 @@ export default {
       </div>`;
     }
 
+    // 문제 문구·보기 글자는 빔프로젝터 화면에서 읽는다 — 손에 든 화면은 문제 번호와
+    // 보기 번호만 큼직하게 눌러 제출하는 키패드다(2026-09-08 요청, 예전엔 문제·보기
+    // 글자도 같이 보여줬었다). OX 문항은 보기가 원래 O/X 두 글자뿐이라 번호 대신
+    // O/X 그대로 큼직하게 보여준다.
+    const optLabel = (it, i) => it.type === 'ox' ? esc(it.choices[i]) : String(i + 1);
+    // "1번" / "O"(OX는 번호 대신 O·X라 조사를 다르게 붙여야 자연스럽다)
+    const optWord = (it, i) => it.type === 'ox' ? `${optLabel(it, i)}` : `${optLabel(it, i)}번`;
+
     function renderQuestion() {
       const it = live.item;
       const choice = pending !== null ? pending : myChoice;
@@ -46,33 +54,26 @@ export default {
       // 마감됐는데 아직 정답 공개 전 — 여기서는 더 할 게 없으니 기다리는 화면만 보여준다.
       if (!live.open) {
         ctx.root.innerHTML = `${badges(it)}
-          <div class="tq">${nl2br(it.question)}</div>
           <div class="waitbox">
             <div class="pulse"></div>
-            <div class="wt">${choice !== null ? `${choice + 1}번으로 제출했어요` : '답을 제출하지 못했어요'}</div>
+            <div class="wt">${choice !== null ? `${optWord(it, choice)} 제출 완료` : '답을 제출하지 못했어요'}</div>
             <div class="ws">잠시만 기다려주세요<br>곧 정답을 공개합니다</div>
           </div>`;
         return;
       }
 
-      // ⚠ 진행자 화면은 문제 → 보기 → 제출현황 순서로 한 단계씩 여는데, 참여자 화면은
-      // 문제와 보기를 같이 준다 — 손에 든 화면에서 문제를 읽고 바로 고를 수 있어야
-      // 하기 때문(2026-09-08 요청으로 문제 문구를 추가). 문제가 바뀌는 시점 자체는
-      // 진행자가 다음으로 넘길 때다(quiz/live).
       const opts = it.choices.map((c, i) => `
-        <button class="opt ${choice === i ? 'sel' : ''}" data-i="${i}">
-          <span class="n">${i + 1}</span><span class="t">${esc(c)}</span></button>`).join('');
+        <button class="opt ${choice === i ? 'sel' : ''}" data-i="${i}"><span class="n">${optLabel(it, i)}</span></button>`).join('');
       const head = choice !== null
         ? `<div class="waitbox slim">
              <div class="pulse"></div>
-             <div class="wt">✓ ${choice + 1}번 제출 완료</div>
+             <div class="wt">✓ ${optWord(it, choice)} 제출 완료</div>
              <div class="ws">다른 조가 제출하는 동안 기다려주세요<br>마감 전까지 다시 고를 수 있어요</div>
            </div>`
         : `<div class="status">답을 골라주세요 · 조당 대표 한 분만</div>`;
       ctx.root.innerHTML = `${badges(it)}
-        <div class="tq">${nl2br(it.question)}</div>
         ${head}
-        <div class="opts">${opts}</div>`;
+        <div class="opts" style="--n:${it.choices.length}">${opts}</div>`;
       ctx.root.querySelectorAll('.opt').forEach(btn => {
         btn.onclick = () => answer(Number(btn.dataset.i));
       });
@@ -86,26 +87,20 @@ export default {
       finally { pending = null; render(); }
     }
 
+    // 문제·보기·해설은 빔프로젝터 화면에서 본다 — 손에 든 화면은 우리 조가 맞았는지
+    // 틀렸는지와 점수만 짧게 보여준다(2026-09-08 요청, 예전엔 보기 전체와 해설
+    // 문단까지 다시 보여줬었다).
     function renderReveal() {
       const it = live.item, r = live.reveal;
       const my = myChoice;
       const ok = my !== null && my === r.answerIndex;
-      const opts = it.choices.map((c, i) => {
-        let cls = 'mute';
-        if (i === r.answerIndex) cls = 'correct'; else if (i === my) cls = 'wrong';
-        return `<button class="opt ${cls}" disabled><span class="n">${i + 1}</span><span class="t">${esc(c)}</span></button>`;
-      }).join('');
       const mr = (r.ranking || []).find(x => x.team === ctx.team);
       ctx.root.innerHTML = `${badges(it)}
-        <div class="tq">${nl2br(it.question)}</div>
         <div class="verdict ${my === null ? '' : ok ? 'ok' : 'no'}">
           <div class="mk">${my === null ? '–' : ok ? 'O' : 'X'}</div>
           <div class="lb">${my === null ? '답을 제출하지 않았어요' : ok ? '정답입니다!' : '아쉬워요'}</div>
           <div class="an">정답 · ${esc(r.answerLabel)}</div>
         </div>
-        <div class="opts">${opts}</div>
-        <div class="card hl"><div class="lb">핵심 숫자</div><div class="v">${esc(r.highlight)}</div></div>
-        <div class="card">${sentences(r.explanation)}<div class="src">출처 · ${esc(r.source)}</div></div>
         ${it.scored && mr ? `<div class="scorebar">
           <div class="sb"><div class="k">우리 조 점수</div><div class="v">${mr.score}</div></div>
           <div class="sb"><div class="k">현재 순위</div><div class="v">${mr.rank}위</div></div>

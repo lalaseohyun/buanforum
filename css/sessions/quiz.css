@@ -197,10 +197,9 @@
 .row.p2 .r,.row.p3 .r{color:var(--cream)}
 
 /* ── 팀(모바일) 전용 ── */
-/* 문제 문구 — 예전에는 보기만 보여줬는데, 손에 든 화면에서 문제를 읽고 바로 고를 수
-   있어야 해서 추가했다(2026-09-08 요청). 진행자 화면의 큰 문제 글자와 같은 문장이다. */
-.tq{font-size:22px;font-weight:800;letter-spacing:-.03em;line-height:1.38;text-align:center;
-  margin:4px 0 18px;word-break:keep-all}
+/* 문제 문구·보기 글자는 빔프로젝터 화면에서 읽는다 — 손에 든 화면은 문제 번호만
+   큼직하게 눌러 제출하는 키패드다(2026-09-08 요청, 예전엔 .tq에 문제 문구도 같이
+   보여줬었다). */
 /* 제출한 뒤 · 마감된 뒤 "기다려주세요" 안내 */
 .waitbox{background:var(--panel);border-radius:20px;padding:26px 18px;text-align:center;margin-bottom:18px}
 .waitbox.slim{padding:18px 16px}
@@ -210,23 +209,15 @@
 .waitbox.slim .wt{font-size:16px}
 .waitbox .ws{font-size:14px;font-weight:600;color:var(--ink2);line-height:1.5;margin-top:7px}
 
-.opts{display:flex;flex-direction:column;gap:13px}
-.opt{display:flex;align-items:center;gap:16px;background:var(--panel);border:2px solid transparent;border-radius:20px;
-  padding:22px 18px;text-align:left;width:100%;cursor:pointer;transition:.15s;color:inherit;font:inherit}
+/* 보기 번호 키패드 — 2열 고정(4지선다는 2×2, OX는 1행 2칸)으로 항상 큼직하게 누른다 */
+.opts{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.opt{display:flex;align-items:center;justify-content:center;background:var(--panel);
+  border:2px solid transparent;border-radius:22px;aspect-ratio:1.35;cursor:pointer;
+  transition:.15s;color:inherit;font:inherit}
 .opt:active{transform:scale(.98)}
-.opt .n{flex:0 0 auto;width:38px;height:38px;border-radius:50%;background:var(--panel2);display:grid;place-items:center;font-weight:700;font-size:17px;color:var(--ink3)}
-.opt .t{font-size:20px;font-weight:600;letter-spacing:-.02em}
+.opt .n{font-weight:800;font-size:clamp(30px,10vw,48px);color:var(--ink2);letter-spacing:-.02em}
 .opt.sel{background:rgba(253,206,15,.16);border-color:var(--yellow)}
-.opt.sel .n{background:var(--fill);color:var(--fillInk)}
-.opt.sel .t{color:var(--fill);font-weight:700}
-.opt.correct{background:rgba(253,206,15,.16);border-color:var(--yellow)}
-.opt.correct .n{background:var(--fill);color:var(--fillInk)}
-.opt.correct .t{color:var(--fill);font-weight:700}
-.opt.wrong{background:rgba(232,112,95,.16);border-color:var(--no)}
-.opt.wrong .n{background:var(--no);color:#2c2c2a}
-.opt.wrong .t{color:var(--no);font-weight:700}
-.opt:disabled{cursor:default}
-.opt.mute:disabled{opacity:.5}
+.opt.sel .n{color:var(--fill)}
 
 .status{margin-top:20px;padding:16px 18px;border-radius:16px;font-size:15.5px;font-weight:600;text-align:center;
   background:var(--panel);color:var(--ink2)}

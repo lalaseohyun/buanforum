@@ -15,7 +15,7 @@
    그 id에 맞는 화면을 마운트한다. 'policy'는 그 순간의 진행 단계(opts.mode)에 따라
    제출/투표 중 하나로 갈린다. 'survey'는 화면이 아니라 별도 페이지(survey.html) 이동이다.
    ─────────────────────────────────────── */
-import { ensureAuth } from '../db.js';
+import { ensureAuth, watch, path } from '../db.js';
 import { loadForum } from '../content.js';
 import { esc } from '../util.js';
 import { getMyTeam, clearMyTeam } from './teamId.js';
@@ -86,4 +86,21 @@ function enterTile(id, opts = {}) {
   }
   await ensureAuth();
   mountScreen('hub');
+
+  // 진행자가 퀴즈 "전체 초기화"를 누르면(js/host/sessions/quiz.js resetAll) forum
+  // 문서의 quizResetAt이 바뀐다 — 지금 이 폰이 어느 화면에 있든(허브든 퀴즈 문제
+  // 화면이든) 감지해서 기억해 둔 "우리 조"를 지우고 허브로 돌려보낸다. 페이지를
+  // 막 열어서 받는 첫 값은 "방금 일어난 초기화"가 아니라 "예전에 언젠가 있었던
+  // 초기화 시각"일 뿐이므로 무시한다 — 그 값 하나만으로 매번 새로고침할 때마다
+  // 조가 풀리면 안 되기 때문.
+  let lastResetAt = undefined;
+  watch(path(), snap => {
+    const t = snap?.quizResetAt || null;
+    if (lastResetAt === undefined) { lastResetAt = t; return; }
+    if (t && t !== lastResetAt) {
+      lastResetAt = t;
+      clearMyTeam();
+      mountScreen('hub');
+    }
+  });
 })();

@@ -173,6 +173,11 @@ export default {
       ctx.forum.teams.forEach(t => hostReset(path('teams', String(t.no)), {}));
       stage = 0;
       writeState({ phase: 'lobby', index: -1, open: false, revealed: false, asked: {} });
+      // 참여자 화면도 같이 초기화 — 이 값이 바뀌는 걸 js/team/main.js가 지켜보고 있다가
+      // 감지하면 그 폰이 지금 뭘 보고 있든 기억해 둔 "우리 조"를 지우고 허브로 돌려보낸다
+      // (2026-09-08 요청 — 안 그러면 실제로는 다 지워졌는데 폰에는 예전 조·예전 문제
+      // 화면이 그대로 남아 헷갈린다).
+      hostSet(path(), { quizResetAt: Date.now() });
     }
 
     /* ---- 렌더 ---- */
