@@ -12,24 +12,43 @@
 .surveycount b{color:var(--yellow);font-weight:800;font-variant-numeric:tabular-nums}
 
 /* ── 5-2. 실시간 오픈엔디드 2분할 ── */
-.wallhead2{flex:0 0 auto;text-align:center;font-size:clamp(39px,4.29vw,71px);font-weight:800;
-  color:var(--yellow);letter-spacing:-.02em;margin-bottom:clamp(24px,3.6vh,48px)}
+/* 응답이 10~20개씩 쌓이는 화면이라 카드가 쓸 세로 공간이 우선이다 — 위 제목
+   두 겹(전체 타이틀 + 칸별 소제목)을 줄여서 그만큼 카드 쪽에 자리를 더 준다
+   (2026-09-08). */
+.wallhead2{flex:0 0 auto;text-align:center;font-size:clamp(24px,2.2vw,34px);font-weight:800;
+  color:var(--yellow);letter-spacing:-.02em;margin-bottom:clamp(10px,1.4vh,18px)}
 .wallwrap{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;gap:clamp(39px,5.46vw,93px);position:relative}
-.wallcol{position:relative;min-width:0;min-height:0;display:flex;flex-direction:column;gap:clamp(12px,1.8vh,22px);
+.wallcol{position:relative;min-width:0;min-height:0;display:flex;flex-direction:column;gap:clamp(8px,1.2vh,14px);
   border-right:1px solid var(--line2);padding-right:clamp(39px,5.46vw,93px)}
 .wallcol:last-child{border-right:none;padding-right:0}
 .wallhead{flex:0 0 auto;display:flex;align-items:baseline;justify-content:center;gap:10px;
-  font-size:clamp(39px,4.29vw,71px);font-weight:800;letter-spacing:-.02em}
-.wallhead .wallcount{font-size:clamp(30px,2.73vw,44px);color:var(--ink3);font-weight:700;font-variant-numeric:tabular-nums}
+  font-size:clamp(26px,2.44vw,38px);font-weight:800;letter-spacing:-.02em}
+.wallhead .wallcount{font-size:clamp(20px,1.73vw,26px);color:var(--ink3);font-weight:700;font-variant-numeric:tabular-nums}
 /* ⚠ 예전엔 새 응답이 화면 중앙에 3초간 하이라이트됐다가 목록에 합류하고, 4장만
    보이게 순환하는 방식이었다 — 2026-09-08 요청으로 없앴다("인원이 많지 않으니
    그냥 다 개별 텍스트박스로"). 이제 들어온 응답을 전부 최신순으로 나열만 한다
-   (js/host/sessions/surveyWall.js). overflow는 hidden 대신 auto로 — 나중에 응답이
-   많아져서 한 칸에 다 안 들어가도 잘려서 안 보이는 대신 그 칸만 스크롤된다. */
-.walllist{flex:1;min-height:0;display:flex;flex-direction:column;gap:clamp(10px,1.6vh,18px);overflow-y:auto}
-.wallcard{background:var(--panel);border-radius:18px;padding:clamp(16px,2vh,26px) clamp(35px,3.51vw,54px);
-  font-size:clamp(33px,3.32vw,51px);font-weight:600;line-height:1.45;letter-spacing:-.015em;
-  flex:0 0 auto;animation:wallcardin .4s ease-out backwards}
+   (js/host/sessions/surveyWall.js).
+   --ws는 그 파일의 fitList()가 정하는 카드 크기 배율이다 — 응답이 10개, 20개로
+   늘어나도 이 칸(overflow-y:auto인 세로 공간) 안에 다 들어가도록 카드 크기를
+   자동으로 줄인다(같은 날 바로 이어진 요청). 최소 배율(0.28)로도 안 들어갈
+   만큼 많아지면 그때는 스크롤된다. */
+/* 세로로 한 줄씩 쌓으면 응답이 10~20개만 돼도 칸 높이를 훨씬 넘어서(카드 크기를
+   최소로 줄여도 못 따라간다) — 2단 그리드로 짜서 같은 개수를 절반 높이에 담는다
+   (2026-09-08, "10개 20개 뜰 텐데 텍스트박스가 너무 크다" 이어진 지적). */
+/* 더 작게(2026-09-08 재요청) — ⚠ fitList()는 "20개가 이 칸에 딱 들어가는 만큼만"
+   줄이지, 그보다 더 작게는 안 줄인다(꽉 채우는 게 목적이라). 그래서 기본 크기를
+   조금 낮추는 정도로는 20개 상황에서 최종 크기가 거의 안 바뀌었다 — 자동 축소가
+   그 차이를 도로 메꿔버리기 때문. 첨부 샘플 이미지만큼 확실히 작게 하려면 기본
+   크기 자체를 "20개를 넣어도 남는 자리가 있을" 정도로 확 낮춰야 한다. 4열로도
+   늘렸다(샘플 이미지처럼 더 촘촘하게). */
+.walllist{flex:1;min-height:0;display:grid;grid-template-columns:repeat(4,1fr);
+  grid-auto-rows:min-content;align-content:start;
+  gap:calc(clamp(5px,.8vh,9px) * var(--ws,1)) calc(clamp(6px,.7vw,10px) * var(--ws,1));
+  overflow-y:auto}
+.wallcard{background:var(--panel);border-radius:calc(11px * var(--ws,1));min-width:0;
+  padding:calc(clamp(6px,.9vh,10px) * var(--ws,1)) calc(clamp(9px,.9vw,13px) * var(--ws,1));
+  font-size:calc(clamp(10px,1vw,14px) * var(--ws,1));font-weight:600;line-height:1.35;letter-spacing:-.005em;
+  word-break:keep-all;animation:wallcardin .4s ease-out backwards}
 @keyframes wallcardin{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 
 .wallpaused{position:absolute;left:50%;bottom:clamp(70px,9vh,110px);transform:translateX(-50%);

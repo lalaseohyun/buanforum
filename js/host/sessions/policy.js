@@ -184,6 +184,10 @@ export default {
         // 두 줄·세 줄로 자연스럽게 내려가게 하려고(2026-09-08 요청). 줄이 늘면 그만큼 칸이
         // 세로로 커진다(growName). Enter는 줄바꿈이 아니라 "입력 끝"으로 쓴다(=저장).
         ctx.root.querySelectorAll('.votetable .pname').forEach(inp => {
+          // ⚠ stopPropagation 필수 — 안 막으면 main.js의 전역 "빈 공간 클릭 = 다음으로
+          // 넘기기"가 같이 발동해서, 정책명을 적으려고 칸을 누르는 순간 옆(6.우수정책)
+          // 화면으로 넘어가 버렸다(2026-09-08).
+          inp.onclick = e => e.stopPropagation();
           inp.oninput = () => fitVoteTable();
           inp.onblur = () => saveName(Number(inp.dataset.t), inp.textContent.trim());
           inp.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); inp.blur(); } };

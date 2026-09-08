@@ -6,15 +6,21 @@
    ⚠ 예전엔 새 응답이 오면 화면 중앙에 3초간 크게 하이라이트했다가 목록에 합류하고,
    4장만 보이게 4초마다 한 칸씩 순환시키는 방식이었다. 2026-09-08 요청으로 걷어냈다 —
    "지금 인원이 많지 않으니 그냥 다 개별 텍스트박스로 띄워달라"는 요청. 이제 하이라이트도
-   순환도 없이, 들어온 응답을 전부 최신순으로 그대로 나열한다. 나중에 응답이 아주 많아지면
-   (한 화면에 다 안 들어갈 정도로) 다시 순환이나 스크롤 방식이 필요할 수 있다 —
-   지금은 .walllist가 overflow:auto라 넘치면 그 칸만 스크롤된다.
+   순환도 없이, 들어온 응답을 전부 최신순으로 그대로 나열한다.
+   ⚠ 그런데 "10개, 20개씩 뜰 텐데 박스가 너무 크다"는 지적(2026-09-08 같은 날 바로) —
+   카드 크기를 고정해 두면 응답이 늘어날수록 화면 밖으로 넘쳐서 스크롤해야만 다 보인다.
+   그래서 카드가 늘어날 때마다 fitList()가 이 칸에 다 들어갈 때까지 카드 크기(--ws)를
+   자동으로 줄인다 — css/sessions/survey.css의 --ws 참고. 그래도 정말 너무 많아지면
+   (최소 크기로도 안 들어가면) .walllist가 overflow:auto라 그 칸만 스크롤된다.
 
-   고칠 때 ─ 글자수 제한(70자)         → 아래 CONFIG
-             카드 모양·색              → css/sessions/survey.css
+   고칠 때 ─ 글자수 제한(70자)·최소 배율 → 아래 CONFIG
+             카드 모양·색                → css/sessions/survey.css
    ─────────────────────────────────────── */
+import { refitOnFontsReady } from '../../util.js';
+
 const CONFIG = {
   maxChars: 70,   // 이 글자 수 넘으면 말줄임
+  minScale: 0.28, // 카드가 이 배율보다 더 작아지지는 않는다(그 아래는 글자를 못 읽는다) — 넘치면 스크롤
 };
 
 function truncate(text) {
@@ -40,7 +46,21 @@ export function createWallColumn(root, opts) {
   function renderList() {
     listEl.innerHTML = ids.map((id, i) => `
       <div class="wallcard" style="animation-delay:${Math.min(i, 8) * 60}ms">${escapeHtml(truncate(byId.get(id)))}</div>`).join('');
+    fitList();
   }
+
+  // 카드가 몇 장이든 이 칸(listEl) 안에 다 들어가도록 --ws(카드 크기 배율)를 줄인다.
+  // 매번 1(원래 크기)부터 다시 시작한다 — 응답이 지워져서 줄어들 수도 있으니까.
+  function fitList() {
+    listEl.style.setProperty('--ws', '1');
+    const over = () => listEl.scrollHeight - listEl.clientHeight > 2;
+    if (!over()) return;
+    let s = 1;
+    for (; s > CONFIG.minScale && over(); s -= 0.03) listEl.style.setProperty('--ws', (s - 0.03).toFixed(2));
+  }
+  // 폰트(Pretendard, CDN)가 아직 안 끝난 시점에 쟀을 수도 있다 — 다 준비된 뒤 한 번 더
+  // 재서 바로잡는다(2026-09-08, 다른 화면에서 실제로 어긋난 적 있어서 생긴 안전장치).
+  refitOnFontsReady(listEl, fitList);
 
   function update(items) {
     const cleaned = items.filter(it => it.text && it.text.trim());
