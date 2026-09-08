@@ -124,10 +124,12 @@
   align-items:center;justify-content:center;flex:1;min-height:0;
   padding:0 clamp(30px,4vw,70px)}
 .qrbox{background:#fff;border-radius:24px;padding:clamp(18px,1.8vw,28px);line-height:0}
-.qrbox img{width:clamp(300px,30vw,470px);display:block}
-.lobby h2{font-size:clamp(36px,4.6vw,86px);font-weight:800;letter-spacing:-.04em;line-height:1.22;margin-bottom:clamp(14px,2.2vh,30px)}
+/* 상한(세 번째 값)을 넉넉히 열어둔다 — 모니터가 넓을수록 clamp 상한에 먼저 걸려서
+   내용만 그대로고 좌우 빈 공간만 늘어나 "작아 보이는" 문제가 있었다(2026-09-08). */
+.qrbox img{width:clamp(300px,28vw,620px);display:block}
+.lobby h2{font-size:clamp(36px,4.6vw,110px);font-weight:800;letter-spacing:-.04em;line-height:1.22;margin-bottom:clamp(14px,2.2vh,30px)}
 .lobby h2 span{color:var(--yellow)}
-.lsub{font-size:clamp(21px,2.4vw,44px);color:var(--ink2);font-weight:600;margin-bottom:clamp(8px,1.2vh,16px)}
+.lsub{font-size:clamp(21px,2.4vw,52px);color:var(--ink2);font-weight:600;margin-bottom:clamp(8px,1.2vh,16px)}
 .lsub b{color:var(--yellow)}
 /* 대기화면 — 오늘 진행할 조 수 고르기 */
 /* 조 수 버튼(.tcbtn) — 탭바 ☰ 메뉴(js/host/main.js)가 쓰는 전역 클래스라 여기 남겨 둔다.
