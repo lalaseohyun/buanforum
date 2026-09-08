@@ -11,12 +11,18 @@
    ─────────────────────────────────────── */
 
 /* 문제 화면 — 문제만/문제+보기/전체 3단계로 노출된다(js/host/sessions/quiz.js의 stage).
-   보기·제출현황이 아직 없을 때는 세로 중앙 정렬로, 다 나오면 기존처럼 아래로 붙는다. */
-.qview{flex:1;min-height:0;display:flex;flex-direction:column}
-.qview.centered{justify-content:center}
+   ⚠ 세로 가운데 정렬을 하면 안 된다 — 단계를 넘길 때마다 문제가 위아래로 움직여서
+   보는 사람의 시선이 흐트러진다(2026-09-08 요청). 항상 위에 붙여 놓고, 배지·문제·보기의
+   간격과 크기를 세 단계 모두 똑같이 줘서 문제 위치가 한 번도 안 움직이게 한다.
+   그래서 아래 여백 값들은 셋 중 가장 빡빡한 "제출현황" 단계 기준으로 잡혀 있다. */
+/* --qs(문제 글자) · --cs(보기 칸)는 "화면에 안 들어갈 때만" 줄이는 축소 비율이다.
+   기본은 1(=CSS에 적힌 크기 그대로). 문항이 길거나 노트북처럼 세로가 짧은 화면에서
+   페이지 점·조 원이 아래로 밀려 잘리면, js/host/sessions/quiz.js의 fitQuestion()이
+   딱 들어갈 때까지 이 두 값만 조금씩 낮춘다 — 짧은 문제는 손대지 않아 그대로 크다. */
+.qview{flex:1;min-height:0;display:flex;flex-direction:column;--qs:1;--cs:1}
 
 /* 배지 */
-.badges{display:flex;gap:10px;align-items:center;justify-content:center;margin-bottom:clamp(14px,2.2vh,30px);flex-wrap:wrap;flex:0 0 auto}
+.badges{display:flex;gap:10px;align-items:center;justify-content:center;margin-bottom:clamp(8px,1.2vh,16px);flex-wrap:wrap;flex:0 0 auto}
 
 /* 탭바에서 2.퀴즈를 다시 눌러 들어왔을 때(진행 중이었다면) 뜨는 되돌아보기 안내 —
    실제 진행이 멈춘 게 아니라는 걸 진행자가 한눈에 알 수 있게 크게 보여준다 */
@@ -25,19 +31,21 @@
 
 /* 문제 — 여기도 화면 전체 확대를 그대로 곱하면(63~149px) 문제 2줄 + 보기 4개 조합에서
    페이지 점(.pagedots)이 화면 아래로 밀려 안 보였다(2026-09-08 실측) — 조금만 덜 키움 */
-.q{font-size:clamp(42px,6.1vw,116px);font-weight:800;line-height:1.3;letter-spacing:-.038em;
-  text-align:center;margin-bottom:clamp(28px,4.4vh,64px);flex:0 0 auto}
+.q{font-size:calc(clamp(42px,6.1vw,116px) * var(--qs,1));font-weight:800;line-height:1.3;letter-spacing:-.038em;
+  text-align:center;margin-bottom:clamp(16px,2.2vh,32px);flex:0 0 auto}
 
 /* 보기 — 개수(--n)에 따라 가로 등분. 기본 3, OX는 2, 4지선다는 4 */
 .choices{display:grid;grid-template-columns:repeat(var(--n,3),1fr);gap:clamp(18px,2.3vw,44px);flex:0 0 auto}
-.ch{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(12px,1.8vh,24px);
+.ch{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:calc(clamp(6px,1vh,12px) * var(--cs,1));
   background:var(--panel);border:2px solid transparent;border-radius:22px;
-  padding:clamp(22px,3.4vh,48px) clamp(14px,1.4vw,26px);text-align:center;transition:.25s}
-.ch .n{width:clamp(58px,4.7vw,90px);height:clamp(58px,4.7vw,90px);border-radius:50%;background:var(--panel2);
-  display:grid;place-items:center;font-weight:800;font-size:clamp(27px,2.4vw,44px);color:var(--ink2)}
+  padding:calc(clamp(14px,2.2vh,32px) * var(--cs,1)) clamp(14px,1.4vw,26px);text-align:center;transition:.25s}
+.ch .n{width:calc(clamp(58px,4.7vw,90px) * var(--cs,1));height:calc(clamp(58px,4.7vw,90px) * var(--cs,1));
+  border-radius:50%;background:var(--panel2);
+  display:grid;place-items:center;font-weight:800;font-size:calc(clamp(27px,2.4vw,44px) * var(--cs,1));color:var(--ink2)}
 /* 보기 글자 — 이 이상 키우면 "약 6,700명" 같은 보기가 칸 안에서 두 줄로 꺾인다
    (칸 폭 402px, 좌우 여백 뺀 글자 자리 ≈350px @1920, 2026-09-08 실측) */
-.ch .t{font-size:clamp(31px,3.6vw,68px);font-weight:700;letter-spacing:-.028em;line-height:1.24}
+.ch .t{font-size:calc(clamp(31px,3.6vw,68px) * var(--cs,1));font-weight:700;letter-spacing:-.028em;line-height:1.24}
 /* 보기 부연설명 — 목업에서 지정한 부드러운 노랑(#F6D049), 본문의 0.7배 */
 .ch .t .sub{font-size:.7em;font-weight:700;color:#F6D049}
 .ch .tally{font-size:clamp(27px,2.44vw,41px);font-weight:700;color:var(--ink3);font-variant-numeric:tabular-nums}
@@ -48,8 +56,8 @@
 
 /* OX 문항 — 번호를 빼고 O/X만 세 배 크기로 (기본 보기 글자의 3배) */
 .choices.ox .ch .n{display:none}
-.choices.ox .ch .t{font-size:clamp(117px,15.79vw,284px);line-height:1.05}
-.qview.revealed .choices.ox .ch .t{font-size:clamp(90px,9.95vw,176px)}
+.choices.ox .ch .t{font-size:calc(clamp(117px,15.79vw,284px) * var(--cs,1));line-height:1.05}
+.qview.revealed .choices.ox .ch .t{font-size:calc(clamp(90px,9.95vw,176px) * var(--cs,1))}
 
 /* 정답 공개 — 화면 구성은 그대로 두고 정답 보기만 노랗게(#F6D049) 바뀐다 */
 .ch.correct{background:#F6D049;border-color:#F6D049}
@@ -70,28 +78,23 @@
 
 /* 화면 맨 아래 묶음 — 제출현황(있을 때) + 남은 페이지 점.
    정답 페이지에서는 해설 박스가 남는 자리를 다 쓰므로 auto 여백을 빼준다. */
+/* margin-top:auto 덕분에 이 묶음은 항상 화면 맨 아래에 붙는다 — 그래서 단계를 넘겨
+   제출현황이 새로 나타나도 페이지 점(.pagedots)은 제자리에 있고, 제출현황만 그 위로
+   끼어든다. 위쪽의 문제·보기는 전혀 안 움직인다. */
 .qbottom{margin-top:auto;flex:0 0 auto}
 .qview.revealed .qbottom{margin-top:0}
-/* ⚠ 문제만/문제+보기 단계(.centered)에서는 margin-top:auto를 쓰면 안 된다 —
-   남는 세로 공간을 이 요소가 전부 먹어버려서 justify-content:center가 무력화되고,
-   문제가 화면 위쪽에 붙어 보였다(2026-09-08). 이 단계에서는 고정 간격만 주고,
-   문제+보기 묶음 전체가 화면 세로 가운데에 오게 한다. */
-.qview.centered .qbottom{margin-top:clamp(20px,3vh,44px)}
-/* 제출현황 단계(.centered도 .revealed도 아닌 상태)만 — 문제·보기에 조 원까지 한 화면에
-   다 들어가야 해서 가장 빡빡하다. 글자 크기는 앞 단계와 똑같이 두고(넘어갈 때 크기가
-   튀지 않게), 박스 안쪽 여백과 문제 아래 간격만 줄여 자리를 만든다(2026-09-08 실측). */
-.qview:not(.centered):not(.revealed) .q{margin-bottom:clamp(16px,2.2vh,32px)}
-.qview:not(.centered):not(.revealed) .badges{margin-bottom:clamp(8px,1.2vh,16px)}
-.qview:not(.centered):not(.revealed) .ch{padding:clamp(14px,2.2vh,32px) clamp(14px,1.4vw,26px);
-  gap:clamp(6px,1vh,12px)}
 /* 정답 페이지 — 이미 읽은 문제와 보기를 조금 줄여 해설 박스 자리를 만든다
-   (배치는 그대로, 크기만 한 단계 낮춘다) */
-.qview.revealed .q{font-size:clamp(41px,4.88vw,86px);margin-bottom:clamp(12px,1.8vh,26px)}
-.qview.revealed .ch{padding:clamp(10px,1.4vh,20px) clamp(24px,2.34vw,39px);gap:clamp(5px,.8vh,11px);border-radius:18px}
-.qview.revealed .ch .n{width:clamp(54px,4.1vw,74px);height:clamp(54px,4.1vw,74px);font-size:clamp(27px,2.25vw,39px)}
-.qview.revealed .ch .t{font-size:clamp(30px,3.32vw,59px)}
-.qview.revealed .ch .tally{font-size:clamp(24px,2.06vw,35px)}
-.qview.revealed .ch .hl-inline{font-size:clamp(26px,2.54vw,45px);padding-top:7px}
+   (배치는 그대로, 크기만 한 단계 낮춘다). 여기서도 --qs/--cs를 곱해 두는 이유는,
+   해설이 긴 문항에서 해설 글자가 읽기 힘든 크기까지 쪼그라들지 않도록 fitQuestion()이
+   "이미 읽은 문제·보기"를 먼저 줄여 해설 자리를 만들어 주기 때문이다. */
+.qview.revealed .q{font-size:calc(clamp(41px,4.88vw,86px) * var(--qs,1));margin-bottom:clamp(12px,1.8vh,26px)}
+.qview.revealed .ch{padding:calc(clamp(10px,1.4vh,20px) * var(--cs,1)) clamp(24px,2.34vw,39px);
+  gap:calc(clamp(5px,.8vh,11px) * var(--cs,1));border-radius:18px}
+.qview.revealed .ch .n{width:calc(clamp(54px,4.1vw,74px) * var(--cs,1));height:calc(clamp(54px,4.1vw,74px) * var(--cs,1));
+  font-size:calc(clamp(27px,2.25vw,39px) * var(--cs,1))}
+.qview.revealed .ch .t{font-size:calc(clamp(30px,3.32vw,59px) * var(--cs,1))}
+.qview.revealed .ch .tally{font-size:calc(clamp(24px,2.06vw,35px) * var(--cs,1))}
+.qview.revealed .ch .hl-inline{font-size:calc(clamp(26px,2.54vw,45px) * var(--cs,1));padding-top:7px}
 
 /* 보기 아래 여백 + 제출 현황.
    목업 프레임에는 하단 조작바가 없었지만 실제 화면에는 탭바+조작바(약 135px)가 더 있어서,

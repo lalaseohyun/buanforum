@@ -150,7 +150,9 @@ export default {
     }
     function stepBack() {
       if (previewIndex !== null) {
+        // 되돌아보기 맨 앞(대기화면)에서 더 뒤로 가면 1.오프닝으로 — 실제 진행 상황은 그대로 둔다.
         if (previewIndex > -1) { previewIndex--; render(); }
+        else ctx.goSession('opening', { resume: true });
         return;
       }
       if (state.phase === 'lobby') { ctx.goSession('opening', { resume: true }); return; }
@@ -207,8 +209,50 @@ export default {
       else if (!previewing && state.showChart && it?.chart) ctx.root.innerHTML = viewChart(it);
       else ctx.root.innerHTML = viewQuestion(it); // 정답 공개도 같은 화면에서(정답만 노랗게 + 해설박스)
       // flex로 높이가 정해진 뒤에 재야 정확하다 — 한 프레임 뒤에 넘칠 때만 줄인다
-      requestAnimationFrame(() => fitInto('.answerbox', 18));
+      // 순서 중요 — fitQuestion()이 문제·보기를 줄여 해설 자리를 먼저 만들고,
+      // 그래도 모자라는 만큼만 fitInto()가 해설 글자를 줄인다.
+      requestAnimationFrame(() => { fitQuestion(); fitInto('.answerbox', 18); });
       ctx.setControls(controlsFor());
+    }
+
+    // 문제 글자는 CSS에서 화면 폭에 맞춰 크게(최대 116px) 잡아두는데, 문항에 따라
+    // 세 줄까지 늘어나면 보기·제출현황·페이지 점이 화면 아래로 밀려 잘린다
+    // (1920×1080에서 최대 161px 초과 — 2026-09-08 실측). 넘칠 때만 이 문항의
+    // 문제 글자를 1px씩 줄여 딱 맞춘다. 짧은 문제는 손대지 않으니 그대로 크게 나온다.
+    // 보기·제출현황 자리를 항상 잡아두는 덕분에(viewQuestion의 veil 참고) 단계가
+    // 바뀌어도 같은 크기가 나와서, 문제 글자 크기가 도중에 튀지 않는다.
+    function fitQuestion() {
+      const view = ctx.root.querySelector('.qview');
+      if (!view) return;
+      const set = (k, v) => view.style.setProperty(k, String(v));
+      set('--qs', 1); set('--cs', 1);
+
+      // 정답 페이지 — 해설 박스는 남는 자리를 다 쓰는 구조라 화면이 넘치는 대신
+      // 해설 글자만 계속 작아진다(1920×1080에서 최저 18px까지 쪼그라들었다 —
+      // 2026-09-08 실측, 빔프로젝터로는 못 읽는 크기). 그래서 여기서는 이미 읽고 지나간
+      // 문제·보기를 먼저 줄여 해설이 들어갈 자리를 만들어 준 뒤, 나머지만 fitInto가 맡는다.
+      const ab = view.querySelector('.answerbox');
+      if (ab) {
+        ab.style.fontSize = '';
+        const tight = () => ab.scrollHeight - ab.clientHeight > 4;
+        if (!tight()) return;
+        // 0.55까지 — 여기까지 줄이면 1920×1080에서 해설이 최소 38px은 확보된다
+        // (0.7이 하한이면 긴 해설이 20px까지 떨어졌다, 2026-09-08 실측)
+        for (let cs = 1; cs >= 0.55 && tight(); cs -= 0.02) set('--cs', cs.toFixed(2));
+        for (let qs = 1; qs >= 0.55 && tight(); qs -= 0.02) set('--qs', qs.toFixed(2));
+        return;
+      }
+
+      const over = () => view.scrollHeight - view.clientHeight > 4; // 4px는 반올림 오차 여유
+      if (!over()) return;
+      // 1) 문제 글자를 조금(최대 20%) — 대개 여기서 줄바꿈이 한 줄 줄면서 바로 들어간다
+      let qs = 1;
+      for (; qs >= 0.8 && over(); qs -= 0.02) set('--qs', qs.toFixed(2));
+      if (!over()) return;
+      // 2) 그래도 넘치면 보기 칸을 줄인다 — 문제 글자를 더 줄이기 전에 여기부터
+      for (let cs = 1; cs >= 0.72 && over(); cs -= 0.02) set('--cs', cs.toFixed(2));
+      // 3) 마지막 수단 — 문제 글자를 절반까지
+      for (; qs >= 0.5 && over(); qs -= 0.02) set('--qs', qs.toFixed(2));
     }
 
     function chip(t, cls, mark) {
@@ -287,11 +331,21 @@ export default {
       // 미리보기 중임을 진행자가 헷갈리지 않게 위에 크게 표시한다 — 실제 진행은 안 멈춰 있다
       const previewNotice = previewIndex !== null
         ? `<div class="previewnotice"><span class="badge preview">◀▶ 되돌아보기 · 실제 진행 상황은 그대로예요</span></div>` : '';
+      // ⚠ 문제만(0) → 보기(1) → 제출현황(2) 세 단계에서 문제·보기는 1px도 움직이면 안 된다
+      // (움직이면 보는 사람 시선이 흐트러진다 — 2026-09-08 요청). 그래서 아직 보여줄
+      // 차례가 아닌 보기·제출현황도 자리는 처음부터 그대로 잡아두고, 보이지만 않게 한다
+      // (display:none이 아니라 visibility:hidden — 자리는 차지한 채 안 보인다).
+      const veil = show => (show ? '' : ' visibility:hidden;');
       let body = `${previewNotice}${badges(it)}<div class="q">${nl2br(it.question)}</div>`;
-      if (p >= 1) body += `<div class="choices ${isOx ? 'ox' : ''}" style="--n:${n}">${ch}</div>`;
-      if (revealed) body += `<div class="answerbox">${sentences(it.explanation)}<div class="src">출처 · ${esc(it.source)}</div></div>`;
-      const foot = p === 2 ? `<div class="foot"><div class="tmeta">${stat}</div><div class="chips">${chips}</div></div>` : '';
-      return `<div class="qview ${p < 2 ? 'centered' : ''} ${revealed ? 'revealed' : ''}">${body}
+      if (revealed) {
+        body += `<div class="choices ${isOx ? 'ox' : ''}" style="--n:${n}">${ch}</div>`;
+        body += `<div class="answerbox">${sentences(it.explanation)}<div class="src">출처 · ${esc(it.source)}</div></div>`;
+      } else {
+        body += `<div class="choices ${isOx ? 'ox' : ''}" style="--n:${n};${veil(p >= 1)}">${ch}</div>`;
+      }
+      const foot = revealed ? ''
+        : `<div class="foot" style="${veil(p >= 2)}"><div class="tmeta">${stat}</div><div class="chips">${chips}</div></div>`;
+      return `<div class="qview ${revealed ? 'revealed' : ''}">${body}
         <div class="qbottom">${foot}${dots(it)}</div>
       </div>`;
     }

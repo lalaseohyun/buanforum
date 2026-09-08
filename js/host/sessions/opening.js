@@ -57,7 +57,11 @@ export default {
       ]);
       hostSet(path('slides', 'opening'), { index });
     }
-    function next() { if (index < 1) { index++; render(); } else ctx.goSession('quiz', { resume: true }); }
+    // 퀴즈로 넘어갈 때는 일부러 resume을 안 넘긴다 — 앞으로 넘어가는 흐름에서 퀴즈의
+    // 첫 화면은 언제나 QR 대기화면이어야 한다. 리허설 등으로 퀴즈가 이미 진행돼 있었다면
+    // 퀴즈 쪽이 "되돌아보기"로 받아서 대기화면부터 보여주고(실제 진행 상황은 안 건드림),
+    // 화살표를 계속 누르면 진행 지점까지 따라잡는다(quiz.js previewIndex 참고).
+    function next() { if (index < 1) { index++; render(); } else ctx.goSession('quiz'); }
     function prev() { if (index > 0) { index--; render(); } else ctx.goSession('home', { resume: true }); }
 
     loadOpening().then(d => { data = d; render(); })
