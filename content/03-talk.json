@@ -7,22 +7,22 @@
   ],
   "rounds": [
     {
-      "kicker": "Round 1 · 현재",
+      "kicker": "Round 1 현재",
       "title": "실태조사\n숫자",
       "lines": [""]
     },
     {
-      "kicker": "Round 2 · 정주",
+      "kicker": "Round 2 정주",
       "title": "왜 떠나고,\n왜 남는가",
       "lines": [""]
     },
     {
-      "kicker": "Round 3 · 정책",
+      "kicker": "Round 3 정책",
       "title": "청년정책, 없는걸까?\n닿지 않는 걸까?",
       "lines": [""]
     },
     {
-      "kicker": "Round 4 · 미래",
+      "kicker": "Round 4 미래",
       "title": "우리가 그리고 싶은\n부안의 미래",
       "lines": [""]
     }

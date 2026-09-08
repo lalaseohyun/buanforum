@@ -55,8 +55,11 @@ export default {
       // 처리는 main.js의 전역 처리(root 클릭 → ArrowRight)에 맡기고 여기서 따로 안 건다.
     }
 
+    // 진행 순서를 "크게 4가지"로 보여주는 화면이라 카드는 1~4번만 쓴다(5~7번은 하단
+    // 탭바에는 그대로 남아 있고, 여기서만 뺀다 — 원래 목적이 2×2 딱 채우는 것이었다).
+    const CARD_IDS = ['opening', 'quiz', 'talk', 'board'];
     function renderCards() {
-      const cards = ctx.forum.sessions.map(s => `
+      const cards = ctx.forum.sessions.filter(s => CARD_IDS.includes(s.id)).map(s => `
         <div class="homecard" data-s="${s.id}">
           <div class="n">${s.no}</div>
           <div class="t">${esc(s.title)}</div>

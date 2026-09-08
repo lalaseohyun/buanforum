@@ -13,7 +13,7 @@
              응답 저장·구독 방식        → js/survey.js(Realtime Database)
              색·크기                   → css/sessions/survey.css
    ─────────────────────────────────────── */
-import { esc } from '../../util.js';
+import { esc, nl2br } from '../../util.js';
 import { loadSurvey } from '../../content.js';
 import { watchResponses, watchPaused } from '../../survey.js';
 import { createWallColumn } from './surveyWall.js';
@@ -46,12 +46,15 @@ export default {
         .filter(it => it.text);
     }
 
+    // 2.퀴즈 대기화면(viewLobby)과 같은 레이아웃 — 왼쪽 QR, 오른쪽 큰 타이틀+작은 부연 설명.
     function renderIntro() {
-      ctx.root.innerHTML = `<div class="slide surveyintro">
-        <h2>${esc(data.intro.title)}</h2>
+      ctx.root.innerHTML = `<div class="lobby">
         <div class="qrbox"><div id="surveyQr"></div></div>
-        <p class="sub">${esc(data.intro.sub)}</p>
-        <div class="surveycount">응답 <b id="surveyCountNum">${Object.keys(responses).length}</b>명</div>
+        <div>
+          <h2>${nl2br(data.intro.title)}</h2>
+          <div class="lsub">${nl2br(data.intro.note)}</div>
+          <div class="surveycount">응답 <b id="surveyCountNum">${Object.keys(responses).length}</b>명</div>
+        </div>
       </div>${dots()}`;
       const holder = document.getElementById('surveyQr');
       if (holder && window.QRCode) {
@@ -61,7 +64,8 @@ export default {
     }
 
     function renderWall() {
-      ctx.root.innerHTML = `<div class="wallwrap">
+      ctx.root.innerHTML = `<div class="wallhead2">2026 부안 청년포럼</div>
+      <div class="wallwrap">
         <div class="wallcol" id="wallQ3"></div>
         <div class="wallcol" id="wallQ5"></div>
       </div>${dots()}

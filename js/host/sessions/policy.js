@@ -1,14 +1,15 @@
 /* ───────────────────────────────────────
-   5. 대표정책 — 진행자 화면. 화살표로 두 페이지가 이어진다.
-     0) 정책 갤러리(메인페이지) — 위에 "대표정책" kicker + 제목 + 안내문이 있고,
-        그 아래 진행자가 자기 컴퓨터에서 조별 사진을 올리는 칸이 있다.
+   5. 대표정책 — 진행자 화면. 화살표로 세 페이지가 이어진다.
+     0) 메인페이지 — 1.오프닝·3.토크콘서트 첫 화면과 같은 모양(kicker+제목+부제 한 장짜리 슬라이드)
+     1) 정책 갤러리 — 진행자가 자기 컴퓨터에서 조별 사진을 올리는 칸(참여자도 허브에서 직접 올릴 수 있음).
         사진을 누르면 전체화면으로 크게 띄우고, 거기서 "사진 바꾸기"로 다시 올릴 수 있다.
-     1) 공감투표 — 참여자 허브 안내 QR + 조별 정책명(진행자가 직접 기입) + 실시간 집계.
+     2) 공감투표 — 참여자 허브 안내 QR + 조별 정책명(진행자가 직접 기입) + 실시간 집계.
         표 수만큼 동그란 점이 박스 안에 콕콕 찍히는 방식(멘티미터 스타일, 막대 아님).
         조가 적을수록(예: 3개) 한 줄이 세로로 더 크게 — 화면을 항상 채우도록
         css/sessions/policy.css의 .voterow가 flex:1로 남는 세로 공간을 나눠 가진다.
 
-   고칠 때 ─ 조 수                  → 퀴즈 대기화면에서 고른 값(Firestore forum 문서)
+   고칠 때 ─ 메인페이지 문구           → 아래 renderIntro()
+             조 수                  → 퀴즈 대기화면에서 고른 값(Firestore forum 문서)
              투표 규칙(순위별 표수) → js/db.js의 voteWeights
              색·크기·점 애니메이션  → css/sessions/policy.css
    쓰는 것 ─ js/db.js(boardPhotos·policy/live·policyVotes) · js/storage.js(사진 업로드)
@@ -17,11 +18,17 @@ import { esc } from '../../util.js';
 import { watch, watchCollection, hostSet, hostReset, path, tallyVotes, voteWeights } from '../../db.js';
 import { uploadPhoto } from '../../storage.js';
 
+const LAST_PAGE = 2;   // 0 메인페이지 · 1 갤러리 · 2 공감투표
+
+// opening.js·talk.js·board.js와 같은 이유로, 화살표로 이어서 들어올 때만(ctx.resume)
+// 마지막 페이지를 쓴다(award.js에서 ◀로 돌아오면 방금 보던 공감투표 페이지부터).
+let lastPage = 0;
+
 export default {
   id: 'policy',
   title: '대표정책',
   mount(ctx) {
-    let page = 0;                 // 0 갤러리 · 1 공감투표
+    let page = ctx.resume ? lastPage : 0;
     let teamCount = ctx.forum.teamCount || ctx.forum.teams.length;
     let photos = {};              // { photoId: {teamNo, url, path, at} }
     let names = {};               // { [teamNo]: 정책명 }
@@ -41,13 +48,14 @@ export default {
     const hubUrl = () => location.href.replace(/host\.html.*$/, '');
 
     function render() {
+      lastPage = page;
       // 투표가 들어올 때마다 다시 그리는데, 그 순간 진행자가 정책명을 치고 있을 수 있다.
       // 치던 칸(값·커서)을 붙잡아 뒀다가 그린 뒤에 되돌려 준다.
       const act = document.activeElement;
       const typing = act && act.matches?.('.votetable input')
         ? { t: act.dataset.t, v: act.value, s: act.selectionStart } : null;
 
-      ctx.root.innerHTML = page === 0 ? viewGallery() : viewVote();
+      ctx.root.innerHTML = page === 0 ? viewIntro() : page === 1 ? viewGallery() : viewVote();
       wire();
       ctx.setControls(controlsFor());
 
@@ -61,7 +69,20 @@ export default {
       }
     }
 
-    /* ---- 0. 갤러리(메인페이지) ---- */
+    // 화살표로 넘기는 페이지 점 — 지금이 3페이지 중 몇 번째인지
+    const dots = () => `<div class="pagedots">${[0, 1, 2].map(i =>
+      `<i class="${i === page ? 'on' : ''}"></i>`).join('')}</div>`;
+
+    /* ---- 0. 메인페이지 — 1.오프닝·3.토크콘서트 첫 화면과 같은 슬라이드 ---- */
+    function viewIntro() {
+      return `<div class="slide">
+        <div class="kicker">대표정책</div>
+        <h2>대표정책 제안</h2>
+        <p class="sub">논의결과 종이를 사진찍어서 올려주세요!</p>
+      </div>${dots()}`;
+    }
+
+    /* ---- 1. 갤러리 ---- */
     function viewGallery() {
       const cards = teams().map(t => {
         const p = photoOf(t.no);
@@ -84,16 +105,15 @@ export default {
         <div class="toppage-head">
           <div class="kicker">대표정책</div>
           <h2>대표정책 제안</h2>
-          <p>논의결과 종이를 사진찍어서 올려주세요!</p>
         </div>
         <div class="gallery" style="--cols:${teamCount <= 4 ? 2 : 3}">${cards}</div>
       </div>
         <input type="file" accept="image/*" id="fileUp" hidden>
         ${uploading ? `<div class="uploading">사진 올리는 중…</div>` : ''}${zoom}
-        <div class="pagedots"><i class="on"></i><i></i></div>`;
+        ${dots()}`;
     }
 
-    /* ---- 1. 공감투표 ---- */
+    /* ---- 2. 공감투표 ---- */
     // 멘티미터의 객관식 투표처럼, 막대가 아니라 표 하나당 동그란 점 하나가 박스 안에
     // 콕콕 찍히는 걸로 보여준다. 매번 다시 그릴 때마다 점이 튀어 오르듯 애니메이션된다
     // (css/sessions/policy.css의 @keyframes dotpop).
@@ -125,11 +145,11 @@ export default {
           <div class="votetable">${rows}</div>
         </div>
       </div>
-      <div class="pagedots"><i></i><i class="on"></i></div>`;
+      ${dots()}`;
     }
 
     function wire() {
-      if (page === 0) {
+      if (page === 1) {
         const f = document.getElementById('fileUp');
         // 아래 셋 다 stopPropagation 필수 — 안 막으면 main.js의 전역 "빈 공간 클릭 = 다음"
         // 처리로 버블링돼서, 사진을 올리거나 확대/닫는 클릭이 동시에 다음 페이지로도 넘겨버린다.
@@ -156,7 +176,7 @@ export default {
         };
         const layer = document.getElementById('zoomLayer');
         if (layer) layer.onclick = e => { e.stopPropagation(); if (e.target === layer) { zoomId = null; render(); } };
-      } else {
+      } else if (page === 2) {
         const holder = document.getElementById('voteQr');
         if (holder && window.QRCode) {
           holder.innerHTML = '';
@@ -184,13 +204,13 @@ export default {
       const v = String(value || '').trim();
       if ((names[teamNo] || '') === v) return;
       names = { ...names, [teamNo]: v };
-      hostSet(path('policy', 'live'), { page, open: page === 1, names });
+      hostSet(path('policy', 'live'), { page, open: page === 2, names });
     }
 
     function goPage(p) {
-      page = Math.max(0, Math.min(1, p));
+      page = Math.max(0, Math.min(LAST_PAGE, p));
       zoomId = null;
-      hostSet(path('policy', 'live'), { page, open: page === 1, names });
+      hostSet(path('policy', 'live'), { page, open: page === 2, names });
       render();
     }
 
@@ -202,18 +222,20 @@ export default {
 
     function controlsFor() {
       return [
-        { label: '◀ 이전', onClick: () => (page === 0 ? ctx.goSession('board', { resume: true }) : goPage(0)) },
-        page === 0
-          ? { label: '공감투표 ▶', variant: 'primary', onClick: () => goPage(1) }
+        { label: page === 0 ? '◀ 원탁토론으로' : '◀ 이전', onClick: () => (page === 0 ? ctx.goSession('board', { resume: true }) : goPage(page - 1)) },
+        page < LAST_PAGE
+          ? { label: page === 0 ? '갤러리 ▶' : '공감투표 ▶', variant: 'primary', onClick: () => goPage(page + 1) }
           : { label: '우수정책 시상 ▶', variant: 'primary', onClick: () => ctx.goSession('award', { resume: true }) },
         { label: '전체 초기화(사진·투표)', variant: 'danger', onClick: resetAll },
       ];
     }
 
+    const forward = () => (page < LAST_PAGE ? goPage(page + 1) : ctx.goSession('award', { resume: true }));
+    const backward = () => (page > 0 ? goPage(page - 1) : ctx.goSession('board', { resume: true }));
     ctx.setKeys({
-      ArrowRight: () => (page === 0 ? goPage(1) : ctx.goSession('award', { resume: true })),
-      ArrowLeft: () => (page === 0 ? ctx.goSession('board', { resume: true }) : goPage(0)),
-      ' ': () => (page === 0 ? goPage(1) : ctx.goSession('award', { resume: true })),
+      ArrowRight: forward,
+      ArrowLeft: backward,
+      ' ': forward,
       Escape: () => { if (zoomId) { zoomId = null; render(); } },
     });
 

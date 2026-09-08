@@ -51,14 +51,14 @@
 .awardmid{font-size:clamp(28px,3.2vw,56px);font-weight:800;color:var(--yellow);letter-spacing:-.02em}
 .awardbig{font-size:clamp(48px,6.4vw,116px);font-weight:800;color:var(--ink);letter-spacing:-.04em;line-height:1.15}
 
-/* 홈 — 2x2(5개면 자동으로 3줄) 진행순서 카드 */
-.homegrid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(2,1fr);grid-auto-rows:1fr;gap:clamp(16px,2vw,32px)}
-.homecard{background:var(--panel);border-radius:26px;display:flex;flex-direction:column;justify-content:center;align-items:center;
-  text-align:center;gap:10px;cursor:pointer;transition:.15s}
+/* 홈 — 진행 순서를 "크게 4가지"로 보여주는 2×2 카드(딱 4장 고정, js/host/sessions/home.js CARD_IDS) */
+.homegrid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(2,1fr);grid-auto-rows:1fr;gap:clamp(20px,2.6vw,42px)}
+.homecard{background:var(--panel);border-radius:32px;display:flex;flex-direction:column;justify-content:center;align-items:center;
+  text-align:center;gap:16px;cursor:pointer;transition:.15s}
 .homecard:hover{background:var(--panel2);outline:2px solid var(--yellow)}
-.homecard .n{font-size:clamp(15px,1.4vw,22px);font-weight:800;color:var(--yellow)}
-.homecard .t{font-size:clamp(26px,3vw,52px);font-weight:800;letter-spacing:-.03em}
-.homecard .s{font-size:clamp(14px,1.3vw,20px);color:var(--ink2);font-weight:600}
+.homecard .n{font-size:clamp(20px,2vw,32px);font-weight:800;color:var(--yellow)}
+.homecard .t{font-size:clamp(38px,4.6vw,80px);font-weight:800;letter-spacing:-.03em}
+.homecard .s{font-size:clamp(18px,1.8vw,28px);color:var(--ink2);font-weight:600}
 
 /* ───────────────────────────────────────
    좌측상단 제목 + 아래 N단 박스 — 공용 패턴
@@ -84,12 +84,14 @@
 /* 토크콘서트 ROUND 박스만 위쪽 정렬로 — 라운드마다 문구 줄 수가 달라서 가운데 정렬이면
    박스마다 시작 높이가 들쭉날쭉해 보였다. 안의 글자는 그대로 가운데 정렬(.qbox 기본값). */
 .boxrow.cols-4 .qbox{justify-content:flex-start}
-/* 4단은 3단보다 박스가 좁아서 기본 qt 크기로는 강제 줄바꿈 앞 문구가 한 줄에 안 들어가고
-   한 번 더 꺾여 3줄이 됐다 — 이 박스에서만 글자를 살짝 줄여 의도한 2줄로 맞춘다 */
-.boxrow.cols-4 .qt{font-size:clamp(18px,1.9vw,34px)}
-/* 토크콘서트 ROUND·정책 개요 박스 — 남는 세로 공간을 끝까지 채우지 않고 내용 높이만큼만
-   차지하게 해서(align-content:start) 박스 세로 길이를 살짝 줄인다. */
-.boxrow.cols-4,.boxrow.cols-5{align-content:start}
+/* 토크콘서트 ROUND 박스 — 박스 안을 최대한 채우도록 기본 qt(42px 기준)의 2배 크기.
+   4단이라 3단보다 좁은데도 글자를 이만큼 키운 만큼, 강제 줄바꿈된 두 줄이 박스 폭에
+   딱 맞게 줄바꿈 지점을 content/03-talk.json에서 미리 잡아 두었다(talk.js 참고). */
+.boxrow.cols-4 .qt{font-size:clamp(36px,5vw,84px);word-break:keep-all}
+/* 원탁토론 참고자료 개요(5개 분야 박스)만 남는 세로 공간을 끝까지 채우지 않고 내용
+   높이만큼만 차지하게 해서(align-content:start) 박스 세로 길이를 살짝 줄인다.
+   토크콘서트 ROUND 박스(cols-4)는 반대로 세로로 길게 — 기본값(stretch)대로 행 전체를 채운다. */
+.boxrow.cols-5{align-content:start}
 .qbox .badge-step{align-self:flex-start;font-size:clamp(13px,1.1vw,18px);font-weight:800;letter-spacing:.08em;
   color:#2c2c2a;background:var(--yellow);padding:6px 16px;border-radius:999px}
 /* ROUND 박스 안의 노란 타원(Round N · ○○)은 좌측 정렬 대신 가운데 정렬로 */
