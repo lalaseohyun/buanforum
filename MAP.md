@@ -106,6 +106,7 @@ QR·실시간 화면(위 7번)은 host.html 안의 세션이지만, **설문 폼
 | [js/score.js](js/score.js) | **채점 규칙의 유일한 정의.** `node tools/test-score.js`로 검증됨 |
 | [js/db.js](js/db.js) 의 `voteWeights` | **공감투표 규칙의 유일한 정의.** 조가 3개 이하면 1표, 4조 이상이면 1순위 2표·2순위 1표 |
 | [js/firebase.js](js/firebase.js) | Firebase 프로젝트 연결 값 (배포 시 여기부터 채운다) |
+| [js/vendor/qrcode.min.js](js/vendor/qrcode.min.js) | QR 생성 라이브러리(host.html 전용). CDN 대신 로컬로 갖고 있는 이유는 파일 맨 위 주석 참고 |
 
 ## 세션 모듈 계약
 
