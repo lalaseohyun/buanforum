@@ -14,7 +14,7 @@
              색·크기·점 애니메이션  → css/sessions/policy.css
    쓰는 것 ─ js/db.js(boardPhotos·policy/live·policyVotes) · js/storage.js(사진 업로드)
    ─────────────────────────────────────── */
-import { esc } from '../../util.js';
+import { esc, renderQr } from '../../util.js';
 import { watch, watchCollection, hostSet, hostReset, path, tallyVotes, voteWeights } from '../../db.js';
 import { uploadPhoto } from '../../storage.js';
 
@@ -177,11 +177,7 @@ export default {
         const layer = document.getElementById('zoomLayer');
         if (layer) layer.onclick = e => { e.stopPropagation(); if (e.target === layer) { zoomId = null; render(); } };
       } else if (page === 2) {
-        const holder = document.getElementById('voteQr');
-        if (holder && window.QRCode) {
-          holder.innerHTML = '';
-          new QRCode(holder, { text: hubUrl(), width: 260, height: 260, colorDark: '#2c2c2a', colorLight: '#ffffff' });
-        }
+        renderQr(document.getElementById('voteQr'), hubUrl(), { width: 260, height: 260 });
         // 정책명은 타이핑이 끝난 뒤(포커스가 빠질 때) 저장한다 — 글자마다 저장하면 커서가 튄다
         ctx.root.querySelectorAll('.votetable input').forEach(inp => {
           inp.onblur = () => saveName(Number(inp.dataset.t), inp.value);

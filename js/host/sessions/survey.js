@@ -13,7 +13,7 @@
              응답 저장·구독 방식        → js/survey.js(Realtime Database)
              색·크기                   → css/sessions/survey.css
    ─────────────────────────────────────── */
-import { esc, nl2br } from '../../util.js';
+import { esc, nl2br, renderQr } from '../../util.js';
 import { loadSurvey } from '../../content.js';
 import { watchResponses, watchPaused } from '../../survey.js';
 import { createWallColumn } from './surveyWall.js';
@@ -56,11 +56,7 @@ export default {
           <div class="surveycount">응답 <b id="surveyCountNum">${Object.keys(responses).length}</b>명</div>
         </div>
       </div>${dots()}`;
-      const holder = document.getElementById('surveyQr');
-      if (holder && window.QRCode) {
-        holder.innerHTML = '';
-        new QRCode(holder, { text: surveyUrl(), width: 300, height: 300, colorDark: '#2c2c2a', colorLight: '#ffffff' });
-      }
+      renderQr(document.getElementById('surveyQr'), surveyUrl());
     }
 
     function renderWall() {
@@ -80,6 +76,9 @@ export default {
     }
 
     function render() {
+      // content/07-survey.json이 아직 안 왔는데 화살표를 빨리 누르면(느린 네트워크 등)
+      // next()가 render()를 부르는데 data가 없어 죽는 문제 — 로드 전엔 조용히 무시.
+      if (!data) return;
       lastIndex = index;
       destroyWall();
       index === 0 ? renderIntro() : renderWall();

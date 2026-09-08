@@ -43,6 +43,30 @@ export function fitInto(selector, minPx = 14) {
   }
 }
 
+// QR 생성 라이브러리(cdnjs, host.html에서 blocking <script>로 미리 불러둔다)는 보통
+// 모듈보다 먼저 준비되지만, 네트워크가 느리거나 그 순간 막히면 window.QRCode가 아직
+// 없을 수 있다 — 그때 그냥 건너뛰면(예전 방식) 그 뒤로 아무것도 다시 안 그려서
+// QR이 영영 빈 채로 남는다("QR이 또 안 떠" 버그). 준비될 때까지 0.3초마다 재시도하고
+// (최대 15초), 그래도 안 되면 눌러서 바로 열 수 있는 링크라도 남긴다.
+export function renderQr(el, text, opts = {}) {
+  if (!el) return;
+  let tries = 0;
+  const tick = () => {
+    if (!document.body.contains(el)) return;   // 그 사이 다른 화면으로 넘어갔으면 그만둔다
+    if (window.QRCode) {
+      el.innerHTML = '';
+      new window.QRCode(el, { text, width: 300, height: 300, colorDark: '#2c2c2a', colorLight: '#ffffff', ...opts });
+      return;
+    }
+    if (++tries > 50) {
+      el.innerHTML = `<a href="${esc(text)}" target="_blank" rel="noopener" style="font-size:13px;color:#2c2c2a;font-weight:700;display:block;padding:20px;text-align:center">QR 생성 실패<br>여기를 눌러 주소로 이동</a>`;
+      return;
+    }
+    setTimeout(tick, 300);
+  };
+  tick();
+}
+
 // 두 JSON 값을 "의미 있게 같은지"만 비교할 때 쓰는 안정적 시그니처.
 // serverNow처럼 매번 바뀌는 필드는 무시하도록 replacer를 넘긴다.
 export function sig(value, ignoreKeys = []) {

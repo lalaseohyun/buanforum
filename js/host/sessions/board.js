@@ -109,6 +109,9 @@ export default {
       </div>${dots()}`;
     }
     function render() {
+      // content/04-board.json·policies-2026.json이 아직 안 왔는데 화살표를 빨리 누르면
+      // next()/prev()가 render()를 부르는데 data가 없어 죽는 문제 — 로드 전엔 조용히 무시.
+      if (!data || !policies) return;
       lastIndex = index;
       if (index === 0) renderIntro();
       else if (index === 1) renderSteps();

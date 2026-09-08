@@ -46,6 +46,9 @@ export default {
       </div>${dots()}`;
     }
     function render() {
+      // content/01-opening.json이 아직 안 왔는데 화살표를 빨리 누르면(느린 네트워크 등)
+      // next()/prev()가 render()를 부르는데 data가 없어 죽는 문제 — 로드 전엔 조용히 무시.
+      if (!data) return;
       lastIndex = index;
       index === 0 ? renderIntro() : renderQuestions();
       ctx.setControls([

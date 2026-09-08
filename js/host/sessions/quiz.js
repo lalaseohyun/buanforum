@@ -28,7 +28,7 @@
        합류한다. 화살표로 옆 세션에서 이어서 들어올 때(ctx.resume)는 이 되돌아보기
        없이 실제 상태를 바로 보여준다.
    ─────────────────────────────────────── */
-import { esc, nl2br, sentences, fitInto } from '../../util.js';
+import { esc, nl2br, sentences, fitInto, renderQr } from '../../util.js';
 import { loadQuiz } from '../../content.js';
 import { watch, watchCollection, hostSet, hostReset, path } from '../../db.js';
 import { computeRanking, allAnswered } from '../../score.js';
@@ -240,11 +240,7 @@ export default {
       </div>`;
     }
     function wireLobby() {
-      const holder = document.getElementById('qrHolder');
-      if (holder && window.QRCode) {
-        holder.innerHTML = '';
-        new QRCode(holder, { text: location.href.replace(/host\.html.*$/, ''), width: 300, height: 300, colorDark: '#2c2c2a', colorLight: '#ffffff' });
-      }
+      renderQr(document.getElementById('qrHolder'), location.href.replace(/host\.html.*$/, ''));
     }
 
     // 하단 노란 점 — 이 문항을 넘기는 데 몇 번 남았는지 한눈에 보여준다
