@@ -21,20 +21,16 @@
 .wallhead{flex:0 0 auto;display:flex;align-items:baseline;justify-content:center;gap:10px;
   font-size:clamp(39px,4.29vw,71px);font-weight:800;letter-spacing:-.02em}
 .wallhead .wallcount{font-size:clamp(30px,2.73vw,44px);color:var(--ink3);font-weight:700;font-variant-numeric:tabular-nums}
-.walllist{flex:1;min-height:0;display:flex;flex-direction:column;gap:clamp(10px,1.6vh,18px);overflow:hidden}
+/* ⚠ 예전엔 새 응답이 화면 중앙에 3초간 하이라이트됐다가 목록에 합류하고, 4장만
+   보이게 순환하는 방식이었다 — 2026-09-08 요청으로 없앴다("인원이 많지 않으니
+   그냥 다 개별 텍스트박스로"). 이제 들어온 응답을 전부 최신순으로 나열만 한다
+   (js/host/sessions/surveyWall.js). overflow는 hidden 대신 auto로 — 나중에 응답이
+   많아져서 한 칸에 다 안 들어가도 잘려서 안 보이는 대신 그 칸만 스크롤된다. */
+.walllist{flex:1;min-height:0;display:flex;flex-direction:column;gap:clamp(10px,1.6vh,18px);overflow-y:auto}
 .wallcard{background:var(--panel);border-radius:18px;padding:clamp(16px,2vh,26px) clamp(35px,3.51vw,54px);
   font-size:clamp(33px,3.32vw,51px);font-weight:600;line-height:1.45;letter-spacing:-.015em;
-  animation:wallcardin .4s ease-out backwards}
+  flex:0 0 auto;animation:wallcardin .4s ease-out backwards}
 @keyframes wallcardin{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
-
-/* 새 응답 — 화면 중앙에 크게 3초 단독 표시(하이브리드 C안의 ①).
-   글자색이 노란색이라 너무 튄다는 지적으로, 목록에 합류한 뒤의 .wallcard와
-   같은 크림색으로 맞췄다(2026-09-08). */
-.wallhighlight{position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;
-  text-align:center;background:var(--bg);border-radius:24px;
-  padding:clamp(24px,4vh,48px);font-size:clamp(51px,5.46vw,86px);font-weight:800;line-height:1.4;
-  letter-spacing:-.02em;color:var(--cream);animation:wallcardin .4s ease-out}
-.wallhighlight[hidden]{display:none}
 
 .wallpaused{position:absolute;left:50%;bottom:clamp(70px,9vh,110px);transform:translateX(-50%);
   background:var(--panel2);color:var(--ink);padding:12px 26px;border-radius:999px;font-weight:800;
