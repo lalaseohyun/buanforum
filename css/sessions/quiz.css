@@ -24,10 +24,6 @@
 /* 배지 */
 .badges{display:flex;gap:10px;align-items:center;justify-content:center;margin-bottom:clamp(8px,1.2vh,16px);flex-wrap:wrap;flex:0 0 auto}
 
-/* 탭바에서 2.퀴즈를 다시 눌러 들어왔을 때(진행 중이었다면) 뜨는 되돌아보기 안내 —
-   실제 진행이 멈춘 게 아니라는 걸 진행자가 한눈에 알 수 있게 크게 보여준다 */
-.previewnotice{text-align:center;margin-bottom:clamp(10px,1.6vh,20px);flex:0 0 auto}
-.badge.preview{background:var(--yellow);color:#2c2c2a;font-weight:800}
 
 /* 문제 — 여기도 화면 전체 확대를 그대로 곱하면(63~149px) 문제 2줄 + 보기 4개 조합에서
    페이지 점(.pagedots)이 화면 아래로 밀려 안 보였다(2026-09-08 실측) — 조금만 덜 키움 */
