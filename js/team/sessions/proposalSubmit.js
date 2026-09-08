@@ -56,7 +56,11 @@ export default {
       } finally { uploading = false; render(); }
     }
 
-    const unsub = watch(path('boardPhotos', docId), snap => { photo = snap; render(); });
+    // "전체 초기화"는 문서를 진짜로 지우지 않고 빈 문서({hostKey,updatedAt}만 남김)로
+    // 덮어쓴다(js/db.js hostReset 주석 참고) — snap 자체는 truthy로 남아있으니
+    // url이 실제로 있을 때만 "사진 있음"으로 본다. 안 그러면 초기화 직후에도
+    // 이 화면이 "제출 완료"로 잘못 나온다.
+    const unsub = watch(path('boardPhotos', docId), snap => { photo = (snap && snap.url) ? snap : null; render(); });
     render();
     return { unmount() { unsub && unsub(); } };
   },
