@@ -234,9 +234,11 @@ export default {
         ab.style.fontSize = '';
         const tight = () => ab.scrollHeight - ab.clientHeight > 4;
         if (!tight()) return;
-        // 0.55까지 — 여기까지 줄이면 1920×1080에서 해설이 최소 38px은 확보된다
-        // (0.7이 하한이면 긴 해설이 20px까지 떨어졌다, 2026-09-08 실측)
-        for (let cs = 1; cs >= 0.55 && tight(); cs -= 0.02) set('--cs', cs.toFixed(2));
+        // 0.45까지 — 조 원(O/X 표시)이 생기면서 해설에 남는 자리가 줄어, 보기 칸을
+        // 예전 하한(0.55)까지만 줄여서는 부족한 문항이 나왔다(2줄짜리 보기 문항에서
+        // 해설이 18px까지 떨어졌다, 2026-09-08 실측). 보기 번호·글자는 여전히 읽을 수
+        // 있는 한도 안에서 조금 더 양보하고, 그만큼 해설 쪽에 자리를 더 준다.
+        for (let cs = 1; cs >= 0.45 && tight(); cs -= 0.02) set('--cs', cs.toFixed(2));
         for (let qs = 1; qs >= 0.55 && tight(); qs -= 0.02) set('--qs', qs.toFixed(2));
         return;
       }
@@ -326,6 +328,17 @@ export default {
         : cnt === teams().length ? `<div class="tstat done">전체 제출 완료!</div>`
         : `<div class="tstat"><b>${cnt}</b>조 제출 완료${state.open ? '' : ' · 마감됨'}</div>`;
 
+      // 정답 공개 화면 전용 — 제출한 팀 중 누가 맞혔는지 조 원마다 O/X로 보여준다
+      // (제출현황 단계의 ✓ 표시와 같은 자리, 같은 조 원 모양을 그대로 쓴다).
+      // 제출을 안 한 팀은 "–"(접속은 했지만 답은 안 낸 경우) 또는 표식 없음(접속조차 안 함).
+      const correctNos = teams().filter(t => ansForItem[t.no]?.choice === it.answerIndex).map(t => t.no);
+      const revealChips = teams().map(t => {
+        const a = ansForItem[t.no];
+        if (a) return chip(t, correctNos.includes(t.no) ? 'done' : 'wrong', correctNos.includes(t.no) ? 'O' : 'X');
+        return chip(t, joinedNos().includes(t.no) ? 'on' : '', joinedNos().includes(t.no) ? '–' : null);
+      }).join('');
+      const revealStat = `<div class="tstat"><b>${correctNos.length}</b>조 정답 · ${cnt}조 제출</div>`;
+
       // ⚠ 문제만(0) → 보기(1) → 제출현황(2) 세 단계에서 문제·보기는 1px도 움직이면 안 된다
       // (움직이면 보는 사람 시선이 흐트러진다 — 2026-09-08 요청). 그래서 아직 보여줄
       // 차례가 아닌 보기·제출현황도 자리는 처음부터 그대로 잡아두고, 보이지만 않게 한다
@@ -338,7 +351,8 @@ export default {
       } else {
         body += `<div class="choices ${isOx ? 'ox' : ''}" style="--n:${n};${veil(p >= 1)}">${ch}</div>`;
       }
-      const foot = revealed ? ''
+      const foot = revealed
+        ? `<div class="foot revealfoot"><div class="tmeta">${revealStat}</div><div class="chips">${revealChips}</div></div>`
         : `<div class="foot" style="${veil(p >= 2)}"><div class="tmeta">${stat}</div><div class="chips">${chips}</div></div>`;
       return `<div class="qview ${revealed ? 'revealed' : ''}">${body}
         <div class="qbottom">${foot}${dots(it)}</div>

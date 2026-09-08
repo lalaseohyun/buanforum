@@ -63,14 +63,17 @@
 .ch.dimmed{opacity:.4}
 
 /* 정답 해설 — 보기 바로 아래 연회색 네모박스, 가운데 정렬, 문장마다 줄바꿈 */
+/* 해설 글자 — 예전엔 최대 65px까지 커서 짧은 해설에서 너무 크다는 지적(2026-09-08) —
+   한 단계 낮췄다. 그래도 긴 해설이 넘치면 fitInto('.answerbox', 18)가 이 크기부터
+   시작해서 18px까지 더 줄인다(js/host/sessions/quiz.js). */
 .answerbox{background:var(--beige);color:var(--beigeInk);border-radius:24px;
   margin-top:clamp(14px,2.2vh,32px);padding:clamp(14px,2vh,28px) clamp(39px,4.68vw,86px);
-  font-size:clamp(38px,3.62vw,65px);line-height:1.45;font-weight:500;letter-spacing:-.02em;
+  font-size:clamp(26px,2.5vw,44px);line-height:1.45;font-weight:500;letter-spacing:-.02em;
   text-align:center;flex:1 1 auto;min-height:0;overflow:auto;
   display:flex;flex-direction:column;justify-content:center}
 .answerbox p+p{margin-top:clamp(3px,.6vh,9px)}
 .answerbox strong{color:#C60909}
-.answerbox .src{font-size:clamp(26px,2.25vw,38px);color:rgba(58,58,56,.5);margin-top:clamp(8px,1.2vh,16px);font-weight:600}
+.answerbox .src{font-size:clamp(19px,1.7vw,28px);color:rgba(58,58,56,.5);margin-top:clamp(8px,1.2vh,16px);font-weight:600}
 
 /* 화면 맨 아래 묶음 — 제출현황(있을 때) + 남은 페이지 점.
    정답 페이지에서는 해설 박스가 남는 자리를 다 쓰므로 auto 여백을 빼준다. */
@@ -88,9 +91,22 @@
   gap:calc(clamp(5px,.8vh,11px) * var(--cs,1));border-radius:18px}
 .qview.revealed .ch .n{width:calc(clamp(54px,4.1vw,74px) * var(--cs,1));height:calc(clamp(54px,4.1vw,74px) * var(--cs,1));
   font-size:calc(clamp(27px,2.25vw,39px) * var(--cs,1))}
-.qview.revealed .ch .t{font-size:calc(clamp(30px,3.32vw,59px) * var(--cs,1))}
+.qview.revealed .ch .t{font-size:calc(clamp(24px,2.7vw,48px) * var(--cs,1))}
 .qview.revealed .ch .tally{font-size:calc(clamp(24px,2.06vw,35px) * var(--cs,1))}
 .qview.revealed .ch .hl-inline{font-size:calc(clamp(26px,2.54vw,45px) * var(--cs,1));padding-top:7px}
+
+/* 정답 공개 화면 하단 — 제출 현황 대신 "누가 맞혔는지"(조 원마다 O/X)를 보여준다.
+   조 원은 여기서 아주 작게(참고용 표시일 뿐) — 해설 박스(.answerbox)가 이 화면의
+   주인공이라 자리를 뺏기면 해설 글자가 억지로 더 작아진다(2026-09-08 실측:
+   4지선다처럼 보기 글자가 원래 2줄인 문항에서 해설이 18px까지 눌렸다). */
+.qview.revealed .foot{padding-top:calc(clamp(6px,.9vh,14px) * var(--cs,1))}
+.qview.revealed .foot .tmeta{margin-bottom:calc(clamp(4px,.6vh,10px) * var(--cs,1))}
+.qview.revealed .foot .tstat{font-size:calc(clamp(17px,1.6vw,26px) * var(--cs,1))}
+.qview.revealed .foot .chips{gap:calc(clamp(5px,.7vh,10px) * var(--cs,1)) clamp(8px,.9vw,15px);
+  margin-top:0}
+.qview.revealed .foot .chip{width:calc(clamp(34px,3.6vw,52px) * var(--cs,1));
+  font-size:calc(clamp(13px,1.3vw,20px) * var(--cs,1))}
+.qview.revealed .foot .chip .mk{font-size:.7em}
 
 /* 보기 아래 여백 + 제출 현황.
    목업 프레임에는 하단 조작바가 없었지만 실제 화면에는 탭바+조작바(약 135px)가 더 있어서,
