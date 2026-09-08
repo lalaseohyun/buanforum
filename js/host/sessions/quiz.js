@@ -1,11 +1,14 @@
 /* ───────────────────────────────────────
    2. 청년정책 퀴즈 — 진행자 화면
 
-   고칠 때 ─ 문항·정답·해설·그래프 데이터   → content/02-quiz.json
+   고칠 때 ─ 문항·정답·해설                → content/02-quiz.json
              팀 수·팀 이름                  → content/forum.json
              화면 색·글자 크기               → css/sessions/quiz.css
-             정답 뒤 그래프를 그리는 방식     → ./chart.js
              진행 흐름·버튼(이 파일)         → 아래
+   ⚠ 정답 공개 뒤 그래프/표를 보여주는 "데이터 보기" 단계가 있었는데 2026-09-08
+     요청으로 완전히 없앴다(js/host/sessions/chart.js·css/sessions/chart.css는
+     이제 아무 데서도 안 부른다 — 지우지 않고 남겨는 뒀다. content/02-quiz.json의
+     각 문항 "chart" 필드도 이제 안 읽는다). 정답 공개 화면 하나로 끝난다.
    쓰는 것 ─ js/db.js(Firestore) · js/score.js(채점, 규칙은 여기서 절대 다시 안 만든다)
 
    정읍 프로젝트에서 검증된 규칙을 그대로 따른다 ─
@@ -37,7 +40,6 @@ import { esc, nl2br, sentences, fitInto, renderQr, refitOnFontsReady } from '../
 import { loadQuiz } from '../../content.js';
 import { watch, watchCollection, hostSet, hostReset, path } from '../../db.js';
 import { computeRanking, allAnswered } from '../../score.js';
-import { renderChart } from './chart.js';
 
 export default {
   id: 'quiz',
@@ -47,7 +49,7 @@ export default {
     let teamCount = ctx.forum.teamCount || ctx.forum.teams.length;
     const teams = () => ctx.forum.teams.slice(0, teamCount);
     let data = null, ITEMS = [];
-    let state = { phase: 'lobby', index: -1, open: false, revealed: false, showChart: false, openedAt: null, asked: {} };
+    let state = { phase: 'lobby', index: -1, open: false, revealed: false, openedAt: null, asked: {} };
     let teamsMap = {};    // { [no]: {joinedAt} }
     let answersAll = {};  // { [qid]: { [no]: {choice, ms} } }
     let stage = 0;        // 0=문제만 1=+보기 2=+제출현황 — 진행자 화면 전용, Firestore에 안 남긴다
@@ -91,9 +93,6 @@ export default {
     }
     function writeLive() {
       const it = currentItem();
-      // chart는 안 실어 보낸다 — 팀 화면은 그래프/표를 아예 안 그리고(진행자 화면 전용 연출),
-      // 표(table) 문항의 rows는 배열 안에 배열이 들어있는 모양이라 Firestore가 아예 거부한다
-      // (nested arrays not supported) — 예전엔 이 필드 때문에 이 문서 쓰기 자체가 조용히 실패했다.
       const reveal = state.revealed && it ? {
         answerIndex: it.answerIndex, answerLabel: it.answerLabel,
         highlight: it.highlight, explanation: it.explanation, source: it.source,
@@ -117,23 +116,22 @@ export default {
       const it = ITEMS[i];
       stage = 0;
       writeState({
-        phase: 'quiz', index: i, open: true, revealed: false, showChart: false,
+        phase: 'quiz', index: i, open: true, revealed: false,
         openedAt: Date.now(), asked: { ...state.asked, [it.id]: true },
       });
     }
     const reveal = () => writeState({ open: false, revealed: true });
-    const showChart = () => writeState({ showChart: true });
-    const goFinal = () => { stage = 0; writeState({ phase: 'final', open: false, revealed: false, showChart: false }); };
-    const toLobby = () => { coverMode = false; stage = 0; writeState({ phase: 'lobby', open: false, revealed: false, showChart: false }); };
+    const goFinal = () => { stage = 0; writeState({ phase: 'final', open: false, revealed: false }); };
+    const toLobby = () => { coverMode = false; stage = 0; writeState({ phase: 'lobby', open: false, revealed: false }); };
     // QR 대기화면(coverMode)에서 화살표를 누르면 — 지나간 문제를 훑지 않고 실제 진행
     // 상태로 한 번에 넘어간다. Firestore는 전혀 안 건드린다(화면 표시만 바꾼다).
     const exitCover = () => { coverMode = false; render(); };
 
     /* ---- 한 문항 = 여러 페이지. 화살표 하나로 처음부터 끝까지 이어진다 ----
-       0 문제만 · 1 +보기 · 2 +제출현황 · 3 정답공개(그 자리에서 정답만 노랗게 + 해설박스)
-       4 데이터(차트가 있는 문항만). 하단 노란 점이 이 페이지 수를 보여준다. */
-    const pagesOf = it => (it && it.chart ? 5 : 4);
-    const pageNow = () => (state.showChart ? 4 : state.revealed ? 3 : stage);
+       0 문제만 · 1 +보기 · 2 +제출현황 · 3 정답공개(그 자리에서 정답만 노랗게 + 해설박스).
+       하단 노란 점이 이 페이지 수를 보여준다. */
+    const pagesOf = () => 4;
+    const pageNow = () => (state.revealed ? 3 : stage);
 
     // 화살표는 세션 경계도 넘나든다 — 대기화면에서 더 뒤로 가면 1.오프닝으로,
     // 최종 순위에서 더 앞으로 가면 3.토크콘서트로 이어진다.
@@ -145,7 +143,6 @@ export default {
       const p = pageNow();
       if (p < 2) { stage = p + 1; render(); }
       else if (p === 2) reveal();
-      else if (p === 3 && it.chart) showChart();
       else if (state.index >= ITEMS.length - 1) goFinal();
       else selectIndex(state.index + 1);
     }
@@ -156,8 +153,7 @@ export default {
       const it = currentItem();
       if (state.phase !== 'quiz' || !it) { selectIndex(state.index - 1); return; }
       const p = pageNow();
-      if (p === 4) writeState({ showChart: false });
-      else if (p === 3) { stage = 2; writeState({ revealed: false }); }
+      if (p === 3) { stage = 2; writeState({ revealed: false }); }
       else if (p > 0) { stage = p - 1; render(); }
       else selectIndex(state.index - 1);
     }
@@ -168,7 +164,7 @@ export default {
       if (!confirm('이 문제의 팀 답변을 모두 지웁니다. 진행할까요?')) return;
       hostReset(path('quizAnswers', it.id), {});
       stage = 0;
-      writeState({ revealed: false, open: false, showChart: false });
+      writeState({ revealed: false, open: false });
     }
     function resetAll() {
       if (!confirm('답변·점수·접속한 팀까지 모두 지웁니다. 정말 초기화할까요?')) return;
@@ -176,7 +172,7 @@ export default {
       ITEMS.forEach(it => hostReset(path('quizAnswers', it.id), {}));
       ctx.forum.teams.forEach(t => hostReset(path('teams', String(t.no)), {}));
       stage = 0;
-      writeState({ phase: 'lobby', index: -1, open: false, revealed: false, showChart: false, asked: {} });
+      writeState({ phase: 'lobby', index: -1, open: false, revealed: false, asked: {} });
     }
 
     /* ---- 렌더 ---- */
@@ -200,7 +196,6 @@ export default {
       const showLobby = coverMode || state.phase === 'lobby' || state.index < 0;
       if (showLobby) { ctx.root.innerHTML = viewLobby(); wireLobby(); }
       else if (state.phase === 'final') ctx.root.innerHTML = viewFinal();
-      else if (state.showChart && it?.chart) ctx.root.innerHTML = viewChart(it);
       else ctx.root.innerHTML = viewQuestion(it); // 정답 공개도 같은 화면에서(정답만 노랗게 + 해설박스)
       // 순서 중요 — fitQuestion()이 문제·보기를 줄여 해설 자리를 먼저 만들고,
       // 그래도 모자라는 만큼만 fitInto()가 해설 글자를 줄인다.
@@ -359,16 +354,6 @@ export default {
       </div>`;
     }
 
-    function viewChart(it) {
-      // 데이터 해설은 그래프 "위"에 붙는다. chart.note가 따로 있으면 그걸(데이터 전용 해설),
-      // note 필드 자체가 없으면 정답 화면과 같은 explanation을 재사용한다.
-      // note를 일부러 빈 문자열로 넣어두면(정답 화면과 중복이라 뺀 경우) 아무것도 안 붙는다.
-      const chart = { ...it.chart, note: 'note' in it.chart ? it.chart.note : it.explanation };
-      return `<div class="qview">${badges(it)}${renderChart(chart)}
-        <div class="qbottom">${dots(it)}</div>
-      </div>`;
-    }
-
     // 최종 순위 — 한 번이라도 접속한 조만 올린다(안 온 조가 0점으로 자리를 채우면 시상에 방해).
     function viewFinal() {
       const rows = computeRanking(ITEMS, answersAll, rankTeams());
@@ -412,7 +397,6 @@ export default {
         const label = p === 0 ? '보기 보여주기'
           : p === 1 ? '제출 현황'
           : p === 2 ? '정답 공개'
-          : p === 3 && it.chart ? '데이터 보기'
           : isLast ? '최종 순위' : '다음 문제';
         btns.push({
           label, variant: 'primary',

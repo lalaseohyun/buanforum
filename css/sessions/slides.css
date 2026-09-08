@@ -100,9 +100,11 @@
   padding:calc(clamp(28px,4vh,56px) * var(--bs,1)) clamp(39px,4.68vw,71px);
   display:flex;flex-direction:column;justify-content:center;
   gap:calc(clamp(12px,2vh,22px) * var(--bs,1));text-align:center}
-/* 토크콘서트 ROUND 박스만 위쪽 정렬로 — 라운드마다 문구 줄 수가 달라서 가운데 정렬이면
-   박스마다 시작 높이가 들쭉날쭉해 보였다. 안의 글자는 그대로 가운데 정렬(.qbox 기본값). */
-.boxrow.cols-4 .qbox{justify-content:flex-start}
+/* ⚠ 예전엔 토크콘서트 ROUND 박스만 위쪽 정렬이었다("라운드마다 줄 수가 달라 가운데
+   정렬이면 시작 높이가 들쭉날쭉해 보인다"는 이유) — 그런데 실제 라운드 4개는 줄 수
+   차이가 커서(2줄짜리 옆에 4줄짜리) 위쪽 정렬로는 오히려 짧은 라운드 아래에 빈 공간만
+   덩그러니 남아 박스끼리 안 맞아 보였다("균형이 안 맞다", 2026-09-08). 다른 박스들과
+   똑같이 가운데 정렬로 되돌렸다(.qbox 기본값 그대로 — 이 파일에 더는 예외 없음). */
 /* 4단은 3단보다 박스가 좁아서 기본 qt 크기로는 강제 줄바꿈 앞 문구가 한 줄에 안 들어가고
    한 번 더 꺾여 3줄이 됐다 — 이 박스에서만 글자를 살짝 줄여 의도한 2줄로 맞춘다.
    (word-break:keep-all은 그대로 — 단어 중간에서 안 끊기게) */
@@ -125,8 +127,14 @@
 .boxrow.cols-2 .qt{font-size:calc(clamp(31px,3.56vw,61px) * var(--bs,1))}
 .boxrow.cols-2 .qs{font-size:calc(clamp(19px,1.8vw,30px) * var(--bs,1))}
 
-/* 원탁토론 참고자료 개요(5개 분야 박스) — 분야명은 노란색. 칸이 5개라 좁으므로(1920에서 287px)
-   분야명은 기본값보다 조금만, 설명은 넉넉히 키운다. 분야명이 2~4글자라 크게 해도 안 꺾인다. */
-.boxrow.cols-5 .qt{color:var(--yellow);font-size:calc(clamp(26px,3.06vw,52px) * var(--bs,1))}
-.boxrow.cols-5 .qs{font-size:calc(clamp(18px,1.76vw,29px) * var(--bs,1))}
+/* 원탁토론 참고자료 개요(5개 분야 박스) — 칸이 5개라 세로로 긴 좁은 기둥이 된다(1920에서
+   287×580px). 기본 qbox 좌우 패딩(최대 71px씩)을 그대로 쓰면 글자 자리가 145px밖에
+   안 남아서 "복지문화"·"참여권리" 같은 4글자 분야명이 한 줄에 못 들어가고 세로로
+   두 줄로 꺾여 이상해 보였다("가로가 너무 짧아서 글씨가 세로로 길게", 2026-09-08).
+   이 박스만 좌우 패딩을 훨씬 좁게 줘서 4글자가 한 줄에 들어갈 자리를 만든다. */
+.boxrow.cols-5 .qbox{padding-left:calc(clamp(12px,1.3vw,22px) * var(--bs,1));
+  padding-right:calc(clamp(12px,1.3vw,22px) * var(--bs,1))}
+.boxrow.cols-5 .qt{color:var(--yellow);font-size:calc(clamp(24px,2.6vw,44px) * var(--bs,1));
+  white-space:nowrap}
+.boxrow.cols-5 .qs{font-size:calc(clamp(16px,1.5vw,25px) * var(--bs,1));word-break:keep-all}
 .boxrow.cols-5 .qnote{font-size:calc(clamp(16px,1.58vw,25px) * var(--bs,1))}

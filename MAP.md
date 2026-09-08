@@ -31,7 +31,6 @@
 | 참여자 화면 셸(상단바) | [css/team.css](css/team.css) |
 | 오프닝·토크콘서트·원탁토론(진행자 화면) 첫화면/STEP 모양 | [css/sessions/slides.css](css/sessions/slides.css) (홈 로고·부제도 여기) |
 | 퀴즈 화면(문제·보기·정답·순위) 모양 — 진행자·참여자 공용 | [css/sessions/quiz.css](css/sessions/quiz.css) |
-| 정답 뒤 그래프/표 화면 모양 | [css/sessions/chart.css](css/sessions/chart.css) |
 | 원탁토론 참고자료 패널 모양(진행자 화면, 분야별 P1~P5) | [css/sessions/board.css](css/sessions/board.css) |
 | 대표정책(사진 갤러리·확대·공감투표 표) 모양 — 진행자·참여자 공용 | [css/sessions/policy.css](css/sessions/policy.css) |
 | 6. 우수정책 시상 타이틀 모양 | [css/sessions/slides.css](css/sessions/slides.css) 의 `.awardslide` 부분 |
@@ -47,8 +46,7 @@
 |---|---|
 | 홈(타이틀→2×2 카드) | [js/host/sessions/home.js](js/host/sessions/home.js) |
 | 1. 오프닝 스몰토크 | [js/host/sessions/opening.js](js/host/sessions/opening.js) |
-| 2. 청년정책 퀴즈 | [js/host/sessions/quiz.js](js/host/sessions/quiz.js) |
-| ⭐ 정답 뒤 그래프 화면 | [js/host/sessions/chart.js](js/host/sessions/chart.js) (quiz.js가 불러 씀, 독립 세션 아님) |
+| 2. 청년정책 퀴즈 | [js/host/sessions/quiz.js](js/host/sessions/quiz.js) (예전엔 정답 공개 뒤 그래프 화면이 하나 더 있었는데 2026-09-08에 없앴다) |
 | 3. 토크콘서트 | [js/host/sessions/talk.js](js/host/sessions/talk.js) |
 | 4. 원탁토론(첫화면+STEP1~3+참고자료 P1~P5, 사진 없음) | [js/host/sessions/board.js](js/host/sessions/board.js) |
 | 5. 대표정책(사진 갤러리 → 공감투표) | [js/host/sessions/policy.js](js/host/sessions/policy.js) |
