@@ -7,7 +7,7 @@
              질문 박스 레이아웃    → css/sessions/slides.css (.toppage/.boxrow/.qbox)
    쓰는 것 ─ js/content.js(로더) · js/db.js(slides/opening.index 기록 — 팀 화면 동기화용)
    ─────────────────────────────────────── */
-import { esc, nl2br, fitScale } from '../../util.js';
+import { esc, nl2br, fitScale, refitOnFontsReady } from '../../util.js';
 import { loadOpening } from '../../content.js';
 import { hostSet, path } from '../../db.js';
 
@@ -52,8 +52,18 @@ export default {
       lastIndex = index;
       index === 0 ? renderIntro() : renderQuestions();
       // 질문 박스 글자를 이 화면에 딱 맞게 (css/sessions/slides.css의 --bs).
-      // 창이 뒤에 가려져 있으면 requestAnimationFrame은 안 돌기 때문에 setTimeout을 쓴다.
-      if (index === 1) setTimeout(() => fitScale(ctx.root.querySelector('.boxrow'), { min: .5, max: 1, prop: '--bs' }), 0);
+      // ⚠ 그냥 이 자리에서 바로 부른다(setTimeout/rAF로 미루지 않는다) — innerHTML을 넣은
+      // 직후에 scrollHeight를 읽으면 브라우저가 그 순간 레이아웃만 계산해 줄 뿐, 아직
+      // 화면에 "그려서 보여주지"는 않는다(페인트는 이 함수가 다 끝나고 브라우저에
+      // 제어권을 돌려준 다음에 한 번만 일어난다). 미루면 그 사이에 큰 크기로 한 번
+      // 그려졌다가 줄어드는 게 눈에 보였다("화살표 누르면 글씨가 커졌다 작아졌다 해",
+      // 2026-09-08) — 지금처럼 즉시 부르면 그 깜빡임이 아예 없다.
+      if (index === 1) {
+        const box = ctx.root.querySelector('.boxrow');
+        const opts = { min: .5, max: 1, prop: '--bs' };
+        fitScale(box, opts);
+        refitOnFontsReady(box, () => fitScale(box, opts));
+      }
       ctx.setControls([
         { label: index === 0 ? '◀ 홈으로' : '◀ 이전', onClick: prev },
         { label: index >= 1 ? '오프닝 끝' : '다음 ▶', onClick: next, variant: 'primary' },

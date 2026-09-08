@@ -14,7 +14,7 @@
              색·크기·점 애니메이션  → css/sessions/policy.css
    쓰는 것 ─ js/db.js(boardPhotos·policy/live·policyVotes) · js/storage.js(사진 업로드)
    ─────────────────────────────────────── */
-import { esc, renderQr } from '../../util.js';
+import { esc, renderQr, refitOnFontsReady } from '../../util.js';
 import { watch, watchCollection, hostSet, hostReset, path, tallyVotes, voteWeights } from '../../db.js';
 import { uploadPhoto } from '../../storage.js';
 
@@ -195,8 +195,9 @@ export default {
             document.execCommand('insertText', false, t);
           };
         });
-        // 줄 수가 정해진 뒤에 재야 하므로 한 박자 뒤에 (rAF가 아닌 이유는 board.js 참고)
-        setTimeout(fitVoteTable, 0);
+        // 미루지 않고 바로 부른다 — 미루면 큰 글자로 한 번 그려졌다 줄어드는 게 눈에 보인다
+        fitVoteTable();
+        refitOnFontsReady(ctx.root.querySelector('.votetable'), fitVoteTable);
       }
     }
 

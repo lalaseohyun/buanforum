@@ -10,7 +10,7 @@
                                      opening.js·board.js와 공용)
    쓰는 것 ─ js/content.js(로더) · js/db.js(slides/talk.index 기록 — 팀 화면 동기화용)
    ─────────────────────────────────────── */
-import { esc, nl2br, fitScale } from '../../util.js';
+import { esc, nl2br, fitScale, refitOnFontsReady } from '../../util.js';
 import { loadTalk } from '../../content.js';
 import { hostSet, path } from '../../db.js';
 
@@ -56,8 +56,14 @@ export default {
       lastIndex = index;
       index === 0 ? renderPanels() : renderRounds();
       // ROUND 박스 4개 글자를 이 화면에 딱 맞게 (css/sessions/slides.css의 --bs).
-      // 창이 뒤에 가려져 있으면 requestAnimationFrame은 안 돌기 때문에 setTimeout을 쓴다.
-      if (index === 1) setTimeout(() => fitScale(ctx.root.querySelector('.boxrow'), { min: .5, max: 1, prop: '--bs' }), 0);
+      // ⚠ 미루지 않고 바로 부른다 — opening.js의 같은 자리 설명 참고
+      // ("화살표 누르면 글씨가 커졌다 작아졌다 해" 깜빡임의 원인이었다, 2026-09-08).
+      if (index === 1) {
+        const box = ctx.root.querySelector('.boxrow');
+        const opts = { min: .5, max: 1, prop: '--bs' };
+        fitScale(box, opts);
+        refitOnFontsReady(box, () => fitScale(box, opts));
+      }
       ctx.setControls([
         { label: index === 0 ? '◀ 퀴즈로' : '◀ 이전', onClick: prev },
         { label: index >= 1 ? '토크콘서트 끝' : '다음 ▶', onClick: next, variant: 'primary' },

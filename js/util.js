@@ -58,6 +58,16 @@ export function fitScale(el, { min = 0.6, max = 1.8, step = 0.04, prop = '--fs' 
   return last;
 }
 
+// fitScale/fitInto는 렌더 직후 곧바로(동기로) 재서 화면이 커졌다 작아지는 깜빡임을
+// 없앴는데(2026-09-08), 그 "직후"가 폰트(Pretendard, CDN)가 아직 안 끝난 시점일 수도
+// 있다 — 그러면 대체 글꼴 기준으로 잰 크기가 폰트 교체 뒤 살짝 어긋난다(1366×768에서
+// 표 한 줄이 34px 넘친 사례 실측). 폰트가 실제로 다 준비된 뒤 한 번 더 재서 미세하게
+// 바로잡는다. 그 사이 다른 화면으로 넘어가 el이 화면에서 사라졌으면 아무것도 안 한다.
+export function refitOnFontsReady(el, fit) {
+  if (!el || !document.fonts || !document.fonts.ready) return;
+  document.fonts.ready.then(() => { if (document.body.contains(el)) fit(); });
+}
+
 // 카드 안에 텍스트가 넘치면(scrollHeight > clientHeight) 글자 크기를 0.5px씩 줄여 잘리지 않게 한다.
 export function fitInto(selector, minPx = 14) {
   const el = document.querySelector(selector);

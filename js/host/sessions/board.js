@@ -16,7 +16,7 @@
              참고자료 패널·페이지 스타일    → css/sessions/board.css
    쓰는 것 ─ js/content.js(로더) · js/db.js(slides/board.index 기록 — 팀 화면 동기화용)
    ─────────────────────────────────────── */
-import { esc, nl2br, fitScale } from '../../util.js';
+import { esc, nl2br, fitScale, refitOnFontsReady } from '../../util.js';
 import { loadBoard, loadPolicies } from '../../content.js';
 import { hostSet, path } from '../../db.js';
 
@@ -116,17 +116,22 @@ export default {
       if (index === 0) renderIntro();
       else if (index === 1) renderSteps();
       else if (index === 2) renderOverview();
-      // STEP 3개(1페이지)·분야 5개(2페이지) 박스 글자를 그 화면에 딱 맞게 (slides.css의 --bs)
+      // STEP 3개(1페이지)·분야 5개(2페이지) 박스 글자를 그 화면에 딱 맞게 (slides.css의 --bs).
+      // ⚠ 미루지 않고 바로 부른다 — 미루면(예전엔 setTimeout) 큰 크기로 한 번 그려졌다가
+      // 줄어드는 게 눈에 보였다("화살표 누르면 글씨가 커졌다 작아졌다 해", 2026-09-08).
       if (index === 1 || index === 2) {
-        setTimeout(() => fitScale(ctx.root.querySelector('.boxrow'), { min: .5, max: 1, prop: '--bs' }), 0);
+        const box = ctx.root.querySelector('.boxrow');
+        const opts = { min: .5, max: 1, prop: '--bs' };
+        fitScale(box, opts);
+        refitOnFontsReady(box, () => fitScale(box, opts));
       }
       if (index >= 3) {
         renderField();
-        // 사업 수가 분야마다 3~15개로 달라서 표 글자 크기를 페이지마다 맞춘다.
-        // flex로 높이가 정해진 뒤에 재야 하므로 한 박자 뒤에 — requestAnimationFrame이 아니라
-        // setTimeout인 이유: 진행자 창이 뒤에 가려져 있으면 rAF는 아예 안 돌아서 크기 조정이
-        // 통째로 건너뛰어진다(2026-09-08에 실제로 그랬다). setTimeout은 가려져도 실행된다.
-        setTimeout(() => fitScale(ctx.root.querySelector('.reftable-wrap'), { min: 0.32, max: 1.15, prop: '--rs' }), 0);
+        // 사업 수가 분야마다 3~15개로 달라서 표 글자 크기를 페이지마다 맞춘다. 같은 이유로 바로 부른다.
+        const wrap = ctx.root.querySelector('.reftable-wrap');
+        const opts = { min: 0.32, max: 1.15, prop: '--rs' };
+        fitScale(wrap, opts);
+        refitOnFontsReady(wrap, () => fitScale(wrap, opts));
       }
       const btns = [
         { label: index === 0 ? '◀ 토크콘서트로' : '◀ 이전', onClick: prev },

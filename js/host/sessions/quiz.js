@@ -21,14 +21,19 @@
      · 문항이 열려 있는 동안(정답 공개 전)에는 문제 → 보기 → 제출현황 순으로
        화살표를 누를 때마다 한 단계씩 더 보여준다(stage 0/1/2). Firestore에는
        안 남기는 진행자 화면만의 연출이라 팀 화면과는 무관하다.
-     · 탭바를 누르든 다른 세션에서 화살표로 넘어오든, 항상 지금 Firestore에 있는
-       "진짜" 진행 상태를 그대로 보여준다 — 예전엔 "탭으로 들어오면 QR 대기화면부터
-       훑어보기(previewIndex)"라는 별도 모드가 있었는데, 훑어보는 지난 문제를 전부
-       "정답 공개" 상태로 그려버려서 실제로는 아직 안 연 새 문제인데도 화면에는
-       정답만 나오는 사고로 이어졌다(2026-09-08, 테스트 중 quiz/state를 앞으로
-       돌려놓은 게 이 모드와 겹쳐 실제로 터짐 — 그날로 이 모드를 걷어냈다).
+     · 탭바를 누르거나 3.토크콘서트에서 화살표로 되돌아오는 경우(ctx.resume이
+       아닌 모든 입장)에는, 실제 진행이 얼마나 됐든 일단 QR 대기화면부터 보여준다
+       (coverMode) — 참가자에게 "여기로 접속하세요"를 언제든 다시 보여줄 수 있어야
+       하기 때문. 화살표를 한 번만 누르면 실제 진행 상태로 곧장 넘어간다(중간에
+       지나간 문제들을 하나씩 훑어 보여주지 않는다 — 예전엔 그렇게 했었는데,
+       지나간 문제를 전부 "정답 공개"로 그려버리는 방식이라 테스트로 진행 상태가
+       꼬였을 때 아직 안 연 새 문제까지 정답으로 보여버리는 사고로 이어졌다.
+       2026-09-08에 "한 번에 진짜 상태로 전환"하는 지금 방식으로 다시 바꿨다).
+       1.오프닝 → 화살표로 처음 들어올 때, 최종 순위에서 화살표로 3.토크콘서트로
+       넘어갈 때도 마찬가지로 coverMode를 거친다. 반대로 3.토크콘서트 첫 페이지에서
+       ◀로 다시 돌아올 때(ctx.resume)는 진짜 진행 중이던 화면을 곧장 보여준다.
    ─────────────────────────────────────── */
-import { esc, nl2br, sentences, fitInto, renderQr } from '../../util.js';
+import { esc, nl2br, sentences, fitInto, renderQr, refitOnFontsReady } from '../../util.js';
 import { loadQuiz } from '../../content.js';
 import { watch, watchCollection, hostSet, hostReset, path } from '../../db.js';
 import { computeRanking, allAnswered } from '../../score.js';
@@ -46,6 +51,10 @@ export default {
     let teamsMap = {};    // { [no]: {joinedAt} }
     let answersAll = {};  // { [qid]: { [no]: {choice, ms} } }
     let stage = 0;        // 0=문제만 1=+보기 2=+제출현황 — 진행자 화면 전용, Firestore에 안 남긴다
+    // 탭바로 들어오거나 토크콘서트에서 돌아올 때(ctx.resume 아닐 때) 실제 진행이 얼마나
+    // 됐든 일단 QR 대기화면부터 보여준다 — 화면에만 쓰는 값, Firestore에는 안 남긴다.
+    // 화살표를 누르면 exitCover()가 한 번에 진짜 상태로 바꾼다(단계별 훑어보기 없음).
+    let coverMode = !ctx.resume;
     const unsubs = [];
 
     const choicesFor = it => it.type === 'ox' ? ['O', 'X'] : it.choices;
@@ -115,7 +124,10 @@ export default {
     const reveal = () => writeState({ open: false, revealed: true });
     const showChart = () => writeState({ showChart: true });
     const goFinal = () => { stage = 0; writeState({ phase: 'final', open: false, revealed: false, showChart: false }); };
-    const toLobby = () => { stage = 0; writeState({ phase: 'lobby', open: false, revealed: false, showChart: false }); };
+    const toLobby = () => { coverMode = false; stage = 0; writeState({ phase: 'lobby', open: false, revealed: false, showChart: false }); };
+    // QR 대기화면(coverMode)에서 화살표를 누르면 — 지나간 문제를 훑지 않고 실제 진행
+    // 상태로 한 번에 넘어간다. Firestore는 전혀 안 건드린다(화면 표시만 바꾼다).
+    const exitCover = () => { coverMode = false; render(); };
 
     /* ---- 한 문항 = 여러 페이지. 화살표 하나로 처음부터 끝까지 이어진다 ----
        0 문제만 · 1 +보기 · 2 +제출현황 · 3 정답공개(그 자리에서 정답만 노랗게 + 해설박스)
@@ -126,6 +138,7 @@ export default {
     // 화살표는 세션 경계도 넘나든다 — 대기화면에서 더 뒤로 가면 1.오프닝으로,
     // 최종 순위에서 더 앞으로 가면 3.토크콘서트로 이어진다.
     function stepForward() {
+      if (coverMode) { exitCover(); return; }
       if (state.phase === 'final') { ctx.goSession('talk', { resume: true }); return; }
       const it = currentItem();
       if (state.phase !== 'quiz' || !it) { selectIndex(state.index + 1); return; }
@@ -137,7 +150,9 @@ export default {
       else selectIndex(state.index + 1);
     }
     function stepBack() {
-      if (state.phase === 'lobby') { ctx.goSession('opening', { resume: true }); return; }
+      // coverMode에서 ◀는 실제 진행 상태로 들어가지 않고 그냥 1.오프닝으로 나간다 —
+      // 화면에 QR이 떠 있는 동안은 "아직 대기화면을 보고 있는 것"과 같기 때문.
+      if (coverMode || state.phase === 'lobby') { ctx.goSession('opening', { resume: true }); return; }
       const it = currentItem();
       if (state.phase !== 'quiz' || !it) { selectIndex(state.index - 1); return; }
       const p = pageNow();
@@ -157,6 +172,7 @@ export default {
     }
     function resetAll() {
       if (!confirm('답변·점수·접속한 팀까지 모두 지웁니다. 정말 초기화할까요?')) return;
+      coverMode = false;
       ITEMS.forEach(it => hostReset(path('quizAnswers', it.id), {}));
       ctx.forum.teams.forEach(t => hostReset(path('teams', String(t.no)), {}));
       stage = 0;
@@ -180,16 +196,20 @@ export default {
     function render() {
       if (!data) { ctx.root.innerHTML = `<div class="slide"><h2>불러오는 중…</h2></div>`; return; }
       const it = currentItem();
-      const showLobby = state.phase === 'lobby' || state.index < 0;
+      // coverMode면 실제 진행이 어디까지 갔든 QR 대기화면부터 보여준다(위 파일 설명 참고)
+      const showLobby = coverMode || state.phase === 'lobby' || state.index < 0;
       if (showLobby) { ctx.root.innerHTML = viewLobby(); wireLobby(); }
       else if (state.phase === 'final') ctx.root.innerHTML = viewFinal();
       else if (state.showChart && it?.chart) ctx.root.innerHTML = viewChart(it);
       else ctx.root.innerHTML = viewQuestion(it); // 정답 공개도 같은 화면에서(정답만 노랗게 + 해설박스)
-      // flex로 높이가 정해진 뒤에 재야 정확하다 — 한 프레임 뒤에 넘칠 때만 줄인다
       // 순서 중요 — fitQuestion()이 문제·보기를 줄여 해설 자리를 먼저 만들고,
       // 그래도 모자라는 만큼만 fitInto()가 해설 글자를 줄인다.
-      // (rAF가 아니라 setTimeout — 창이 뒤에 가려져 있으면 rAF는 안 돌아서 크기 조정이 통째로 안 된다)
-      setTimeout(() => { fitQuestion(); fitInto('.answerbox', 18); }, 0);
+      // ⚠ 미루지 않고 바로 부른다 — innerHTML을 넣은 직후 scrollHeight를 읽으면 그 순간
+      // 레이아웃은 이미 계산되어 있다(페인트는 이 함수가 끝난 뒤에나 일어난다). 예전엔
+      // setTimeout으로 미뤄서 큰 글자로 한 번 그려졌다 줄어드는 게 화살표 누를 때마다
+      // 눈에 보였다("글씨가 커졌다 작아졌다 해", 2026-09-08).
+      fitQuestion(); fitInto('.answerbox', 18);
+      refitOnFontsReady(ctx.root.querySelector('.qview'), () => { fitQuestion(); fitInto('.answerbox', 18); });
       ctx.setControls(controlsFor());
     }
 
@@ -353,6 +373,15 @@ export default {
 
     // 큰 버튼도 화살표(stepForward)와 똑같은 한 줄기 흐름을 따른다 — 라벨만 지금 페이지에 맞게 바뀐다
     function controlsFor() {
+      // QR 대기화면(coverMode)에서는 조작을 최소로 — ◀는 1.오프닝으로, 다음은 실제
+      // 진행 상태 공개(exitCover). "대기화면"·초기화 버튼은 실제 상태로 넘어간 뒤에만
+      // 눌러야 진짜로 뭘 지우는지 헷갈리지 않는다.
+      if (coverMode) {
+        return [
+          { label: '◀', onClick: stepBack },
+          { label: '다음 ▶', variant: 'primary', onClick: exitCover },
+        ];
+      }
       const it = currentItem();
       const quizPhase = state.phase === 'quiz' && it;
       const p = quizPhase ? pageNow() : -1;
