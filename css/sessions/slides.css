@@ -16,11 +16,16 @@
 .slide p{font-size:clamp(47px,5.85vw,98px);font-weight:600;line-height:1.42;letter-spacing:-.03em;color:var(--ink)}
 .slide p.sub{font-size:clamp(33px,3.32vw,54px);color:var(--ink2);font-weight:500}
 
-/* 패널/게스트 소개 카드 (토크콘서트) */
-.panels{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(32px,3.9vw,71px);width:100%;margin-top:clamp(10px,2vh,20px)}
-.panel{background:var(--panel);border-radius:22px;padding:clamp(20px,2.6vh,36px) clamp(27px,2.73vw,47px);text-align:center}
-.panel .name{font-size:clamp(38px,3.51vw,59px);font-weight:800}
-.panel .role{font-size:clamp(26px,2.25vw,38px);color:var(--ink2);font-weight:600;margin-top:6px;line-height:1.4}
+/* 패널/게스트 소개 카드 (토크콘서트) — 카드가 세로로 너무 납작하다는 요청으로
+   남는 세로 공간을 카드가 나눠 갖게 했다(flex:1). 화면이 커질수록 카드도 같이 커진다.
+   제목은 이 화면에서만 한 단계 작게 — 두 줄로 꺾이면 그만큼 카드가 눌린다(talk.js 참고). */
+.slide.slide-panels h2{font-size:clamp(52px,6.2vw,110px)}
+.panels{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(32px,3.9vw,71px);width:100%;
+  margin-top:clamp(10px,2vh,20px);flex:1 1 auto;min-height:0;align-items:stretch}
+.panel{background:var(--panel);border-radius:22px;padding:clamp(24px,3.4vh,50px) clamp(27px,2.73vw,47px);text-align:center;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(8px,1.4vh,18px)}
+.panel .name{font-size:clamp(42px,4vw,72px);font-weight:800}
+.panel .role{font-size:clamp(28px,2.5vw,45px);color:var(--ink2);font-weight:600;line-height:1.4}
 
 /* 진행 순서 인디케이터 — 지금 몇 번째 카드인지 */
 .stepdots{display:flex;gap:8px;justify-content:center}
@@ -72,43 +77,55 @@
 .toppage-head{flex:0 0 auto;text-align:left}
 .toppage-head.center{text-align:center}
 .toppage-head .kicker{font-size:clamp(27px,2.54vw,39px);font-weight:800;letter-spacing:.14em;color:var(--yellow)}
-.toppage-head h2{font-size:clamp(66px,8.19vw,141px);font-weight:800;letter-spacing:-.04em;line-height:1.22;margin-top:8px}
+/* 박스 화면의 제목 — 제목이 클수록 아래 박스가 눌린다. 박스 쪽이 본문이라 제목은
+   한 단계 작게 잡았다(2026-09-08, 토크 ROUND 박스가 94px 넘쳐 잘리던 문제와 같은 원인). */
+.toppage-head h2{font-size:clamp(56px,6.8vw,116px);font-weight:800;letter-spacing:-.04em;line-height:1.22;margin-top:8px}
 
 /* 원탁토론 타이틀("원탁토론")만 노란색 — opening·talk의 h2는 그대로 흰색이라 공용 규칙 대신 여기 */
 .boardtitle{color:var(--yellow)}
 .toppage-head p{font-size:clamp(33px,3.32vw,54px);color:var(--ink2);font-weight:600;margin-top:10px}
 
-.boxrow{flex:1;min-height:0;display:grid;gap:clamp(35px,4.68vw,78px)}
+/* --bs — 박스 안 글자·여백을 한꺼번에 키우고 줄이는 배율. 페이지마다 문구 분량이
+   달라서(오프닝 질문 2개 / 토크 라운드 4개 / STEP 3개 / 분야 5개) 크기를 하나로 고정하면
+   어떤 페이지는 텅 비고 어떤 페이지는 아래가 잘렸다(1920에서 토크 라운드가 94px 넘쳤다).
+   각 세션 js가 fitScale(.boxrow, {prop:'--bs'})로 그 페이지에 딱 맞는 배율을 찾는다.
+   박스 자체는 남는 세로를 다 쓰므로(grid stretch) 글자가 커질수록 박스도 꽉 찬다. */
+.boxrow{flex:1;min-height:0;display:grid;gap:clamp(35px,4.68vw,78px);--bs:1}
 .boxrow.cols-2{grid-template-columns:repeat(2,1fr)}
 .boxrow.cols-3{grid-template-columns:repeat(3,1fr)}
 .boxrow.cols-4{grid-template-columns:repeat(4,1fr)}
 .boxrow.cols-5{grid-template-columns:repeat(5,1fr)}
-.qbox{background:var(--panel);border-radius:26px;padding:clamp(28px,4vh,56px) clamp(39px,4.68vw,71px);
-  display:flex;flex-direction:column;justify-content:center;gap:clamp(12px,2vh,22px);text-align:center}
+.qbox{background:var(--panel);border-radius:26px;
+  padding:calc(clamp(28px,4vh,56px) * var(--bs,1)) clamp(39px,4.68vw,71px);
+  display:flex;flex-direction:column;justify-content:center;
+  gap:calc(clamp(12px,2vh,22px) * var(--bs,1));text-align:center}
 /* 토크콘서트 ROUND 박스만 위쪽 정렬로 — 라운드마다 문구 줄 수가 달라서 가운데 정렬이면
    박스마다 시작 높이가 들쭉날쭉해 보였다. 안의 글자는 그대로 가운데 정렬(.qbox 기본값). */
 .boxrow.cols-4 .qbox{justify-content:flex-start}
 /* 4단은 3단보다 박스가 좁아서 기본 qt 크기로는 강제 줄바꿈 앞 문구가 한 줄에 안 들어가고
    한 번 더 꺾여 3줄이 됐다 — 이 박스에서만 글자를 살짝 줄여 의도한 2줄로 맞춘다.
    (word-break:keep-all은 그대로 — 단어 중간에서 안 끊기게) */
-.boxrow.cols-4 .qt{font-size:clamp(35px,3.71vw,66px);word-break:keep-all}
-/* 토크콘서트 ROUND·원탁토론 참고자료 개요 박스 둘 다 — 남는 세로 공간을 끝까지
-   채우지 않고 내용 높이만큼만 차지하게 해서(align-content:start) 박스 세로 길이를 줄인다. */
-.boxrow.cols-4,.boxrow.cols-5{align-content:start}
-.qbox .badge-step{align-self:flex-start;font-size:clamp(26px,2.15vw,35px);font-weight:800;letter-spacing:.08em;
+.boxrow.cols-4 .qt{font-size:calc(clamp(35px,3.71vw,66px) * var(--bs,1));word-break:keep-all}
+/* (예전엔 여기서 align-content:start로 박스 높이를 내용만큼만 줄였는데, 2026-09-08
+   요청으로 걷어냈다 — 토크콘서트 ROUND 4칸·시행계획 5칸 모두 남는 세로 공간을 끝까지
+   써서 박스가 화면 비율에 맞게 커진다. 글자는 박스 안에서 가운데 정렬로 뜬다.) */
+.qbox .badge-step{align-self:flex-start;font-size:calc(clamp(26px,2.15vw,35px) * var(--bs,1));font-weight:800;letter-spacing:.08em;
   color:#2c2c2a;background:var(--yellow);padding:6px 16px;border-radius:999px;white-space:nowrap}
 /* ROUND 박스 안의 노란 타원(Round N · ○○)은 좌측 정렬 대신 가운데 정렬로 */
 .boxrow.cols-4 .qbox .badge-step{align-self:center}
 /* 목업 기준: 40px @1600px, 가운데 정렬 */
-/* ⚠ 이 기본값(원탁토론 STEP 3개, cols-3)은 화면 전체 확대를 그대로 곱하면(83px)
-   화면 아래로 넘쳤던 값이라 작게 잡아뒀다(2026-09-08). 오프닝(cols-2)은 박스가
-   2개뿐이라 훨씬 넓어서 더 키워도 된다 — 아래 cols-2 전용 규칙에서 따로 키운다. */
-.qbox .qt{font-size:clamp(28px,3.25vw,55px);font-weight:800;letter-spacing:-.03em;line-height:1.32;text-align:center}
-.qbox .qs{font-size:clamp(20px,1.8vw,29px);color:var(--ink2);font-weight:500;line-height:1.5}
-.qbox .qnote{font-size:clamp(18px,1.6vw,25px);color:var(--yellow);font-weight:700}
+/* 기본값(원탁토론 STEP 3개, cols-3) — 박스가 세로로 남는 공간을 다 쓰게 바뀌어서(위 참고)
+   그만큼 글자를 키웠다(2026-09-08 요청). 오프닝(cols-2)은 박스가 2개뿐이라 훨씬 넓어서
+   아래 cols-2 전용 규칙에서 더 키운다. */
+.qbox .qt{font-size:calc(clamp(33px,3.9vw,68px) * var(--bs,1));font-weight:800;letter-spacing:-.03em;line-height:1.32;text-align:center}
+.qbox .qs{font-size:calc(clamp(23px,2.15vw,36px) * var(--bs,1));color:var(--ink2);font-weight:500;line-height:1.5}
+.qbox .qnote{font-size:calc(clamp(21px,1.95vw,32px) * var(--bs,1));color:var(--yellow);font-weight:700}
 /* 오프닝 스몰토크 질문 2개(cols-2)만 — 박스가 넓어서 기본값보다 훨씬 크게 */
-.boxrow.cols-2 .qt{font-size:clamp(42px,4.9vw,86px)}
-.boxrow.cols-2 .qs{font-size:clamp(25px,2.4vw,40px)}
+.boxrow.cols-2 .qt{font-size:calc(clamp(42px,4.9vw,86px) * var(--bs,1))}
+.boxrow.cols-2 .qs{font-size:calc(clamp(25px,2.4vw,40px) * var(--bs,1))}
 
-/* 원탁토론 참고자료 개요(5개 분야 박스)만 분야명을 노란색으로 */
-.boxrow.cols-5 .qt{color:var(--yellow)}
+/* 원탁토론 참고자료 개요(5개 분야 박스) — 분야명은 노란색. 칸이 5개라 좁으므로(1920에서 287px)
+   분야명은 기본값보다 조금만, 설명은 넉넉히 키운다. 분야명이 2~4글자라 크게 해도 안 꺾인다. */
+.boxrow.cols-5 .qt{color:var(--yellow);font-size:calc(clamp(36px,4.2vw,74px) * var(--bs,1))}
+.boxrow.cols-5 .qs{font-size:calc(clamp(24px,2.34vw,40px) * var(--bs,1))}
+.boxrow.cols-5 .qnote{font-size:calc(clamp(22px,2.1vw,35px) * var(--bs,1))}

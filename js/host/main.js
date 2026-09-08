@@ -45,7 +45,7 @@ import surveySession from './sessions/survey.js';
 // (GitHub Pages는 정적 파일을 10분간 캐시한다. 강력 새로고침은 Ctrl+Shift+R)
 // ⚠ 이 숫자를 올릴 때 host.html·index.html·survey.html·admin.html의
 //    CSS 주소 끝 ?v=숫자도 같이 올릴 것 — 안 그러면 CSS만 옛날 게 캐시된다.
-const BUILD = 'v39';
+const BUILD = 'v40';
 
 const SESSIONS = [homeSession, openingSession, quizSession, talkSession, boardSession, policySession, awardSession, surveySession];
 const byId = Object.fromEntries(SESSIONS.map(s => [s.id, s]));

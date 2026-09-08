@@ -32,6 +32,32 @@ export function fitStage(el) {
   return () => ro.disconnect();
 }
 
+// 내용이 적어 화면이 휑하면 키우고, 넘치면 줄인다 — 세로 공간을 꽉 채우는 배율을 찾아
+// el의 CSS 변수(기본 --fs)에 넣는다. 쓰는 쪽 CSS는 그 변수를 곱하도록 써야 한다:
+//   font-size:calc(clamp(20px,2vw,34px) * var(--fs,1))
+// 왜 필요한가 ─ 같은 화면 틀에 내용 분량이 제각각인 페이지(예: 분야별 사업 표는 3줄짜리도
+// 있고 15줄짜리도 있다)에서 글자 크기를 하나로 고정하면, 짧은 페이지는 텅 비어 보이고
+// 긴 페이지는 잘리거나 스크롤이 생긴다. 페이지마다 딱 맞는 배율을 찾아준다.
+export function fitScale(el, { min = 0.6, max = 1.8, step = 0.04, prop = '--fs' } = {}) {
+  if (!el) return 1;
+  const over = () => el.scrollHeight - el.clientHeight > 0;
+  const put = s => el.style.setProperty(prop, Math.max(min, s).toFixed(2));
+  put(1);
+  if (over()) {                       // 넘친다 — 들어갈 때까지 줄인다
+    let s = 1;
+    for (; s > min && over(); s -= step) put(s - step);
+    return s;
+  }
+  let last = 1;                       // 남는다 — 넘치기 직전까지 키운다
+  for (let s = 1 + step; s <= max; s += step) {
+    put(s);
+    if (over()) break;
+    last = s;
+  }
+  put(last);
+  return last;
+}
+
 // 카드 안에 텍스트가 넘치면(scrollHeight > clientHeight) 글자 크기를 0.5px씩 줄여 잘리지 않게 한다.
 export function fitInto(selector, minPx = 14) {
   const el = document.querySelector(selector);

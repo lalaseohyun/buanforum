@@ -10,7 +10,7 @@
                                      opening.js·board.js와 공용)
    쓰는 것 ─ js/content.js(로더) · js/db.js(slides/talk.index 기록 — 팀 화면 동기화용)
    ─────────────────────────────────────── */
-import { esc, nl2br } from '../../util.js';
+import { esc, nl2br, fitScale } from '../../util.js';
 import { loadTalk } from '../../content.js';
 import { hostSet, path } from '../../db.js';
 
@@ -29,7 +29,10 @@ export default {
     function renderPanels() {
       const cards = data.panels.map(p => `
         <div class="panel"><div class="name">${esc(p.name)}</div><div class="role">${esc(p.role)}</div></div>`).join('');
-      ctx.root.innerHTML = `<div class="slide">
+      // slide-panels ─ 이 화면만 제목을 한 단계 작게 쓴다. 기본 .slide h2(164px)로는
+      // "농촌에서 청년으로 살아간다는 것"이 두 줄로 꺾여 407px를 먹고, 그만큼 아래 패널
+      // 카드가 납작해졌다(1920에서 235px밖에 안 남았다 — 2026-09-08 실측).
+      ctx.root.innerHTML = `<div class="slide slide-panels">
         <div class="kicker">토크콘서트</div><h2>농촌에서 청년으로 살아간다는 것</h2>
         <div class="panels">${cards}</div></div>${dots()}`;
     }
@@ -52,6 +55,9 @@ export default {
       if (!data) return;
       lastIndex = index;
       index === 0 ? renderPanels() : renderRounds();
+      // ROUND 박스 4개 글자를 이 화면에 딱 맞게 (css/sessions/slides.css의 --bs).
+      // 창이 뒤에 가려져 있으면 requestAnimationFrame은 안 돌기 때문에 setTimeout을 쓴다.
+      if (index === 1) setTimeout(() => fitScale(ctx.root.querySelector('.boxrow'), { min: .5, max: 1.7, prop: '--bs' }), 0);
       ctx.setControls([
         { label: index === 0 ? '◀ 퀴즈로' : '◀ 이전', onClick: prev },
         { label: index >= 1 ? '토크콘서트 끝' : '다음 ▶', onClick: next, variant: 'primary' },

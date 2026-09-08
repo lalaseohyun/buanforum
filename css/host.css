@@ -8,7 +8,7 @@ body{display:flex;flex-direction:column;overflow:hidden}
 /* 위쪽 여백은 아래보다 넉넉하게 — 제목·문제가 화면 맨 위에 붙어 보이지 않게 한다
    (2026-09-08 요청으로 조금 더 키움). 너무 키우면 내용이 들어갈 세로 공간이 줄어
    문제+보기가 많은 화면에서 잘리니, 아주 조금씩만 올릴 것. */
-main{flex:1;min-height:0;padding:clamp(46px,7.4vh,116px) clamp(28px,4.5vw,90px) clamp(24px,3.6vh,54px);
+main{flex:1;min-height:0;padding:clamp(58px,9.2vh,146px) clamp(28px,4.5vw,90px) clamp(24px,3.6vh,54px);
   display:flex;flex-direction:column;overflow:hidden}
 
 /* 하단 탭바 — 세션 순서와 무관하게 언제든 이동 */

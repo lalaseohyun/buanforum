@@ -52,23 +52,32 @@
    똑같이 나눠 갖는다(조가 3개면 한 줄이 훨씬 커진다. 조가 8개면 그만큼 작아진다). */
 .voteright{min-width:0;height:100%;display:flex;flex-direction:column}
 .votetable{flex:1;min-height:0;display:flex;flex-direction:column;gap:clamp(6px,1vh,12px)}
-.voterow{flex:1;min-height:0;display:flex;align-items:center;gap:clamp(20px,1.95vw,35px);
+/* flex:1 0 auto — 남는 세로 공간은 나눠 갖되, 정책명이 두 줄이 된 줄은 내용만큼 커진다
+   (flex:1이면 모든 줄 높이가 강제로 같아져서 늘어난 글자가 잘렸다). 넘칠 만큼 길어지면
+   policy.js의 fitVoteTable()이 --vs로 표 글자를 줄여 맞춘다. */
+.voterow{flex:1 0 auto;display:flex;align-items:center;gap:clamp(20px,1.95vw,35px);
   padding:clamp(8px,1.2vh,16px) clamp(24px,1.95vw,35px);background:var(--panel);border-radius:16px}
-.voterow .no{font-size:clamp(32px,2.93vw,51px);font-weight:800;white-space:nowrap;flex:0 0 auto}
-.voterow .name{width:32%;flex:0 0 auto}
-.voterow .name input{width:100%;background:var(--panel2);border:2px solid transparent;border-radius:12px;
-  color:var(--ink);font:inherit;font-size:clamp(30px,2.73vw,47px);font-weight:700;padding:10px 14px}
-.voterow .name input:focus{outline:none;border-color:var(--yellow)}
-.voterow .name input::placeholder{color:var(--ink3);font-weight:500}
+.voterow .no{font-size:calc(clamp(32px,2.93vw,51px) * var(--vs,1));font-weight:800;white-space:nowrap;flex:0 0 auto}
+/* 정책명 칸 — input도 textarea도 아닌 contenteditable이다(js/host/sessions/policy.js 참고).
+   정책명이 길면 가로로 잘리는 대신 두 줄·세 줄로 자연스럽게 내려가고, 그만큼 줄 높이가
+   같이 커진다. (textarea는 높이를 JS로 계산해 넣어야 하는데 그 계산이 화면 상황에 따라
+   틀어져서 줄 높이가 안 줄어드는 문제가 있었다 — 2026-09-08.) */
+.voterow .name{width:36%;flex:0 0 auto}
+.voterow .name .pname{display:block;width:100%;background:var(--panel2);border:2px solid transparent;border-radius:12px;
+  color:var(--ink);font-size:calc(clamp(34px,3.2vw,58px) * var(--vs,1));font-weight:700;line-height:1.28;
+  padding:10px 14px;word-break:break-word;cursor:text}
+.voterow .name .pname:focus{outline:none;border-color:var(--yellow)}
+/* 비어 있을 때만 안내 문구를 보여준다(입력값이 아니라 배경 글씨) */
+.voterow .name .pname:empty::before{content:attr(data-ph);color:var(--ink3);font-weight:500}
 
 /* 멘티미터 스타일 표 집계 — 막대 대신, 표 하나당 동그란 점 하나가 박스 안에 찍힌다 */
 .voterow .dotcell{flex:1;min-width:0;align-self:stretch;display:flex}
 .voterow .dotbox{display:flex;flex-wrap:wrap;align-content:center;gap:clamp(4px,.6vw,8px);
   width:100%;background:var(--panel2);border-radius:12px;padding:clamp(6px,1vh,12px);overflow:hidden}
-.voterow .dot{width:clamp(18px,2.54vw,39px);height:clamp(18px,2.54vw,39px);border-radius:50%;
+.voterow .dot{width:calc(clamp(18px,2.54vw,39px) * var(--vs,1));height:calc(clamp(18px,2.54vw,39px) * var(--vs,1));border-radius:50%;
   background:var(--yellow);flex:0 0 auto;animation:dotpop .3s ease-out backwards}
 @keyframes dotpop{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
-.voterow .cnt{font-size:clamp(35px,3.51vw,63px);font-weight:800;color:var(--yellow);
+.voterow .cnt{font-size:calc(clamp(35px,3.51vw,63px) * var(--vs,1));font-weight:800;color:var(--yellow);
   font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap;flex:0 0 auto;min-width:1.4em}
 
 /* ── 공감투표(참여자 모바일) ── */

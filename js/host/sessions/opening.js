@@ -7,7 +7,7 @@
              질문 박스 레이아웃    → css/sessions/slides.css (.toppage/.boxrow/.qbox)
    쓰는 것 ─ js/content.js(로더) · js/db.js(slides/opening.index 기록 — 팀 화면 동기화용)
    ─────────────────────────────────────── */
-import { esc, nl2br } from '../../util.js';
+import { esc, nl2br, fitScale } from '../../util.js';
 import { loadOpening } from '../../content.js';
 import { hostSet, path } from '../../db.js';
 
@@ -51,6 +51,9 @@ export default {
       if (!data) return;
       lastIndex = index;
       index === 0 ? renderIntro() : renderQuestions();
+      // 질문 박스 글자를 이 화면에 딱 맞게 (css/sessions/slides.css의 --bs).
+      // 창이 뒤에 가려져 있으면 requestAnimationFrame은 안 돌기 때문에 setTimeout을 쓴다.
+      if (index === 1) setTimeout(() => fitScale(ctx.root.querySelector('.boxrow'), { min: .5, max: 1.7, prop: '--bs' }), 0);
       ctx.setControls([
         { label: index === 0 ? '◀ 홈으로' : '◀ 이전', onClick: prev },
         { label: index >= 1 ? '오프닝 끝' : '다음 ▶', onClick: next, variant: 'primary' },

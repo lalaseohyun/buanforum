@@ -8,7 +8,10 @@
    ─────────────────────────────────────── */
 
 .chartwrap{flex:1;min-height:0;display:flex;flex-direction:column;gap:clamp(12px,2vh,26px)}
-.chartwrap h3{font-size:clamp(47px,5.07vw,86px);font-weight:800;letter-spacing:-.03em;text-align:center;flex:0 0 auto}
+/* 그래프 제목 — 길어서 두 줄로 꺾이면 그만큼 그래프가 세로로 눌린다(1920에서 206px를
+   먹어 그래프가 566px로 줄었고, 15줄짜리 막대 라벨이 그만큼 작아졌다 — 2026-09-08).
+   제목보다 그래프가 중요하므로 한 단계 작게 잡는다. */
+.chartwrap h3{font-size:clamp(34px,3.4vw,60px);font-weight:800;letter-spacing:-.03em;text-align:center;flex:0 0 auto;line-height:1.25}
 .chartbox{flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
 .chartbox svg{width:100%;height:100%;max-height:100%}
 
@@ -28,25 +31,25 @@
 .chartnote p+p{margin-top:clamp(6px,1vh,14px)}
 .chartnote strong{color:var(--beigeInk)}
 
-/* 막대그래프 — 문제1이 유일한 사용처라 글자를 2배로 키우고(요청) 막대 두께도 같이 키웠다.
-   전체 화면 글자를 1.3배 키운 뒤(2026-09-08) 여기만 원래 크기로 되돌렸다 — 15줄짜리
-   막대(js/host/sessions/chart.js renderBar, rowH*0.64 고정)라 글자를 더 키우면
-   막대들끼리 라벨이 겹친다. 그래프가 이거 하나뿐이라 그대로 둬도 화면에 잘 찬다. */
-.bar-label{font-size:clamp(26px,2.1vw,38px);fill:var(--ink2);font-weight:600}
+/* 막대그래프 — ⚠ 글자 크기는 일부러 여기 없다. js/host/sessions/chart.js가 줄 간격에
+   맞춰 SVG 좌표 단위로 직접 넣는다(font-size 속성). 여기에 vw로 적으면 화면이 넓어질수록
+   글자만 커지고 줄 간격은 그대로라 라벨이 서로 겹친다(2026-09-08에 실제로 겹쳤다).
+   색·굵기만 여기서 정한다. */
+.bar-label{fill:var(--ink2);font-weight:600}
 .bar-label.hi{fill:var(--yellow);font-weight:800}
-.bar-value{font-size:clamp(26px,2.1vw,38px);fill:var(--ink);font-weight:700;font-variant-numeric:tabular-nums}
+.bar-value{fill:var(--ink);font-weight:700;font-variant-numeric:tabular-nums}
 .bar-value.hi{fill:var(--yellow);font-weight:800}
 .bar-rect{fill:var(--panel2)}
 .bar-rect.hi{fill:var(--yellow)}
 .bar-avgline{stroke:var(--ink3);stroke-dasharray:6 6;stroke-width:1.5}
 
-/* 선그래프(추이) — 문제3이 유일한 사용처라, 오른쪽 해설 박스 본문(.chartnote p)과
-   같은 크기로 맞췄다(요청) */
+/* 선그래프(추이) — 막대그래프와 같이 글자 크기는 chart.js가 점 간격에 맞춰 넣는다.
+   여기 vw로 두면 수치끼리 가로로 겹친다. 색·굵기만 여기서. */
 .line-path{fill:none;stroke:var(--yellow);stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
 .line-dot{fill:var(--yellow)}
 .line-axis{stroke:var(--line);stroke-width:1}
-.line-tick{font-size:clamp(33px,3.42vw,59px);fill:var(--ink3);font-weight:600}
-.line-value{font-size:clamp(33px,3.42vw,59px);fill:var(--ink);font-weight:700}
+.line-tick{fill:var(--ink3);font-weight:600}
+.line-value{fill:var(--ink);font-weight:700}
 
 /* 표 */
 .dtable{width:100%;border-collapse:collapse;font-size:clamp(32px,2.93vw,53px)}

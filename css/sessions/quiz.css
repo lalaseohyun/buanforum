@@ -99,29 +99,30 @@
 /* 보기 아래 여백 + 제출 현황.
    목업 프레임에는 하단 조작바가 없었지만 실제 화면에는 탭바+조작바(약 135px)가 더 있어서,
    조 원이 가려지지 않도록 이 아래 여백과 조 원 크기를 목업보다 조금 줄여 잡았다. */
-.foot{padding-top:clamp(12px,1.6vh,28px);flex:0 0 auto}
+.foot{padding-top:calc(clamp(12px,1.6vh,28px) * var(--cs,1));flex:0 0 auto}
 .tmeta{display:flex;justify-content:center}
-/* ⚠ 이 아래(팀 원 칩)도 화면 전체 확대를 그대로 곱하면 칩이 189px까지 커져서
-   "제출 현황" 페이지(문제+보기+칩이 한 화면에 다 있음)에서 칩 줄이 화면 아래로
-   넘쳐 잘렸다(2026-09-08 실측) — 조금만 덜 키움. */
-.tstat{font-size:clamp(22px,2.2vw,40px);font-weight:700;color:var(--ink2)}
+/* 제출 현황 — 화면 아래쪽에 너무 작게 나온다는 요청으로 약 2배로 키웠다(2026-09-08).
+   커진 만큼 세로를 더 먹으므로, 넘치는 화면에서는 fitQuestion()이 문제·보기를
+   조금 줄여 자리를 맞춘다(--qs/--cs, js/host/sessions/quiz.js). */
+.tstat{font-size:calc(clamp(40px,4.2vw,76px) * var(--cs,1));font-weight:700;color:var(--ink2)}
 .tstat b{color:var(--yellow)}
 .tstat.done{color:var(--yellow)}
 
 /* 팀 원 — 조 수(3~8)에 따라 개수가 달라진다. 예전엔 6칸 그리드라 조가 6보다
    적으면 남은 칸이 비어 왼쪽으로 쏠려 보였다 — flex+가운데 정렬로 몇 개든 항상 중앙에 온다. */
 .chips{display:flex;flex-wrap:wrap;justify-content:center;
-  gap:clamp(8px,1.2vh,18px) clamp(14px,1.6vw,26px);
-  max-width:min(100%,680px);
-  margin:clamp(8px,1vh,14px) auto 0;flex:0 0 auto}
-.chip{width:clamp(44px,5vw,68px);flex:0 0 auto;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;position:relative;
+  gap:calc(clamp(8px,1.2vh,18px) * var(--cs,1)) clamp(14px,1.6vw,26px);
+  max-width:min(100%,1120px);   /* 조 원을 2배로 키운 뒤에도 8조까지 한 줄에 들어가는 폭 */
+  margin:calc(clamp(8px,1vh,14px) * var(--cs,1)) auto 0;flex:0 0 auto}
+.chip{width:calc(clamp(80px,9.2vw,130px) * var(--cs,1));flex:0 0 auto;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;position:relative;
   background:var(--panel);color:var(--ink3);
-  font-weight:800;font-size:clamp(16px,1.7vw,28px);letter-spacing:-.02em;transition:.2s}
+  font-weight:800;font-size:calc(clamp(30px,3.2vw,54px) * var(--cs,1));letter-spacing:-.02em;transition:.2s}
 .chip.on{background:var(--yellow);color:#2c2c2a}
 .chip.done{background:var(--fill);color:var(--fillInk)}
 .chip.wrong{background:var(--panel2);color:var(--no);box-shadow:inset 0 0 0 3px var(--no)}
+/* 표식(✓ / O / X)은 조 원 글자에 비례해서 커지게 em으로 잡는다 — 원 크기를 바꿔도 같이 따라온다 */
 .chip .mk{position:absolute;top:2%;right:2%;width:30%;height:30%;
-  border-radius:50%;display:grid;place-items:center;font-size:clamp(24px,2.06vw,39px);font-weight:800;
+  border-radius:50%;display:grid;place-items:center;font-size:.62em;font-weight:800;
   background:var(--yellow);color:#2c2c2a;border:3px solid var(--bg)}
 .chip .mk.x{background:var(--no);color:#2c2c2a}
 .chip .mk.none{background:var(--panel2);color:var(--ink3)}

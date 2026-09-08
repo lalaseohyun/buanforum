@@ -72,7 +72,13 @@ export default {
     };
     const displayIndex = () => (previewIndex !== null ? previewIndex : state.index);
     const currentItem = () => { const i = displayIndex(); return i >= 0 && i < ITEMS.length ? ITEMS[i] : null; };
-    const answersForCurrent = () => { const it = currentItem(); return it ? (answersAll[it.id] || {}) : {}; };
+    // ⚠ 답변 문서에는 조 번호("1","2",…) 말고도 규칙 검사용 hostKey와 updatedAt이 같이 들어 있고,
+    // 초기화(hostReset)를 해도 문서 자체는 남아서 그 두 칸만 있는 빈 문서가 된다. 그래서 키 개수를
+    // 그대로 세면 아무도 안 냈는데 "2조 제출 완료"로 나왔다(2026-09-08). 진짜 답변만 남긴다 —
+    // 키가 조 번호이고 choice가 들어 있는 것. 제출 수·조 원 표시·보기별 득표수가 모두 이걸 쓴다.
+    const realAnswers = obj => Object.fromEntries(Object.entries(obj || {})
+      .filter(([k, v]) => /^\d+$/.test(k) && v && typeof v.choice === 'number'));
+    const answersForCurrent = () => { const it = currentItem(); return it ? realAnswers(answersAll[it.id]) : {}; };
     const answeredNos = () => Object.keys(answersForCurrent()).map(Number);
 
     /* ---- 쓰기 ---- */
@@ -211,7 +217,8 @@ export default {
       // flex로 높이가 정해진 뒤에 재야 정확하다 — 한 프레임 뒤에 넘칠 때만 줄인다
       // 순서 중요 — fitQuestion()이 문제·보기를 줄여 해설 자리를 먼저 만들고,
       // 그래도 모자라는 만큼만 fitInto()가 해설 글자를 줄인다.
-      requestAnimationFrame(() => { fitQuestion(); fitInto('.answerbox', 18); });
+      // (rAF가 아니라 setTimeout — 창이 뒤에 가려져 있으면 rAF는 안 돌아서 크기 조정이 통째로 안 된다)
+      setTimeout(() => { fitQuestion(); fitInto('.answerbox', 18); }, 0);
       ctx.setControls(controlsFor());
     }
 

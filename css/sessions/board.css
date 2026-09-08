@@ -24,21 +24,26 @@
 .refpage-head{flex:0 0 auto;display:flex;align-items:baseline;gap:clamp(27px,3.12vw,54px)}
 .refpage-head .rf-no{flex:0 0 auto;font-size:clamp(30px,2.73vw,44px);font-weight:800;color:#2c2c2a;
   background:var(--yellow);padding:6px 16px;border-radius:999px}
-.refpage-head .rf-name{flex:1;min-width:0;font-size:clamp(51px,5.85vw,102px);font-weight:800;letter-spacing:-.03em}
+/* 분야 제목 — 아래 사업 표가 본문이라 제목은 한 단계 작게(2026-09-08).
+   제목이 클수록 표에 남는 세로가 줄어 글자가 작아진다. */
+.refpage-head .rf-name{flex:1;min-width:0;font-size:clamp(42px,4.6vw,78px);font-weight:800;letter-spacing:-.03em}
 .refpage-head .rf-name .rf-sub{display:block;font-size:clamp(27px,2.44vw,39px);color:var(--ink2);
   font-weight:600;margin-top:4px;letter-spacing:-.01em}
 .refpage-head .rf-stats{flex:0 0 auto;display:flex;gap:clamp(24px,2.73vw,51px);align-items:baseline;
   font-size:clamp(30px,2.73vw,47px);color:var(--ink2);font-weight:700;white-space:nowrap}
 .refpage-head .rf-stats b{color:var(--yellow);font-size:1.15em}
 
+/* 분야마다 사업 수가 3개(교육)에서 15개(주거)까지 제각각이라, 글자 크기를 하나로 고정하면
+   짧은 분야는 표가 위쪽에만 조금 붙어 텅 비어 보이고 긴 분야는 스크롤이 생겼다.
+   board.js가 페이지마다 fitScale()로 --rs(배율)를 정해 세로를 꽉 채운다(2026-09-08 요청). */
 .reftable-wrap{flex:1;min-height:0;overflow:auto;background:var(--panel);border-radius:20px;padding:clamp(4px,.8vh,12px)}
-.reftable{width:100%;border-collapse:collapse;font-size:clamp(26px,2.25vw,38px)}
+.reftable{width:100%;border-collapse:collapse;font-size:calc(clamp(26px,2.25vw,38px) * var(--rs,1))}
 .reftable th{text-align:left;font-size:.72em;color:var(--ink3);font-weight:700;letter-spacing:.04em;
-  padding:clamp(8px,1vh,14px) clamp(20px,1.95vw,32px);border-bottom:1px solid var(--line2);
+  padding:calc(clamp(8px,1vh,14px) * var(--rs,1)) clamp(20px,1.95vw,32px);border-bottom:1px solid var(--line2);
   position:sticky;top:0;background:var(--panel)}
 .reftable th:first-child,.reftable td.num:first-child{width:6%;text-align:center}
 .reftable td.num{text-align:right;font-variant-numeric:tabular-nums}
-.reftable td{padding:clamp(7px,.9vh,13px) clamp(20px,1.95vw,32px);border-bottom:1px solid var(--line2);
+.reftable td{padding:calc(clamp(7px,.9vh,13px) * var(--rs,1)) clamp(20px,1.95vw,32px);border-bottom:1px solid var(--line2);
   color:var(--ink);font-weight:600}
 .reftable tr:last-child td{border-bottom:none}
 .reftable tr.hi td{color:var(--yellow);font-weight:800}

@@ -52,19 +52,19 @@ export default {
       // 투표가 들어올 때마다 다시 그리는데, 그 순간 진행자가 정책명을 치고 있을 수 있다.
       // 치던 칸(값·커서)을 붙잡아 뒀다가 그린 뒤에 되돌려 준다.
       const act = document.activeElement;
-      const typing = act && act.matches?.('.votetable input')
-        ? { t: act.dataset.t, v: act.value, s: act.selectionStart } : null;
+      const typing = act && act.matches?.('.votetable .pname')
+        ? { t: act.dataset.t, v: act.textContent } : null;
 
       ctx.root.innerHTML = page === 0 ? viewIntro() : page === 1 ? viewGallery() : viewVote();
       wire();
       ctx.setControls(controlsFor());
 
       if (typing) {
-        const back = ctx.root.querySelector(`.votetable input[data-t="${typing.t}"]`);
+        const back = ctx.root.querySelector(`.votetable .pname[data-t="${typing.t}"]`);
         if (back) {
-          back.value = typing.v;
+          back.textContent = typing.v;
           back.focus();
-          try { back.setSelectionRange(typing.s, typing.s); } catch {}
+          caretToEnd(back);
         }
       }
     }
@@ -128,7 +128,8 @@ export default {
           `<span class="dot" style="animation-delay:${Math.min(i, 24) * 35}ms"></span>`).join('');
         return `<div class="voterow">
           <div class="no">${esc(tm.label)}조</div>
-          <div class="name"><input data-t="${tm.no}" value="${esc(names[tm.no] || '')}" placeholder="정책명을 적어주세요"></div>
+          <div class="name"><div class="pname" data-t="${tm.no}" contenteditable="plaintext-only"
+            data-ph="정책명을 적어주세요">${esc(names[tm.no] || '')}</div></div>
           <div class="dotcell"><div class="dotbox">${dots}</div></div>
           <div class="cnt">${n}</div>
         </div>`;
@@ -178,12 +179,53 @@ export default {
         if (layer) layer.onclick = e => { e.stopPropagation(); if (e.target === layer) { zoomId = null; render(); } };
       } else if (page === 2) {
         renderQr(document.getElementById('voteQr'), hubUrl(), { width: 260, height: 260 });
-        // 정책명은 타이핑이 끝난 뒤(포커스가 빠질 때) 저장한다 — 글자마다 저장하면 커서가 튄다
-        ctx.root.querySelectorAll('.votetable input').forEach(inp => {
-          inp.onblur = () => saveName(Number(inp.dataset.t), inp.value);
-          inp.onkeydown = e => { if (e.key === 'Enter') inp.blur(); };
+        // 정책명은 타이핑이 끝난 뒤(포커스가 빠질 때) 저장한다 — 글자마다 저장하면 커서가 튄다.
+        // 한 줄 input이 아니라 textarea인 이유 ─ 정책명이 길면 가로로 잘려 안 보이던 걸,
+        // 두 줄·세 줄로 자연스럽게 내려가게 하려고(2026-09-08 요청). 줄이 늘면 그만큼 칸이
+        // 세로로 커진다(growName). Enter는 줄바꿈이 아니라 "입력 끝"으로 쓴다(=저장).
+        ctx.root.querySelectorAll('.votetable .pname').forEach(inp => {
+          inp.oninput = () => fitVoteTable();
+          inp.onblur = () => saveName(Number(inp.dataset.t), inp.textContent.trim());
+          inp.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); inp.blur(); } };
+          // 다른 데서 복사해 온 서식·줄바꿈이 통째로 들어오지 않게 순수 텍스트만 받는다
+          // (contenteditable="plaintext-only"를 모르는 브라우저 대비)
+          inp.onpaste = e => {
+            e.preventDefault();
+            const t = (e.clipboardData || window.clipboardData).getData('text').replace(/\s+/g, ' ');
+            document.execCommand('insertText', false, t);
+          };
         });
+        // 줄 수가 정해진 뒤에 재야 하므로 한 박자 뒤에 (rAF가 아닌 이유는 board.js 참고)
+        setTimeout(fitVoteTable, 0);
       }
+    }
+
+    // 정책명 칸(textarea)을 내용 줄 수에 맞춰 세로로 늘린다 — 먼저 높이를 비워야
+    // scrollHeight가 "지금 내용에 필요한 높이"로 다시 계산된다(안 그러면 줄어들지 않는다).
+    // 커서를 글자 맨 뒤로 (다시 그린 뒤 이어서 칠 수 있게)
+    function caretToEnd(el) {
+      const r = document.createRange();
+      r.selectNodeContents(el);
+      r.collapse(false);
+      const s = window.getSelection();
+      s.removeAllRanges(); s.addRange(r);
+    }
+
+    // 정책명이 길어 두세 줄이 되면 그 줄만 세로로 커지는데, 조가 많고 이름도 다들 길면
+    // 표 전체가 화면 밖으로 넘친다. 넘칠 때만 표 글자를 조금씩 줄여 딱 맞춘다(--vs).
+    // 짧은 이름만 있으면 손대지 않으니 원래 크기 그대로 크게 보인다.
+    function fitVoteTable() {
+      // ⚠ 넘쳤는지는 .votetable이 아니라 바깥 .votewrap에서 재야 한다 — .voteright가
+      // height:100%라 안쪽은 항상 "딱 맞다"고 나오고, 실제로 밀려 나가는 건 바깥 그리드다.
+      const wrap = ctx.root.querySelector('.votewrap');
+      const tb = wrap && wrap.querySelector('.votetable');
+      if (!tb) return;
+      const over = () => wrap.scrollHeight - wrap.clientHeight > 0;
+      // 0.34까지 — 조 6개 이름이 전부 길고 화면 세로까지 짧은(노트북 768px) 최악의 경우에도
+      // 잘리지 않고 다 보이게. 그런 경우가 아니면 여기까지 내려갈 일이 없다.
+      const apply = s => tb.style.setProperty('--vs', Math.max(0.34, s).toFixed(2));
+      apply(1);
+      for (let s = 1; s > 0.34 && over(); s -= 0.04) apply(s - 0.04);
     }
 
     async function upload(teamNo, file) {

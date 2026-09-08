@@ -31,11 +31,17 @@ export function renderChart(chart) {
 }
 
 function renderBar(chart) {
-  // 글자를 2배로 키운 만큼(css/sessions/chart.css) 왼쪽 라벨 자리와 막대 두께도 같이 키웠다
-  const W = 1000, H = 520, padL = 270, padR = 90, padT = 20, padB = 20;
+  // 글자를 2배로 키운 만큼(css/sessions/chart.css) 왼쪽 라벨 자리와 막대 두께도 같이 키웠다.
+  // ⚠ 아래 숫자들은 화면 px이 아니라 viewBox 안의 좌표 단위다(SVG가 통째로 화면에 맞게
+  //    확대·축소된다). 그래서 글자 크기도 여기서 좌표 단위로 정해야 줄 간격과 비례가 맞는다 —
+  //    CSS에 vw로 적어 두면 화면이 넓어질수록 글자만 커지고 줄 간격은 그대로라 겹친다
+  //    (문제 1은 15줄이라 1920 화면에서 글자 38 > 줄 간격 32로 실제로 겹쳤다, 2026-09-08).
+  const W = 1000, H = 700, padL = 270, padR = 90, padT = 20, padB = 20;
   const rows = chart.rows;
   const max = Math.max(...rows.map(r => r.value)) * 1.08;
   const rowH = (H - padT - padB) / rows.length;
+  // 줄 간격의 62% — 줄이 몇 개든 절대 안 겹치는 크기로 자동으로 정해진다
+  const fs = (rowH * 0.62).toFixed(1);
   const hi = new Set(chart.highlight || []);
   // 막대 두께를 rowH의 64%로(예전엔 82%) 줄여서, 그만큼 막대 사이 세로 간격이
   // 2배로 넓어진다(막대가 많은 문항일수록 다닥다닥 붙어 보이던 문제).
@@ -46,14 +52,17 @@ function renderBar(chart) {
     const w = (r.value / max) * (W - padL - padR);
     const isHi = hi.has(r.label);
     return `
-      <text x="${padL - 14}" y="${y + rowH * 0.62}" text-anchor="end" class="bar-label ${isHi ? 'hi' : ''}">${esc(r.label)}</text>
+      <text x="${padL - 14}" y="${y + rowH * 0.62}" font-size="${fs}" text-anchor="end" class="bar-label ${isHi ? 'hi' : ''}">${esc(r.label)}</text>
       <rect x="${padL}" y="${y + rowH * 0.18}" width="${Math.max(2, w)}" height="${rowH * 0.64}" rx="6" class="bar-rect ${isHi ? 'hi' : ''}"/>
-      <text x="${padL + w + 12}" y="${y + rowH * 0.62}" class="bar-value ${isHi ? 'hi' : ''}">${r.value}${esc(chart.unit || '')}</text>`;
+      <text x="${padL + w + 12}" y="${y + rowH * 0.62}" font-size="${fs}" class="bar-value ${isHi ? 'hi' : ''}">${r.value}${esc(chart.unit || '')}</text>`;
   }).join('');
   return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">${bars}</svg>`;
 }
 
 function renderLine(chart) {
+  // renderBar와 같은 이유로 글자 크기를 여기(viewBox 좌표 단위)에서 정한다 —
+  // CSS에 vw로 두면 점 사이 간격(stepX)과 비례가 안 맞아 "11,227" 같은 수치가 옆 점 것과
+  // 가로로 겹친다(2026-09-08). 점 간격에 맞춰 자동으로 정해지게 한다.
   const W = 1000, H = 480, padL = 60, padR = 40, padT = 30, padB = 50;
   const rows = chart.rows;
   const max = Math.max(...rows.map(r => r.value)) * 1.12;
@@ -65,10 +74,13 @@ function renderLine(chart) {
     return { x, y, ...r };
   });
   const path = xy.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ');
+  // 가장 긴 수치가 점 간격 안에 들어가는 크기(한 글자 폭 ≈ 0.58em으로 잡음), 최대 42
+  const longest = Math.max(...rows.map(r => r.value.toLocaleString().length), 4);
+  const fs = Math.min(42, (stepX - 12) / (longest * 0.58)).toFixed(1);
   const dots = xy.map(p => `
     <circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="7" class="line-dot"/>
-    <text x="${p.x.toFixed(1)}" y="${p.y - 18}" text-anchor="middle" class="line-value">${p.value.toLocaleString()}</text>
-    <text x="${p.x.toFixed(1)}" y="${H - padB + 28}" text-anchor="middle" class="line-tick">${esc(p.label)}</text>`).join('');
+    <text x="${p.x.toFixed(1)}" y="${(p.y - fs * 0.55).toFixed(1)}" font-size="${fs}" text-anchor="middle" class="line-value">${p.value.toLocaleString()}</text>
+    <text x="${p.x.toFixed(1)}" y="${(H - padB + fs * 0.9).toFixed(1)}" font-size="${fs}" text-anchor="middle" class="line-tick">${esc(p.label)}</text>`).join('');
   return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">
     <line x1="${padL}" y1="${H - padB}" x2="${W - padR}" y2="${H - padB}" class="line-axis"/>
     <path d="${path}" class="line-path"/>${dots}
