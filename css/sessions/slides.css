@@ -11,16 +11,16 @@
 
 .slide{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center;
   align-items:center;text-align:center;gap:clamp(18px,3vh,42px)}
-.slide .kicker{font-size:clamp(14px,1.3vw,20px);font-weight:800;letter-spacing:.14em;color:var(--yellow)}
-.slide h2{font-size:clamp(38px,4.8vw,84px);font-weight:800;letter-spacing:-.04em;line-height:1.24}
-.slide p{font-size:clamp(24px,3vw,50px);font-weight:600;line-height:1.42;letter-spacing:-.03em;color:var(--ink)}
-.slide p.sub{font-size:clamp(17px,1.7vw,28px);color:var(--ink2);font-weight:500}
+.slide .kicker{font-size:clamp(18px,1.69vw,26px);font-weight:800;letter-spacing:.14em;color:var(--yellow)}
+.slide h2{font-size:clamp(49px,6.24vw,109px);font-weight:800;letter-spacing:-.04em;line-height:1.24}
+.slide p{font-size:clamp(31px,3.9vw,65px);font-weight:600;line-height:1.42;letter-spacing:-.03em;color:var(--ink)}
+.slide p.sub{font-size:clamp(22px,2.21vw,36px);color:var(--ink2);font-weight:500}
 
 /* 패널/게스트 소개 카드 (토크콘서트) */
-.panels{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(16px,2vw,36px);width:100%;margin-top:clamp(10px,2vh,20px)}
-.panel{background:var(--panel);border-radius:22px;padding:clamp(20px,2.6vh,36px) clamp(14px,1.4vw,24px);text-align:center}
-.panel .name{font-size:clamp(19px,1.8vw,30px);font-weight:800}
-.panel .role{font-size:clamp(13px,1.15vw,19px);color:var(--ink2);font-weight:600;margin-top:6px;line-height:1.4}
+.panels{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(21px,2.6vw,47px);width:100%;margin-top:clamp(10px,2vh,20px)}
+.panel{background:var(--panel);border-radius:22px;padding:clamp(20px,2.6vh,36px) clamp(18px,1.82vw,31px);text-align:center}
+.panel .name{font-size:clamp(25px,2.34vw,39px);font-weight:800}
+.panel .role{font-size:clamp(17px,1.5vw,25px);color:var(--ink2);font-weight:600;margin-top:6px;line-height:1.4}
 
 /* 진행 순서 인디케이터 — 지금 몇 번째 카드인지 */
 .stepdots{display:flex;gap:8px;justify-content:center}
@@ -28,7 +28,7 @@
 .stepdots i.on{background:var(--yellow)}
 
 /* 큐시트(라운드) 배지 */
-.round{font-size:clamp(13px,1.2vw,19px);font-weight:700;padding:8px 20px;border-radius:999px;background:var(--panel);color:var(--ink2)}
+.round{font-size:clamp(17px,1.56vw,25px);font-weight:700;padding:8px 20px;border-radius:999px;background:var(--panel);color:var(--ink2)}
 
 /* ───────────────────────────────────────
    고정 무대 — 디자인 캔버스 목업(1600×801)에서 좌표로 자유 배치한 화면을
@@ -37,7 +37,7 @@
    위치를 옮기고 싶으면 해당 세션 js의 left/top 숫자만 고치면 된다.
    ─────────────────────────────────────── */
 .stagewrap{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;overflow:hidden;
-  margin:calc(-1 * clamp(40px,6.5vh,100px)) calc(-1 * clamp(28px,4.5vw,90px)) calc(-1 * clamp(24px,3.6vh,54px))}
+  margin:calc(-1 * clamp(40px,6.5vh,100px)) calc(-1 * clamp(36px,5.85vw,117px)) calc(-1 * clamp(24px,3.6vh,54px))}
 .stage1600{position:relative;flex:0 0 auto;width:1600px;height:801px;transform-origin:center center}
 .stage1600 .abs{position:absolute;margin:0}
 
@@ -47,18 +47,18 @@
 
 /* 6. 우수정책 — 시상 타이틀. 아래로 갈수록 커진다 */
 .awardslide{gap:clamp(14px,2.4vh,34px)}
-.awardsmall{font-size:clamp(18px,1.8vw,32px);font-weight:700;color:var(--ink2);letter-spacing:.02em}
-.awardmid{font-size:clamp(28px,3.2vw,56px);font-weight:800;color:var(--yellow);letter-spacing:-.02em}
-.awardbig{font-size:clamp(48px,6.4vw,116px);font-weight:800;color:var(--ink);letter-spacing:-.04em;line-height:1.15}
+.awardsmall{font-size:clamp(23px,2.34vw,42px);font-weight:700;color:var(--ink2);letter-spacing:.02em}
+.awardmid{font-size:clamp(36px,4.16vw,73px);font-weight:800;color:var(--yellow);letter-spacing:-.02em}
+.awardbig{font-size:clamp(62px,8.32vw,151px);font-weight:800;color:var(--ink);letter-spacing:-.04em;line-height:1.15}
 
 /* 홈 — 진행 순서를 "크게 4가지"로 보여주는 2×2 카드(딱 4장 고정, js/host/sessions/home.js CARD_IDS) */
-.homegrid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(2,1fr);grid-auto-rows:1fr;gap:clamp(20px,2.6vw,42px)}
+.homegrid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(2,1fr);grid-auto-rows:1fr;gap:clamp(26px,3.38vw,55px)}
 .homecard{background:var(--panel);border-radius:32px;display:flex;flex-direction:column;justify-content:center;align-items:center;
   text-align:center;gap:16px;cursor:pointer;transition:.15s}
 .homecard:hover{background:var(--panel2);outline:2px solid var(--yellow)}
-.homecard .n{font-size:clamp(20px,2vw,32px);font-weight:800;color:var(--yellow)}
-.homecard .t{font-size:clamp(38px,4.6vw,80px);font-weight:800;letter-spacing:-.03em}
-.homecard .s{font-size:clamp(18px,1.8vw,28px);color:var(--ink2);font-weight:600}
+.homecard .n{font-size:clamp(26px,2.6vw,42px);font-weight:800;color:var(--yellow)}
+.homecard .t{font-size:clamp(49px,5.98vw,104px);font-weight:800;letter-spacing:-.03em}
+.homecard .s{font-size:clamp(23px,2.34vw,36px);color:var(--ink2);font-weight:600}
 
 /* ───────────────────────────────────────
    좌측상단 제목 + 아래 N단 박스 — 공용 패턴
@@ -67,19 +67,19 @@
 .toppage{flex:1;min-height:0;display:flex;flex-direction:column;gap:clamp(24px,4vh,56px)}
 .toppage-head{flex:0 0 auto;text-align:left}
 .toppage-head.center{text-align:center}
-.toppage-head .kicker{font-size:clamp(14px,1.3vw,20px);font-weight:800;letter-spacing:.14em;color:var(--yellow)}
-.toppage-head h2{font-size:clamp(34px,4.2vw,72px);font-weight:800;letter-spacing:-.04em;line-height:1.22;margin-top:8px}
+.toppage-head .kicker{font-size:clamp(18px,1.69vw,26px);font-weight:800;letter-spacing:.14em;color:var(--yellow)}
+.toppage-head h2{font-size:clamp(44px,5.46vw,94px);font-weight:800;letter-spacing:-.04em;line-height:1.22;margin-top:8px}
 
 /* 원탁토론 타이틀("원탁토론")만 노란색 — opening·talk의 h2는 그대로 흰색이라 공용 규칙 대신 여기 */
 .boardtitle{color:var(--yellow)}
-.toppage-head p{font-size:clamp(17px,1.7vw,28px);color:var(--ink2);font-weight:600;margin-top:10px}
+.toppage-head p{font-size:clamp(22px,2.21vw,36px);color:var(--ink2);font-weight:600;margin-top:10px}
 
-.boxrow{flex:1;min-height:0;display:grid;gap:clamp(18px,2.4vw,40px)}
+.boxrow{flex:1;min-height:0;display:grid;gap:clamp(23px,3.12vw,52px)}
 .boxrow.cols-2{grid-template-columns:repeat(2,1fr)}
 .boxrow.cols-3{grid-template-columns:repeat(3,1fr)}
 .boxrow.cols-4{grid-template-columns:repeat(4,1fr)}
 .boxrow.cols-5{grid-template-columns:repeat(5,1fr)}
-.qbox{background:var(--panel);border-radius:26px;padding:clamp(28px,4vh,56px) clamp(20px,2.4vw,36px);
+.qbox{background:var(--panel);border-radius:26px;padding:clamp(28px,4vh,56px) clamp(26px,3.12vw,47px);
   display:flex;flex-direction:column;justify-content:center;gap:clamp(12px,2vh,22px);text-align:center}
 /* 토크콘서트 ROUND 박스만 위쪽 정렬로 — 라운드마다 문구 줄 수가 달라서 가운데 정렬이면
    박스마다 시작 높이가 들쭉날쭉해 보였다. 안의 글자는 그대로 가운데 정렬(.qbox 기본값). */
@@ -87,18 +87,18 @@
 /* 4단은 3단보다 박스가 좁아서 기본 qt 크기로는 강제 줄바꿈 앞 문구가 한 줄에 안 들어가고
    한 번 더 꺾여 3줄이 됐다 — 이 박스에서만 글자를 살짝 줄여 의도한 2줄로 맞춘다.
    (word-break:keep-all은 그대로 — 단어 중간에서 안 끊기게) */
-.boxrow.cols-4 .qt{font-size:clamp(18px,1.9vw,34px);word-break:keep-all}
+.boxrow.cols-4 .qt{font-size:clamp(23px,2.47vw,44px);word-break:keep-all}
 /* 토크콘서트 ROUND·원탁토론 참고자료 개요 박스 둘 다 — 남는 세로 공간을 끝까지
    채우지 않고 내용 높이만큼만 차지하게 해서(align-content:start) 박스 세로 길이를 줄인다. */
 .boxrow.cols-4,.boxrow.cols-5{align-content:start}
-.qbox .badge-step{align-self:flex-start;font-size:clamp(13px,1.1vw,18px);font-weight:800;letter-spacing:.08em;
+.qbox .badge-step{align-self:flex-start;font-size:clamp(17px,1.43vw,23px);font-weight:800;letter-spacing:.08em;
   color:#2c2c2a;background:var(--yellow);padding:6px 16px;border-radius:999px}
 /* ROUND 박스 안의 노란 타원(Round N · ○○)은 좌측 정렬 대신 가운데 정렬로 */
 .boxrow.cols-4 .qbox .badge-step{align-self:center}
 /* 목업 기준: 40px @1600px, 가운데 정렬 */
-.qbox .qt{font-size:clamp(22px,2.5vw,42px);font-weight:800;letter-spacing:-.03em;line-height:1.32;text-align:center}
-.qbox .qs{font-size:clamp(15px,1.4vw,22px);color:var(--ink2);font-weight:500;line-height:1.5}
-.qbox .qnote{font-size:clamp(14px,1.25vw,19px);color:var(--yellow);font-weight:700}
+.qbox .qt{font-size:clamp(29px,3.25vw,55px);font-weight:800;letter-spacing:-.03em;line-height:1.32;text-align:center}
+.qbox .qs{font-size:clamp(20px,1.82vw,29px);color:var(--ink2);font-weight:500;line-height:1.5}
+.qbox .qnote{font-size:clamp(18px,1.63vw,25px);color:var(--yellow);font-weight:700}
 
 /* 원탁토론 참고자료 개요(5개 분야 박스)만 분야명을 노란색으로 */
 .boxrow.cols-5 .qt{color:var(--yellow)}

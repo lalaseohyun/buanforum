@@ -24,29 +24,29 @@
 .badge.preview{background:var(--yellow);color:#2c2c2a;font-weight:800}
 
 /* 문제 */
-.q{font-size:clamp(32px,4.4vw,76px);font-weight:800;line-height:1.3;letter-spacing:-.038em;
+.q{font-size:clamp(42px,5.72vw,99px);font-weight:800;line-height:1.3;letter-spacing:-.038em;
   text-align:center;margin-bottom:clamp(28px,4.6vh,64px);flex:0 0 auto}
 
 /* 보기 — 개수(--n)에 따라 가로 등분. 기본 3, OX는 2, 4지선다는 4 */
-.choices{display:grid;grid-template-columns:repeat(var(--n,3),1fr);gap:clamp(14px,1.8vw,34px);flex:0 0 auto}
+.choices{display:grid;grid-template-columns:repeat(var(--n,3),1fr);gap:clamp(18px,2.34vw,44px);flex:0 0 auto}
 .ch{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(12px,1.8vh,24px);
   background:var(--panel);border:2px solid transparent;border-radius:22px;
-  padding:clamp(22px,3.4vh,48px) clamp(16px,1.5vw,28px);text-align:center;transition:.25s}
-.ch .n{width:clamp(42px,3.4vw,62px);height:clamp(42px,3.4vw,62px);border-radius:50%;background:var(--panel2);
-  display:grid;place-items:center;font-weight:800;font-size:clamp(19px,1.7vw,30px);color:var(--ink2)}
-.ch .t{font-size:clamp(23px,2.7vw,50px);font-weight:700;letter-spacing:-.028em;line-height:1.24}
+  padding:clamp(22px,3.4vh,48px) clamp(21px,1.95vw,36px);text-align:center;transition:.25s}
+.ch .n{width:clamp(55px,4.42vw,81px);height:clamp(55px,4.42vw,81px);border-radius:50%;background:var(--panel2);
+  display:grid;place-items:center;font-weight:800;font-size:clamp(25px,2.21vw,39px);color:var(--ink2)}
+.ch .t{font-size:clamp(30px,3.51vw,65px);font-weight:700;letter-spacing:-.028em;line-height:1.24}
 /* 보기 부연설명 — 목업에서 지정한 부드러운 노랑(#F6D049), 본문의 0.7배 */
 .ch .t .sub{font-size:.7em;font-weight:700;color:#F6D049}
-.ch .tally{font-size:clamp(14px,1.25vw,21px);font-weight:700;color:var(--ink3);font-variant-numeric:tabular-nums}
+.ch .tally{font-size:clamp(18px,1.63vw,27px);font-weight:700;color:var(--ink3);font-variant-numeric:tabular-nums}
 /* 정답 공개 — 정답 카드 안에 핵심 수치를 바로 붙인다(오른쪽 answer 카드를 따로 안 둔다).
    목업 기준(1600px 폭): 25px · 빨강 #C60909 · 카드 폭 전체에 가운데 정렬 · 윗줄 구분선 */
-.ch .hl-inline{width:100%;font-size:clamp(15px,1.56vw,27px);font-weight:800;line-height:1.35;
+.ch .hl-inline{width:100%;font-size:clamp(20px,2.03vw,35px);font-weight:800;line-height:1.35;
   color:#C60909;text-align:center;border-top:2px solid rgba(44,44,42,.22);padding-top:11px;margin-top:2px}
 
 /* OX 문항 — 번호를 빼고 O/X만 세 배 크기로 (기본 보기 글자의 3배) */
 .choices.ox .ch .n{display:none}
-.choices.ox .ch .t{font-size:clamp(60px,8.1vw,145px);line-height:1.05}
-.qview.revealed .choices.ox .ch .t{font-size:clamp(46px,5.1vw,90px)}
+.choices.ox .ch .t{font-size:clamp(78px,10.53vw,189px);line-height:1.05}
+.qview.revealed .choices.ox .ch .t{font-size:clamp(60px,6.63vw,117px)}
 
 /* 정답 공개 — 화면 구성은 그대로 두고 정답 보기만 노랗게(#F6D049) 바뀐다 */
 .ch.correct{background:#F6D049;border-color:#F6D049}
@@ -57,13 +57,13 @@
 
 /* 정답 해설 — 보기 바로 아래 연회색 네모박스, 가운데 정렬, 문장마다 줄바꿈 */
 .answerbox{background:var(--beige);color:var(--beigeInk);border-radius:24px;
-  margin-top:clamp(14px,2.2vh,32px);padding:clamp(14px,2vh,28px) clamp(20px,2.4vw,44px);
-  font-size:clamp(19px,1.85vw,33px);line-height:1.45;font-weight:500;letter-spacing:-.02em;
+  margin-top:clamp(14px,2.2vh,32px);padding:clamp(14px,2vh,28px) clamp(26px,3.12vw,57px);
+  font-size:clamp(25px,2.41vw,43px);line-height:1.45;font-weight:500;letter-spacing:-.02em;
   text-align:center;flex:1 1 auto;min-height:0;overflow:auto;
   display:flex;flex-direction:column;justify-content:center}
 .answerbox p+p{margin-top:clamp(3px,.6vh,9px)}
 .answerbox strong{color:#C60909}
-.answerbox .src{font-size:clamp(13px,1.15vw,19px);color:rgba(58,58,56,.5);margin-top:clamp(8px,1.2vh,16px);font-weight:600}
+.answerbox .src{font-size:clamp(17px,1.5vw,25px);color:rgba(58,58,56,.5);margin-top:clamp(8px,1.2vh,16px);font-weight:600}
 
 /* 화면 맨 아래 묶음 — 제출현황(있을 때) + 남은 페이지 점.
    정답 페이지에서는 해설 박스가 남는 자리를 다 쓰므로 auto 여백을 빼준다. */
@@ -71,71 +71,71 @@
 .qview.revealed .qbottom{margin-top:0}
 /* 정답 페이지 — 이미 읽은 문제와 보기를 조금 줄여 해설 박스 자리를 만든다
    (배치는 그대로, 크기만 한 단계 낮춘다) */
-.qview.revealed .q{font-size:clamp(21px,2.5vw,44px);margin-bottom:clamp(12px,1.8vh,26px)}
-.qview.revealed .ch{padding:clamp(10px,1.4vh,20px) clamp(12px,1.2vw,20px);gap:clamp(5px,.8vh,11px);border-radius:18px}
-.qview.revealed .ch .n{width:clamp(28px,2.1vw,38px);height:clamp(28px,2.1vw,38px);font-size:clamp(14px,1.15vw,20px)}
-.qview.revealed .ch .t{font-size:clamp(15px,1.7vw,30px)}
-.qview.revealed .ch .tally{font-size:clamp(12px,1.05vw,18px)}
-.qview.revealed .ch .hl-inline{font-size:clamp(13px,1.3vw,23px);padding-top:7px}
+.qview.revealed .q{font-size:clamp(27px,3.25vw,57px);margin-bottom:clamp(12px,1.8vh,26px)}
+.qview.revealed .ch{padding:clamp(10px,1.4vh,20px) clamp(16px,1.56vw,26px);gap:clamp(5px,.8vh,11px);border-radius:18px}
+.qview.revealed .ch .n{width:clamp(36px,2.73vw,49px);height:clamp(36px,2.73vw,49px);font-size:clamp(18px,1.5vw,26px)}
+.qview.revealed .ch .t{font-size:clamp(20px,2.21vw,39px)}
+.qview.revealed .ch .tally{font-size:clamp(16px,1.37vw,23px)}
+.qview.revealed .ch .hl-inline{font-size:clamp(17px,1.69vw,30px);padding-top:7px}
 
 /* 보기 아래 여백 + 제출 현황.
    목업 프레임에는 하단 조작바가 없었지만 실제 화면에는 탭바+조작바(약 135px)가 더 있어서,
    조 원이 가려지지 않도록 이 아래 여백과 조 원 크기를 목업보다 조금 줄여 잡았다. */
 .foot{padding-top:clamp(18px,3vh,54px);flex:0 0 auto}
 .tmeta{display:flex;justify-content:center}
-.tstat{font-size:clamp(21px,2.1vw,38px);font-weight:700;color:var(--ink2)}
+.tstat{font-size:clamp(27px,2.73vw,49px);font-weight:700;color:var(--ink2)}
 .tstat b{color:var(--yellow)}
 .tstat.done{color:var(--yellow)}
 
 /* 팀 원 — 조 수(3~8)에 따라 개수가 달라진다. 예전엔 6칸 그리드라 조가 6보다
    적으면 남은 칸이 비어 왼쪽으로 쏠려 보였다 — flex+가운데 정렬로 몇 개든 항상 중앙에 온다. */
 .chips{display:flex;flex-wrap:wrap;justify-content:center;
-  gap:clamp(8px,1.2vh,18px) clamp(10px,1.2vw,20px);
+  gap:clamp(8px,1.2vh,18px) clamp(13px,1.56vw,26px);
   max-width:min(100%,680px);
   margin:clamp(12px,2vh,32px) auto 0;flex:0 0 auto}
-.chip{width:clamp(44px,6.05vw,97px);flex:0 0 auto;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;position:relative;
+.chip{width:clamp(57px,7.87vw,126px);flex:0 0 auto;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;position:relative;
   background:var(--panel);color:var(--ink3);
-  font-weight:800;font-size:clamp(15px,1.6vw,28px);letter-spacing:-.02em;transition:.2s}
+  font-weight:800;font-size:clamp(20px,2.08vw,36px);letter-spacing:-.02em;transition:.2s}
 .chip.on{background:var(--yellow);color:#2c2c2a}
 .chip.done{background:var(--fill);color:var(--fillInk)}
 .chip.wrong{background:var(--panel2);color:var(--no);box-shadow:inset 0 0 0 3px var(--no)}
 .chip .mk{position:absolute;top:2%;right:2%;width:30%;height:30%;
-  border-radius:50%;display:grid;place-items:center;font-size:clamp(12px,1.05vw,20px);font-weight:800;
+  border-radius:50%;display:grid;place-items:center;font-size:clamp(16px,1.37vw,26px);font-weight:800;
   background:var(--yellow);color:#2c2c2a;border:3px solid var(--bg)}
 .chip .mk.x{background:var(--no);color:#2c2c2a}
 .chip .mk.none{background:var(--panel2);color:var(--ink3)}
 
 /* 대기화면(lobby) */
-.lobby{display:grid;grid-template-columns:auto 1fr;gap:clamp(34px,5vw,90px);align-items:center;flex:1;min-height:0}
-.qrbox{background:#fff;border-radius:24px;padding:clamp(14px,1.4vw,22px);line-height:0}
-.qrbox img{width:clamp(260px,28vw,480px);display:block}
-.lobby h2{font-size:clamp(36px,4.8vw,88px);font-weight:800;letter-spacing:-.04em;line-height:1.22;margin-bottom:clamp(14px,2.2vh,30px)}
+.lobby{display:grid;grid-template-columns:auto 1fr;gap:clamp(44px,6.5vw,117px);align-items:center;flex:1;min-height:0}
+.qrbox{background:#fff;border-radius:24px;padding:clamp(18px,1.82vw,29px);line-height:0}
+.qrbox img{width:clamp(338px,36.4vw,624px);display:block}
+.lobby h2{font-size:clamp(47px,6.24vw,114px);font-weight:800;letter-spacing:-.04em;line-height:1.22;margin-bottom:clamp(14px,2.2vh,30px)}
 .lobby h2 span{color:var(--yellow)}
-.lsub{font-size:clamp(19px,2.1vw,38px);color:var(--ink2);font-weight:600;margin-bottom:clamp(8px,1.2vh,16px)}
+.lsub{font-size:clamp(25px,2.73vw,49px);color:var(--ink2);font-weight:600;margin-bottom:clamp(8px,1.2vh,16px)}
 .lsub b{color:var(--yellow)}
 /* 대기화면 — 오늘 진행할 조 수 고르기 */
 /* 조 수 버튼(.tcbtn) — 탭바 ☰ 메뉴(js/host/main.js)가 쓰는 전역 클래스라 여기 남겨 둔다 */
 .tcbtn{background:var(--panel);color:var(--ink2);font-weight:800;border:none;border-radius:12px;
-  padding:8px 16px;font-size:clamp(15px,1.3vw,22px);cursor:pointer;transition:.15s}
+  padding:8px 16px;font-size:clamp(20px,1.69vw,29px);cursor:pointer;transition:.15s}
 .tcbtn:hover{background:var(--panel2)}
 .tcbtn.on{background:var(--yellow);color:#2c2c2a}
 
 .lobby .chips{margin:clamp(12px,2vh,24px) 0 0;max-width:min(100%,540px);
   gap:clamp(7px,1vh,12px) clamp(8px,.8vw,13px)}
-.lobby .chip{width:clamp(36px,4.9vw,79px);font-size:clamp(12px,1.15vw,20px)}
+.lobby .chip{width:clamp(47px,6.37vw,103px);font-size:clamp(16px,1.5vw,26px)}
 
 /* 최종 순위 — 제목은 문제 제목과 같은 톤, 칸은 참여 조 수에 맞춰 늘어난다(--cols/--rows) */
-.finaltitle{font-size:clamp(32px,4.4vw,76px);font-weight:800;line-height:1.3;letter-spacing:-.038em;
+.finaltitle{font-size:clamp(42px,5.72vw,99px);font-weight:800;line-height:1.3;letter-spacing:-.038em;
   text-align:center;color:var(--ink);margin-bottom:clamp(20px,3.4vh,48px);flex:0 0 auto}
 .rank{flex:1;min-height:0;display:grid;
   grid-template-columns:repeat(var(--cols,2),1fr);
   grid-template-rows:repeat(var(--rows,3),1fr);
-  gap:clamp(8px,1.4vh,20px) clamp(20px,2.8vw,50px);overflow:auto}
-.row{display:flex;align-items:center;gap:clamp(12px,1.3vw,22px);padding:clamp(14px,2.2vh,36px) clamp(16px,1.7vw,30px);
+  gap:clamp(8px,1.4vh,20px) clamp(26px,3.64vw,65px);overflow:auto}
+.row{display:flex;align-items:center;gap:clamp(16px,1.69vw,29px);padding:clamp(14px,2.2vh,36px) clamp(21px,2.21vw,39px);
   background:var(--panel);border-radius:18px}
-.row .r{flex:0 0 auto;min-width:clamp(56px,4.6vw,82px);font-size:clamp(22px,2.2vw,38px);font-weight:800;color:var(--ink3);letter-spacing:-.03em}
-.row .tm{font-size:clamp(24px,2.4vw,42px);font-weight:800;white-space:nowrap;flex:1}
-.row .sc{font-size:clamp(36px,3.7vw,66px);font-weight:800;color:var(--yellow);font-variant-numeric:tabular-nums;line-height:1}
+.row .r{flex:0 0 auto;min-width:clamp(73px,5.98vw,107px);font-size:clamp(29px,2.86vw,49px);font-weight:800;color:var(--ink3);letter-spacing:-.03em}
+.row .tm{font-size:clamp(31px,3.12vw,55px);font-weight:800;white-space:nowrap;flex:1}
+.row .sc{font-size:clamp(47px,4.81vw,86px);font-weight:800;color:var(--yellow);font-variant-numeric:tabular-nums;line-height:1}
 .row .sc small{font-size:.42em;color:var(--ink3);font-weight:600}
 .row.p1{background:var(--fill)}
 .row.p1 .r,.row.p1 .sc,.row.p1 .tm{color:var(--fillInk)}
