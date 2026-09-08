@@ -114,9 +114,11 @@
    가장 중요한 화면이라 우선 고침). 원래 값(git 3163aa1) 기준으로 살짝만(1.1배 안팎)
    키우는 걸로 다시 잡았다. .tcbtn은 애초에 무대 콘텐츠가 아니라 탭바 ☰ 드롭다운
    버튼(js/host/main.js)이라 원래 크기로 완전히 되돌린다. */
-.lobby{display:grid;grid-template-columns:auto 1fr;gap:clamp(38px,5.4vw,96px);align-items:center;flex:1;min-height:0}
-.qrbox{background:#fff;border-radius:24px;padding:clamp(16px,1.6vw,26px);line-height:0}
-.qrbox img{width:clamp(270px,29vw,450px);display:block}
+/* QR은 오늘 밤 모든 조가 제일 먼저 보는 화면이라 작으면 안 된다 — 넉넉하게 키움
+   (h2 텍스트를 이미 줄여놔서 세로 여유가 있다, 2026-09-08). */
+.lobby{display:grid;grid-template-columns:auto 1fr;gap:clamp(44px,6vw,110px);align-items:center;flex:1;min-height:0}
+.qrbox{background:#fff;border-radius:24px;padding:clamp(20px,2vw,32px);line-height:0}
+.qrbox img{width:clamp(340px,36vw,580px);display:block}
 .lobby h2{font-size:clamp(40px,5.4vw,100px);font-weight:800;letter-spacing:-.04em;line-height:1.22;margin-bottom:clamp(14px,2.2vh,30px)}
 .lobby h2 span{color:var(--yellow)}
 .lsub{font-size:clamp(21px,2.3vw,42px);color:var(--ink2);font-weight:600;margin-bottom:clamp(8px,1.2vh,16px)}
