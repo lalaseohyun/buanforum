@@ -115,8 +115,12 @@
    키우는 걸로 다시 잡았다. .tcbtn은 애초에 무대 콘텐츠가 아니라 탭바 ☰ 드롭다운
    버튼(js/host/main.js)이라 원래 크기로 완전히 되돌린다. */
 /* QR은 오늘 밤 모든 조가 제일 먼저 보는 화면이라 작으면 안 된다 — 넉넉하게 키움
-   (h2 텍스트를 이미 줄여놔서 세로 여유가 있다, 2026-09-08). */
-.lobby{display:grid;grid-template-columns:auto 1fr;gap:clamp(44px,6vw,110px);align-items:center;flex:1;min-height:0}
+   (h2 텍스트를 이미 줄여놔서 세로 여유가 있다, 2026-09-08).
+   왼쪽 여백을 살짝 주고(QR이 화면 맨 끝에 바로 붙어 보이지 않게) — 간격(gap)은
+   키우지 않는다, 간격을 키우면 오히려 오른쪽 글자 칸(1fr)의 폭이 줄어든다.
+   "화면을 꽉 채운다"는 건 글자 칸 자체를 더 크게 키우는 쪽으로 해결한다. */
+.lobby{display:grid;grid-template-columns:auto 1fr;gap:clamp(40px,5.4vw,100px);
+  align-items:center;flex:1;min-height:0;padding-left:clamp(14px,1.8vw,36px)}
 .qrbox{background:#fff;border-radius:24px;padding:clamp(20px,2vw,32px);line-height:0}
 .qrbox img{width:clamp(340px,36vw,580px);display:block}
 .lobby h2{font-size:clamp(40px,5.4vw,100px);font-weight:800;letter-spacing:-.04em;line-height:1.22;margin-bottom:clamp(14px,2.2vh,30px)}

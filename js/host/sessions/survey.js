@@ -1,6 +1,7 @@
 /* ───────────────────────────────────────
    7. 만족도조사 — 진행자 화면. 화살표로 두 페이지가 이어진다.
-     0) QR + 실시간 응답 수 카운터 — 참여자는 survey.html(별도 페이지, 모바일 전용)로 들어온다
+     0) QR + 실시간 응답 수 카운터 — QR은 퀴즈·공감투표와 같은 허브(루트) 주소를 가리킨다.
+        허브의 "만족도조사" 타일을 누르면 survey.html(별도 페이지, 모바일 전용)로 이동한다
      1) 실시간 오픈엔디드 2분할 — 왼쪽 Q3(기억에 남는 것) · 오른쪽 Q5(하고 싶은 말)
         카드 애니메이션(하이라이트→합류→순환→셔플)은 ./surveyWall.js가 맡는다.
 
@@ -33,8 +34,10 @@ export default {
 
     const dots = () => `<div class="pagedots">${[0, 1].map(i =>
       `<i class="${i === index ? 'on' : ''}"></i>`).join('')}</div>`;
-    // 참여자 화면은 이 탭 안이 아니라 별도 정적 페이지(survey.html)다
-    const surveyUrl = () => location.href.replace(/host\.html.*$/, '') + 'survey.html';
+    // 퀴즈·공감투표 QR과 똑같이 허브(루트 주소)를 가리킨다 — 참여자가 QR을 여러 개
+    // 구분해서 찍을 필요 없이, 밤새 하나의 QR(=허브)만 찍으면 되게 통일했다(요청).
+    // 허브의 "만족도조사" 타일을 누르면 그 안에서 survey.html로 이동한다.
+    const surveyUrl = () => location.href.replace(/host\.html.*$/, '');
 
     // 응답 문서의 실제 필드명(js/surveyForm.js·admin.html과 반드시 맞춰야 함): q3_memorable / q5_free
     const RESPONSE_FIELD = { q3: 'q3_memorable', q5: 'q5_free' };

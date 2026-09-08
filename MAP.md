@@ -83,7 +83,7 @@ QR·실시간 화면(위 7번)은 host.html 안의 세션이지만, **설문 폼
 
 | 파일 | 역할 |
 |---|---|
-| [survey.html](survey.html) + [js/surveyForm.js](js/surveyForm.js) | 참여자 설문 폼(모바일 전용). `survey.html` 그 자체가 QR이 가리키는 주소 |
+| [survey.html](survey.html) + [js/surveyForm.js](js/surveyForm.js) | 참여자 설문 폼(모바일 전용). 퀴즈·공감투표와 QR을 하나로 통일하면서, 이제 QR은 이 페이지가 아니라 허브(루트)를 가리키고 허브의 "만족도조사" 타일이 이 페이지로 이동시킨다 |
 | [admin.html](admin.html) + [js/adminPanel.js](js/adminPanel.js) | 진행자 관리 화면 — 응답별 숨김 토글·전체 일시정지·엑셀 다운로드(SheetJS). `admin.html?k=진행자키`로 열어야 조작 버튼이 뜬다(host.html과 같은 방식) |
 | [js/survey.js](js/survey.js) | 응답 저장·구독 래퍼 — 이 셋(7번 세션·survey.html·admin.html)이 전부 이 파일을 통해서만 데이터를 만진다 |
 

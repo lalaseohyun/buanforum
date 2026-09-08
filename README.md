@@ -15,7 +15,7 @@ GitHub Pages에 올려 씁니다. **주소가 고정**이라 QR을 행사 전에
 |---|---|
 | 참여자 | https://lalaseohyun.github.io/buanforum/ |
 | 진행자 | https://lalaseohyun.github.io/buanforum/host.html?k=2026 |
-| 만족도조사 설문(참여자, QR용) | https://lalaseohyun.github.io/buanforum/survey.html |
+| 만족도조사 설문(참여자 허브의 "만족도조사" 타일이 이 주소로 이동시킨다) | https://lalaseohyun.github.io/buanforum/survey.html |
 | 만족도조사 관리(진행자) | https://lalaseohyun.github.io/buanforum/admin.html?k=2026 |
 
 Firebase 프로젝트: `buanforum` (Firestore·Storage 모두 asia-northeast3/무료 위치로 생성 완료, Storage는 Blaze 요금제). Realtime Database는 별도 설정이 필요합니다 — 아래 "만족도조사(Realtime Database) 설정" 참고.
@@ -68,8 +68,9 @@ Firebase 프로젝트: `buanforum` (Firestore·Storage 모두 asia-northeast3/�
    내용을 붙여넣고 **게시**
 5. 이후 `host.html?k=<진행자키>`의 마지막(7번) 탭에서 QR·실시간 화면이, `survey.html`에서
    설문 폼이, `admin.html?k=<진행자키>`에서 관리 화면(숨김·일시정지·엑셀 다운로드)이 작동합니다.
-   설문 QR이 가리키는 주소는 참여자 주소가 아니라 `.../survey.html`이니, 7번 탭의 QR을
-   그대로 화면에 띄우고 참여자가 그걸 찍게 하면 됩니다.
+   7번 탭의 QR은 퀴즈·공감투표와 똑같이 **참여자 허브(루트 주소)**를 가리킵니다 — 참여자가
+   QR을 여러 개 구분할 필요 없이 밤새 하나만 찍으면 되도록 통일했습니다. 허브의
+   "만족도조사" 타일을 누르면 그 안에서 `survey.html`로 이동합니다.
 
 ---
 
