@@ -41,13 +41,16 @@
    그 차이를 도로 메꿔버리기 때문. 첨부 샘플 이미지만큼 확실히 작게 하려면 기본
    크기 자체를 "20개를 넣어도 남는 자리가 있을" 정도로 확 낮춰야 한다. 4열로도
    늘렸다(샘플 이미지처럼 더 촘촘하게). */
+/* 2배 정도 다시 키워달라는 요청(2026-09-08, 같은 날 세 번째 조정) — 위 기본
+   크기를 대략 2배로. 여전히 20개 시나리오에서 --ws 자동 축소가 안전망으로
+   남아 있으니, 너무 많아지면 알아서 다시 줄어든다. */
 .walllist{flex:1;min-height:0;display:grid;grid-template-columns:repeat(4,1fr);
   grid-auto-rows:min-content;align-content:start;
-  gap:calc(clamp(5px,.8vh,9px) * var(--ws,1)) calc(clamp(6px,.7vw,10px) * var(--ws,1));
+  gap:calc(clamp(10px,1.6vh,18px) * var(--ws,1)) calc(clamp(12px,1.4vw,20px) * var(--ws,1));
   overflow-y:auto}
-.wallcard{background:var(--panel);border-radius:calc(11px * var(--ws,1));min-width:0;
-  padding:calc(clamp(6px,.9vh,10px) * var(--ws,1)) calc(clamp(9px,.9vw,13px) * var(--ws,1));
-  font-size:calc(clamp(10px,1vw,14px) * var(--ws,1));font-weight:600;line-height:1.35;letter-spacing:-.005em;
+.wallcard{background:var(--panel);border-radius:calc(22px * var(--ws,1));min-width:0;
+  padding:calc(clamp(12px,1.8vh,20px) * var(--ws,1)) calc(clamp(18px,1.8vw,26px) * var(--ws,1));
+  font-size:calc(clamp(20px,2vw,28px) * var(--ws,1));font-weight:600;line-height:1.35;letter-spacing:-.005em;
   word-break:keep-all;animation:wallcardin .4s ease-out backwards}
 @keyframes wallcardin{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 
